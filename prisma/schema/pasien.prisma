@@ -1,0 +1,49 @@
+model Pasien {
+  id                  Int                  @id @default(autoincrement())
+  noRm                String?
+  namaPasien          String
+  wargaNegara         String?              @db.VarChar(50)
+  nik                 String?              @db.VarChar(50)
+  bpjs                String?              @db.VarChar(30)
+  noAsuransi          String?              @db.VarChar(100)
+  paspor              String?              @db.VarChar(100)
+  bahasa              String?              @db.VarChar(100)
+  noHp                String               @db.VarChar(20)
+  tempatLahir         String               @db.VarChar(20)
+  tanggalLahir        DateTime             @db.Date
+  jenisKelamin        String               @db.Char(1)
+  statusMenikah       String               @db.VarChar(50)
+  agama               String               @db.VarChar(50)
+  alamat              String
+  ibuKandung          String
+  provinsi            String               @db.VarChar(100)
+  idProv              String               @db.VarChar(100)
+  kota                String               @db.VarChar(100)
+  idKota              String               @db.VarChar(100)
+  kecamatan           String               @db.VarChar(100)
+  idKecamatan         String               @db.VarChar(100)
+  kelurahan           String               @db.VarChar(100)
+  idKelurahan         String               @db.VarChar(100)
+  rt                  Int
+  rw                  Int
+  kodePos             String?              @db.VarChar(10)
+  pendidikan          String               @db.VarChar(100)
+  pekerjaan           String               @db.VarChar(100)
+  alamatDomisili      String
+  provinsiDomisili    String               @db.VarChar(100)
+  idProvDomisili      String               @db.VarChar(100)
+  kotaDomisili        String               @db.VarChar(100)
+  idKotaDomisili      String               @db.VarChar(100)
+  kecamatanDomisili   String               @db.VarChar(100)
+  idKecamatanDomisili String               @db.VarChar(100)
+  kelurahanDomisili   String               @db.VarChar(100)
+  idKelurahanDomisili String               @db.VarChar(100)
+  rtDomisili          Int
+  rwDomisili          Int
+  kodePosDomisili     String?              @db.VarChar(10)
+  isAktif             Boolean?             @default(true)
+  createdAt           DateTime             @default(now()) @db.Timestamptz
+  updatedAt           DateTime             @updatedAt @db.Timestamptz
+  episodePasien       EpisodePendaftaran[]
+  idFasyankes         String?              @db.VarChar(30)
+}
