@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Pasien } from '@prisma/client';
+import { Prisma, Pasien, EpisodePendaftaran } from '@prisma/client';
 import { formatISO } from 'date-fns';
 import { PrismaService } from 'src/service/prisma.service';
 
@@ -77,6 +77,17 @@ export class PasienService {
     return transaksi
   }
 
+  async riwayatRegistrasi(params: {
+    where?: Prisma.EpisodePendaftaranWhereInput;
+    include?: Prisma.EpisodePendaftaranInclude
+  }): Promise<EpisodePendaftaran[]> {
+    const { where, include } = params;
+    return this.prisma.episodePendaftaran.findMany({
+      where,
+      include
+    });
+  }
+
   async findAll(params: {
     skip?: number;
     take?: number;
@@ -94,8 +105,11 @@ export class PasienService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} pasien`;
+  async findOne(params: { where?: Prisma.PasienWhereInput }): Promise<Pasien> {
+    const { where } = params
+    return this.prisma.pasien.findFirst({
+      where,
+    })
   }
 
   async update(params: {

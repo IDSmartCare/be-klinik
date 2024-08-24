@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
 import { PasienService } from './pasien.service';
-import { Pasien as PasienModel } from '@prisma/client';
+import { EpisodePendaftaran, Pasien as PasienModel } from '@prisma/client';
 import { CreatePasienDto } from './dto/create-pasien.dto';
 import { UpdatePasienDto } from './dto/update-pasien.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -16,7 +16,7 @@ export class PasienController {
   }
 
   @UseGuards(AuthGuard)
-  @Get("/:idfasyankes")
+  @Get(":idfasyankes")
   async findAll(@Param("idfasyankes") idfasyankes: string): Promise<PasienModel[]> {
     return this.pasienService.findAll({
       where: {
@@ -29,9 +29,48 @@ export class PasienController {
     });
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.pasienService.findOne(+id);
+  @UseGuards(AuthGuard)
+  @Get('/byid/:id')
+  async findOne(@Param('id') id: string): Promise<PasienModel> {
+    return this.pasienService.findOne({
+      where: {
+        id: Number(id)
+      }
+    });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/riwayatregistrasi/:id')
+  async riwayatRegis(@Param('id') id: string): Promise<EpisodePendaftaran[]> {
+    return this.pasienService.riwayatRegistrasi({
+      where: {
+        pasienId: Number(id),
+      },
+      include: {
+        pendaftaran: {
+          select: {
+            penjamin: true,
+            id: true,
+            namaAsuransi: true,
+            createdAt: true,
+            jadwal: {
+
+              include: {
+                dokter: {
+                  include: {
+                    poliklinik: {
+                      select: {
+                        namaPoli: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
   }
 
   @UseGuards(AuthGuard)
