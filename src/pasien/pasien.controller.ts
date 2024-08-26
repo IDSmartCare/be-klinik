@@ -1,23 +1,74 @@
 import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
 import { PasienService } from './pasien.service';
-import { EpisodePendaftaran, Pasien as PasienModel } from '@prisma/client';
+import { EpisodePendaftaran, Pasien, Pendaftaran } from '@prisma/client';
 import { CreatePasienDto } from './dto/create-pasien.dto';
 import { UpdatePasienDto } from './dto/update-pasien.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { RegisPasienDto } from './dto/regis-pasien.dto';
 
 @Controller('pasien')
 export class PasienController {
   constructor(private readonly pasienService: PasienService) { }
 
+
+  @UseGuards(AuthGuard)
+  @Get("/listregistrasi/:idfasyankes")
+  async findAllRegistrasi(@Param("idfasyankes") idfasyankes: string): Promise<Pendaftaran[]> {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return this.pasienService.findAllRegistrasi({
+      where: {
+        isClose: false,
+        AND: [
+          { createdAt: { gte: today } },
+          { createdAt: { lt: tomorrow } },
+        ],
+        idFasyankes: idfasyankes
+      },
+      orderBy: {
+        id: 'desc',
+      },
+      include: {
+        jadwal: {
+          select: {
+            dokter: true,
+          },
+        },
+        episodePendaftaran: {
+          select: {
+            pasien: {
+              select: {
+                noRm: true,
+                namaPasien: true,
+                jenisKelamin: true,
+                kelurahan: true,
+                id: true
+              }
+            }
+          }
+        },
+      }
+
+    });
+  }
+
   @UseGuards(AuthGuard)
   @Post()
-  async create(@Body() pasien: CreatePasienDto): Promise<PasienModel> {
+  async create(@Body() pasien: CreatePasienDto): Promise<Pasien> {
     return this.pasienService.create(pasien);
   }
 
   @UseGuards(AuthGuard)
+  @Post("/registrasi")
+  async createRegis(@Body() pasien: RegisPasienDto): Promise<Pendaftaran> {
+    return this.pasienService.createRegis(pasien);
+  }
+
+  @UseGuards(AuthGuard)
   @Get(":idfasyankes")
-  async findAll(@Param("idfasyankes") idfasyankes: string): Promise<PasienModel[]> {
+  async findAll(@Param("idfasyankes") idfasyankes: string): Promise<Pasien[]> {
     return this.pasienService.findAll({
       where: {
         idFasyankes: idfasyankes
@@ -31,7 +82,7 @@ export class PasienController {
 
   @UseGuards(AuthGuard)
   @Get('/byid/:id')
-  async findOne(@Param('id') id: string): Promise<PasienModel> {
+  async findOne(@Param('id') id: string): Promise<Pasien> {
     return this.pasienService.findOne({
       where: {
         id: Number(id)
@@ -75,7 +126,7 @@ export class PasienController {
 
   @UseGuards(AuthGuard)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updatePasienDto: UpdatePasienDto): Promise<PasienModel> {
+  async update(@Param('id') id: string, @Body() updatePasienDto: UpdatePasienDto): Promise<Pasien> {
     return this.pasienService.update({
       where: {
         id: Number(id)

@@ -1,11 +1,152 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Pasien, EpisodePendaftaran } from '@prisma/client';
+import { Prisma, Pasien, EpisodePendaftaran, Pendaftaran } from '@prisma/client';
 import { formatISO } from 'date-fns';
 import { PrismaService } from 'src/service/prisma.service';
+import { RegisPasienDto } from './dto/regis-pasien.dto';
 
 @Injectable()
 export class PasienService {
   constructor(private prisma: PrismaService) { }
+
+  async createRegis(data: RegisPasienDto): Promise<Pendaftaran> {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const transaksi = await this.prisma.$transaction(async (tx) => {
+      const tarifAdm = await tx.masterTarif.findFirst({
+        where: {
+          idFasyankes: data.idFasyankes,
+          penjamin: data.penjamin,
+          kategoriTarif: "Admin",
+          isAktif: true
+        }
+      })
+      const lastEpisode = await tx.episodePendaftaran.findMany({
+        where: {
+          pasienId: data.pasienId,
+          idFasyankes: data.idFasyankes,
+        },
+        orderBy: {
+          id: "desc",
+        },
+        take: 1,
+      })
+
+      if (lastEpisode.length === 0) {
+        const episodeBaru = await tx.episodePendaftaran.create({
+          data: {
+            pasienId: data.pasienId,
+            episode: 1,
+            idFasyankes: data.idFasyankes
+          }
+        })
+        const registrasi = await tx.pendaftaran.create({
+          data: {
+            episodePendaftaranId: episodeBaru.id,
+            jadwalDokterId: data.jadwalDokterId,
+            penjamin: data.penjamin,
+            namaAsuransi: data.namaAsuransi,
+            idFasyankes: data.idFasyankes,
+          }
+        })
+
+        const bill = await tx.billPasien.create({
+          data: {
+            pendaftaranId: registrasi.id,
+          }
+        })
+        await tx.billPasienDetail.create({
+          data: {
+            harga: tarifAdm?.hargaTarif,
+            jenisBill: "Admin",
+            deskripsi: tarifAdm?.namaTarif,
+            billPasienId: bill.id,
+            jumlah: 1,
+            subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString()
+          }
+        })
+
+        return registrasi
+      }
+      else {
+        const count = await tx.pendaftaran.count({
+          where: {
+            AND: [
+              { createdAt: { gte: today } },
+              { createdAt: { lt: tomorrow } },
+            ],
+            episodePendaftaranId: lastEpisode[0].id,
+            idFasyankes: data.idFasyankes,
+          },
+        })
+        if (count > 0) {
+          const registrasi = await tx.pendaftaran.create({
+            data: {
+              episodePendaftaranId: lastEpisode[0].id,
+              jadwalDokterId: data.jadwalDokterId,
+              penjamin: data.penjamin,
+              namaAsuransi: data.namaAsuransi,
+              idFasyankes: data.idFasyankes
+            }
+          })
+          const bill = await tx.billPasien.create({
+            data: {
+              pendaftaranId: registrasi.id,
+            }
+          })
+
+          await tx.billPasienDetail.create({
+            data: {
+              harga: tarifAdm?.hargaTarif,
+              jenisBill: "Admin",
+              deskripsi: tarifAdm?.namaTarif,
+              billPasienId: bill?.id,
+              jumlah: 1,
+              subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString()
+            }
+          })
+          return registrasi
+        } else {
+
+          const episodeBaru = await tx.episodePendaftaran.create({
+            data: {
+              pasienId: data.pasienId,
+              episode: lastEpisode[0].episode + 1,
+              idFasyankes: data.idFasyankes,
+            }
+          })
+          const registrasi = await tx.pendaftaran.create({
+            data: {
+              episodePendaftaranId: episodeBaru.id,
+              jadwalDokterId: data.jadwalDokterId,
+              penjamin: data.penjamin,
+              namaAsuransi: data.namaAsuransi,
+              idFasyankes: data.idFasyankes
+            }
+          })
+          const bill = await tx.billPasien.create({
+            data: {
+              pendaftaranId: registrasi.id,
+            }
+          })
+          await tx.billPasienDetail.create({
+            data: {
+              harga: tarifAdm?.hargaTarif,
+              jenisBill: "Admin",
+              deskripsi: tarifAdm?.namaTarif,
+              billPasienId: bill.id,
+              jumlah: 1,
+              subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString()
+            }
+          })
+          return registrasi
+        }
+
+      }
+    })
+    return transaksi
+  }
 
   async create(data: Prisma.PasienCreateInput): Promise<Pasien> {
     const today = new Date()
@@ -102,6 +243,19 @@ export class PasienService {
       cursor,
       where,
       orderBy,
+    });
+  }
+
+  async findAllRegistrasi(params: {
+    where?: Prisma.PendaftaranWhereInput;
+    orderBy?: Prisma.PendaftaranOrderByWithRelationInput;
+    include?: Prisma.PendaftaranInclude
+  }): Promise<Pendaftaran[]> {
+    const { where, orderBy, include } = params;
+    return this.prisma.pendaftaran.findMany({
+      where,
+      orderBy,
+      include
     });
   }
 
