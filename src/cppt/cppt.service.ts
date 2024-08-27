@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CreateCpptDto } from './dto/create-cppt.dto';
-import { UpdateCpptDto } from './dto/update-cppt.dto';
 import { PrismaService } from 'src/service/prisma.service';
-import { SOAP } from '@prisma/client';
+import { Prisma, SOAP } from '@prisma/client';
 
 @Injectable()
 export class CpptService {
@@ -149,15 +148,24 @@ export class CpptService {
 
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} cppt`;
+  async listCPPT(params: {
+    where: Prisma.SOAPWhereInput,
+    include: Prisma.SOAPInclude,
+    orderBy?: Prisma.SOAPOrderByWithRelationInput;
+  }): Promise<SOAP[]> {
+    const { where, orderBy, include } = params
+    return this.prisma.sOAP.findMany({
+      where,
+      orderBy,
+      include
+    })
   }
 
-  update(id: number, updateCpptDto: UpdateCpptDto) {
-    return `This action updates a #${id} cppt`;
+  async getOne(params: { where: Prisma.SOAPWhereInput }): Promise<SOAP> {
+    const { where } = params
+    return this.prisma.sOAP.findFirst({
+      where
+    })
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} cppt`;
-  }
 }

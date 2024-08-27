@@ -1,7 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { CpptService } from './cppt.service';
 import { CreateCpptDto } from './dto/create-cppt.dto';
-import { UpdateCpptDto } from './dto/update-cppt.dto';
 import { SOAP } from '@prisma/client';
 
 @Controller('cppt')
@@ -18,18 +17,61 @@ export class CpptController {
     return this.cpptService.findAll(idfasyankes, idpasien);
   }
 
+  @Get('/listfarmasi/:idfasyankes')
+  async findOne(@Param('idfasyankes') idfasyankes: string) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return this.cpptService.listCPPT({
+      where: {
+        idFasyankes: idfasyankes,
+        profesi: 'dokter',
+        AND: [
+          { createdAt: { gte: today } },
+          { createdAt: { lt: tomorrow } },
+        ],
+      },
+      orderBy: {
+        id: 'desc',
+      },
+      include: {
+        pendaftaran: {
+          include: {
+            episodePendaftaran: {
+              select: {
+                pasien: {
+                  select: {
+                    noRm: true,
+                    namaPasien: true,
+                    jenisKelamin: true,
+                    id: true
+                  }
+                }
+              }
+            },
+            jadwal: {
+              select: {
+                dokter: {
+                  select: {
+                    namaLengkap: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cpptService.findOne(+id);
+  async getOne(@Param('id') id: string) {
+    return this.cpptService.getOne({
+      where: {
+        id: Number(id),
+      }
+    });
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCpptDto: UpdateCpptDto) {
-    return this.cpptService.update(+id, updateCpptDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.cpptService.remove(+id);
-  }
 }

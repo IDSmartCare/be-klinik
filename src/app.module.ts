@@ -4,11 +4,12 @@ import { AppService } from './app.service';
 import { PasienModule } from './pasien/pasien.module';
 import { ConfigModule } from '@nestjs/config';
 import { CpptModule } from './cppt/cppt.module';
+import { ResepModule } from './resep/resep.module';
 
 @Module({
   imports: [PasienModule, ConfigModule.forRoot({
     isGlobal: true
-  }), CpptModule],
+  }), CpptModule, ResepModule],
   controllers: [AppController],
   providers: [AppService],
 })
