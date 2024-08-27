@@ -12,6 +12,53 @@ export class PasienController {
 
 
   @UseGuards(AuthGuard)
+  @Get("/listdokter/:iddokter/:idfasyankes")
+  async findListPasienDokter(@Param("iddokter") iddokter: string, @Param("idfasyankes") idfasyankes: string): Promise<Pendaftaran[]> {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return this.pasienService.findAllRegistrasi({
+      where: {
+        isClose: false,
+        idFasyankes: idfasyankes,
+        AND: [
+          { createdAt: { gte: today } },
+          { createdAt: { lt: tomorrow } },
+        ],
+        jadwal: {
+          dokterId: Number(iddokter)
+        },
+        isSoapPerawat: true
+      },
+      orderBy: {
+        id: 'desc',
+      },
+      include: {
+        jadwal: {
+          select: {
+            dokter: true,
+          },
+        },
+        episodePendaftaran: {
+          select: {
+            pasien: {
+              select: {
+                noRm: true,
+                namaPasien: true,
+                jenisKelamin: true,
+                kelurahan: true,
+                id: true
+              }
+            }
+          }
+        },
+      }
+
+    });
+  }
+
+  @UseGuards(AuthGuard)
   @Get("/listregistrasi/:idfasyankes")
   async findAllRegistrasi(@Param("idfasyankes") idfasyankes: string): Promise<Pendaftaran[]> {
     const today = new Date()
