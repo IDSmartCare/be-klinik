@@ -6,11 +6,12 @@ import { ConfigModule } from '@nestjs/config';
 import { CpptModule } from './cppt/cppt.module';
 import { ResepModule } from './resep/resep.module';
 import { KasirModule } from './kasir/kasir.module';
+import { SettingModule } from './setting/setting.module';
 
 @Module({
   imports: [PasienModule, ConfigModule.forRoot({
     isGlobal: true
-  }), CpptModule, ResepModule, KasirModule],
+  }), CpptModule, ResepModule, KasirModule, SettingModule],
   controllers: [AppController],
   providers: [AppService],
 })
