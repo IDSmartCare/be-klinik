@@ -221,11 +221,13 @@ export class PasienService {
   async riwayatRegistrasi(params: {
     where?: Prisma.EpisodePendaftaranWhereInput;
     include?: Prisma.EpisodePendaftaranInclude
+    orderBy?: Prisma.EpisodePendaftaranOrderByWithRelationInput
   }): Promise<EpisodePendaftaran[]> {
-    const { where, include } = params;
+    const { where, include, orderBy } = params;
     return this.prisma.episodePendaftaran.findMany({
       where,
-      include
+      include,
+      orderBy
     });
   }
 

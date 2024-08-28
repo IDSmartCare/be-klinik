@@ -1,22 +1,26 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { CpptService } from './cppt.service';
 import { CreateCpptDto } from './dto/create-cppt.dto';
 import { SOAP } from '@prisma/client';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('cppt')
 export class CpptController {
   constructor(private readonly cpptService: CpptService) { }
 
+  @UseGuards(AuthGuard)
   @Post()
   async create(@Body() createCpptDto: CreateCpptDto) {
     return this.cpptService.create(createCpptDto);
   }
 
+  @UseGuards(AuthGuard)
   @Get("/list/:idpasien/:idfasyankes")
   async findAll(@Param('idpasien') idpasien: string, @Param('idfasyankes') idfasyankes: string): Promise<SOAP[]> {
     return this.cpptService.findAll(idfasyankes, idpasien);
   }
 
+  @UseGuards(AuthGuard)
   @Get('/listfarmasi/:idfasyankes')
   async findOne(@Param('idfasyankes') idfasyankes: string) {
     const today = new Date()
@@ -65,6 +69,7 @@ export class CpptController {
     });
   }
 
+  @UseGuards(AuthGuard)
   @Get(':id')
   async getOne(@Param('id') id: string) {
     return this.cpptService.getOne({

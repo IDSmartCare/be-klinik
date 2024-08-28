@@ -1,12 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ResepService } from './resep.service';
 import { CreateResepDto } from './dto/create-resep.dto';
-import { UpdateResepDto } from './dto/update-resep.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('resep')
 export class ResepController {
   constructor(private readonly resepService: ResepService) { }
 
+  @UseGuards(AuthGuard)
   @Post("/transaksi/:idsoap/:idpendaftaran")
   async create(
     @Body() createResepDto: CreateResepDto[],
@@ -15,6 +16,7 @@ export class ResepController {
     return this.resepService.create(createResepDto, idsoap, idpendaftaran);
   }
 
+  @UseGuards(AuthGuard)
   @Get("/bysoap/:id")
   async findAll(@Param("id") id: string) {
     return this.resepService.findAll({
@@ -35,18 +37,4 @@ export class ResepController {
     });
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.resepService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateResepDto: UpdateResepDto) {
-    return this.resepService.update(+id, updateResepDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.resepService.remove(+id);
-  }
 }

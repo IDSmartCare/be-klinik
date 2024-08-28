@@ -137,6 +137,59 @@ export class PasienController {
     });
   }
 
+
+  @UseGuards(AuthGuard)
+  @Get('/riwayatregistrasi/byfaskes/:idfasyankes')
+  async riwayatRegisByIdfaskes(@Param('idfasyankes') idfasyankes: string): Promise<EpisodePendaftaran[]> {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return this.pasienService.riwayatRegistrasi({
+      where: {
+        AND: [
+          { createdAt: { gte: today } },
+          { createdAt: { lt: tomorrow } },
+        ],
+        idFasyankes: idfasyankes
+      },
+      include: {
+        pasien: true
+      },
+      orderBy: {
+        id: 'desc',
+      },
+    });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/riwayatregistrasi/byepisode/:idepisode/:idfasyankes')
+  async riwayatRegisByEpisode(
+    @Param('idepisode') idepisode: string,
+    @Param('idfasyankes') idfasyankes: string): Promise<Pendaftaran[]> {
+
+    return this.pasienService.findAllRegistrasi({
+      where: {
+        episodePendaftaranId: Number(idepisode),
+        idFasyankes: idfasyankes
+      },
+      orderBy: {
+        id: 'desc'
+      },
+      include: {
+        jadwal: {
+          include: {
+            dokter: {
+              include: {
+                poliklinik: true
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
   @UseGuards(AuthGuard)
   @Get('/riwayatregistrasi/:id')
   async riwayatRegis(@Param('id') id: string): Promise<EpisodePendaftaran[]> {

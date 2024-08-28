@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateResepDto } from './dto/create-resep.dto';
-import { UpdateResepDto } from './dto/update-resep.dto';
 import { PrismaService } from 'src/service/prisma.service';
 import { Prisma, ResepDokter } from '@prisma/client';
 
@@ -49,17 +48,5 @@ export class ResepService {
       where,
       include
     })
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} resep`;
-  }
-
-  update(id: number, updateResepDto: UpdateResepDto) {
-    return `This action updates a #${id} resep`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} resep`;
   }
 }
