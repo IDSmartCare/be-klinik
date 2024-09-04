@@ -91,7 +91,8 @@ export class PasienController {
                 namaPasien: true,
                 jenisKelamin: true,
                 kelurahan: true,
-                id: true
+                id: true,
+                paspor: true
               }
             }
           }
@@ -177,6 +178,7 @@ export class PasienController {
         id: 'desc'
       },
       include: {
+        billPasien: true,
         jadwal: {
           include: {
             dokter: {
