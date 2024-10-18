@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Observable } from 'rxjs';
 

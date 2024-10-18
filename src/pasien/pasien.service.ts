@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { Prisma, Pasien, EpisodePendaftaran, Pendaftaran } from '@prisma/client';
 import { formatISO } from 'date-fns';
