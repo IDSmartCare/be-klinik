@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { CreateCpptDto } from './dto/create-cppt.dto';
 import { PrismaService } from 'src/service/prisma.service';
@@ -83,7 +84,7 @@ export class CpptService {
           data: {
             harga: konsulDokter?.hargaTarif,
             jenisBill: "Dokter",
-            deskripsi: konsulDokter?.namaTarif,
+            deskripsi: konsulDokter?.namaTarif ?? "",
             billPasienId: bill?.id,
             jumlah: 1,
             subTotal: (Number(konsulDokter?.hargaTarif) * 1).toString()

@@ -9,13 +9,22 @@ export class MasterTarifController {
   constructor(private readonly masterTarifService: MasterTarifService) {}
 
   @Get(':idFasyankes')
-
   async getTarif(@Param('idFasyankes') idFasyankes: string) {
     return this.masterTarifService.getTarif(idFasyankes);
   }
 
-  @Post()
-  async createTarif(@Body() data: any) {
+  @Post('/create')
+  async createTarif(
+    @Body()
+    data: {
+      idFasyankes: string;
+      namaTarif: string;
+      kategoriTarif: string;
+      hargaTarif?: string;
+      penjamin: string;
+      isAktif?: boolean;
+    },
+  ) {
     return this.masterTarifService.createTarif(data);
   }
 }

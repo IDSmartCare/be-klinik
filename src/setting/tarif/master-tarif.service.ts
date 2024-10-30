@@ -25,7 +25,14 @@ export class MasterTarifService {
     }
   }
 
-  async createTarif(data: any) {
+  async createTarif(data: {
+    idFasyankes: string;
+    namaTarif: string;
+    kategoriTarif: string;
+    hargaTarif?: string;
+    penjamin: string;
+    isAktif?: boolean;
+  }) {
     try {
       const newTarif = await this.prisma.masterTarif.create({
         data,
