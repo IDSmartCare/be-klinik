@@ -25,7 +25,7 @@ model PembayaranPasien {
 
 model BillPasienDetail {
     id           Int         @id @default(autoincrement())
-    deskripsi    String
+    deskripsi    String?
     jenisBill    String      @db.VarChar(100)
     catatan      String?
     jumlah       Int?

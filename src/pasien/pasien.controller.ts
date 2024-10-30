@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+  import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
 import { PasienService } from './pasien.service';
 import { EpisodePendaftaran, Pasien, Pendaftaran } from '@prisma/client';
 import { CreatePasienDto } from './dto/create-pasien.dto';
