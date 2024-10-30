@@ -6,7 +6,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: process.env.HOST_ORIGIN,
-    allowedHeaders: 'Content-Type, Accept, Authorization',
   });
   await app.listen(process.env.PORT);
 }
