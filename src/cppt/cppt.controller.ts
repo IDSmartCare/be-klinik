@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { CpptService } from './cppt.service';
 import { CreateCpptDto } from './dto/create-cppt.dto';
@@ -6,7 +7,7 @@ import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('cppt')
 export class CpptController {
-  constructor(private readonly cpptService: CpptService) { }
+  constructor(private readonly cpptService: CpptService) {}
 
   @UseGuards(AuthGuard)
   @Post()
@@ -15,26 +16,26 @@ export class CpptController {
   }
 
   @UseGuards(AuthGuard)
-  @Get("/list/:idpasien/:idfasyankes")
-  async findAll(@Param('idpasien') idpasien: string, @Param('idfasyankes') idfasyankes: string): Promise<SOAP[]> {
+  @Get('/list/:idpasien/:idfasyankes')
+  async findAll(
+    @Param('idpasien') idpasien: string,
+    @Param('idfasyankes') idfasyankes: string,
+  ): Promise<SOAP[]> {
     return this.cpptService.findAll(idfasyankes, idpasien);
   }
 
   @UseGuards(AuthGuard)
   @Get('/listfarmasi/:idfasyankes')
   async findOne(@Param('idfasyankes') idfasyankes: string) {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
     return this.cpptService.listCPPT({
       where: {
         idFasyankes: idfasyankes,
         profesi: 'dokter',
-        AND: [
-          { createdAt: { gte: today } },
-          { createdAt: { lt: tomorrow } },
-        ],
+        AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
       },
       orderBy: {
         id: 'desc',
@@ -49,23 +50,23 @@ export class CpptController {
                     noRm: true,
                     namaPasien: true,
                     jenisKelamin: true,
-                    id: true
-                  }
-                }
-              }
+                    id: true,
+                  },
+                },
+              },
             },
             jadwal: {
               select: {
                 dokter: {
                   select: {
-                    namaLengkap: true
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                    namaLengkap: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
   }
 
@@ -75,8 +76,7 @@ export class CpptController {
     return this.cpptService.getOne({
       where: {
         id: Number(id),
-      }
+      },
     });
   }
-
 }

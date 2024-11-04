@@ -14,11 +14,31 @@ import { RegisPasienDto } from './dto/regis-pasien.dto';
 export class PasienService {
   constructor(private prisma: PrismaService) {}
 
-  async createRegis(data: RegisPasienDto): Promise<Pendaftaran> {
+  async createRegis(
+    data: RegisPasienDto,
+    userRole?: string,
+    userPackage?: string,
+  ): Promise<Pendaftaran> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (userRole === 'admin' && userPackage === 'FREE' && data.idFasyankes) {
+      const existingEpisodes = await this.prisma.episodePendaftaran.count({
+        where: {
+          pasienId: data.pasienId,
+          idFasyankes: data.idFasyankes,
+        },
+      });
+
+      if (existingEpisodes > 0) {
+        throw new Error(
+          'You are only allowed to create one episode for this patient with the FREE package.',
+        );
+      }
+    }
+
     const transaksi = await this.prisma.$transaction(async (tx) => {
       const tarifAdm = await tx.masterTarif.findFirst({
         where: {
@@ -151,7 +171,25 @@ export class PasienService {
     return transaksi;
   }
 
-  async create(data: Prisma.PasienCreateInput): Promise<Pasien> {
+  async create(
+    data: Prisma.PasienCreateInput,
+    userRole?: string,
+    userPackage?: string,
+  ): Promise<Pasien> {
+    if (userRole === 'admin' && userPackage === 'FREE' && data.idFasyankes) {
+      const patientCount = await this.prisma.pasien.count({
+        where: {
+          idFasyankes: data.idFasyankes, // filter by idFasyankes
+        },
+      });
+
+      if (patientCount >= 10) {
+        throw new Error(
+          'You have reached the limit of 10 patients for the FREE package.',
+        );
+      }
+    }
+
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
@@ -162,15 +200,15 @@ export class PasienService {
       const count = await tx.pasien.count({
         where: {
           AND: [
-            { createdAt: { gte: new Date(monthStart) } }, // Greater than or equal to this month's start
-            { createdAt: { lt: new Date(nextMonthStart) } }, // Less than next month's start
+            { createdAt: { gte: new Date(monthStart) } },
+            { createdAt: { lt: new Date(nextMonthStart) } },
           ],
         },
       });
       const totalPasien = `${count + 1}`.toString().padStart(4, '0');
       const totalBulan = month.toString().padStart(2, '0');
       const rm = `${year.toString().slice(-2)}${totalBulan}${totalPasien}`;
-      const createPasien = await tx.pasien.create({
+      return tx.pasien.create({
         data: {
           noRm: rm,
           namaPasien: data.namaPasien.toUpperCase(),
@@ -216,8 +254,8 @@ export class PasienService {
           idFasyankes: data.idFasyankes,
         },
       });
-      return createPasien;
     });
+
     return transaksi;
   }
 
