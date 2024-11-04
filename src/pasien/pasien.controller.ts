@@ -1,79 +1,43 @@
 /* eslint-disable prettier/prettier */
-  import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import { PasienService } from './pasien.service';
 import { EpisodePendaftaran, Pasien, Pendaftaran } from '@prisma/client';
-import { CreatePasienDto } from './dto/create-pasien.dto';
 import { UpdatePasienDto } from './dto/update-pasien.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { RegisPasienDto } from './dto/regis-pasien.dto';
 
 @Controller('pasien')
 export class PasienController {
-  constructor(private readonly pasienService: PasienService) { }
-
+  constructor(private readonly pasienService: PasienService) {}
 
   @UseGuards(AuthGuard)
-  @Get("/listdokter/:iddokter/:idfasyankes")
-  async findListPasienDokter(@Param("iddokter") iddokter: string, @Param("idfasyankes") idfasyankes: string): Promise<Pendaftaran[]> {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
+  @Get('/listdokter/:iddokter/:idfasyankes')
+  async findListPasienDokter(
+    @Param('iddokter') iddokter: string,
+    @Param('idfasyankes') idfasyankes: string,
+  ): Promise<Pendaftaran[]> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
     return this.pasienService.findAllRegistrasi({
       where: {
         isClose: false,
         idFasyankes: idfasyankes,
-        AND: [
-          { createdAt: { gte: today } },
-          { createdAt: { lt: tomorrow } },
-        ],
+        AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
         jadwal: {
-          dokterId: Number(iddokter)
+          dokterId: Number(iddokter),
         },
-        isSoapPerawat: true
-      },
-      orderBy: {
-        id: 'desc',
-      },
-      include: {
-        jadwal: {
-          select: {
-            dokter: true,
-          },
-        },
-        episodePendaftaran: {
-          select: {
-            pasien: {
-              select: {
-                noRm: true,
-                namaPasien: true,
-                jenisKelamin: true,
-                kelurahan: true,
-                id: true
-              }
-            }
-          }
-        },
-      }
-
-    });
-  }
-
-  @UseGuards(AuthGuard)
-  @Get("/listregistrasi/:idfasyankes")
-  async findAllRegistrasi(@Param("idfasyankes") idfasyankes: string): Promise<Pendaftaran[]> {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    return this.pasienService.findAllRegistrasi({
-      where: {
-        isClose: false,
-        AND: [
-          { createdAt: { gte: today } },
-          { createdAt: { lt: tomorrow } },
-        ],
-        idFasyankes: idfasyankes
+        isSoapPerawat: true,
       },
       orderBy: {
         id: 'desc',
@@ -93,39 +57,113 @@ export class PasienController {
                 jenisKelamin: true,
                 kelurahan: true,
                 id: true,
-                paspor: true
-              }
-            }
-          }
+              },
+            },
+          },
         },
-      }
+      },
+    });
+  }
 
+  @UseGuards(AuthGuard)
+  @Get('/listregistrasi/:idfasyankes')
+  async findAllRegistrasi(
+    @Param('idfasyankes') idfasyankes: string,
+  ): Promise<Pendaftaran[]> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return this.pasienService.findAllRegistrasi({
+      where: {
+        isClose: false,
+        AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
+        idFasyankes: idfasyankes,
+      },
+      orderBy: {
+        id: 'desc',
+      },
+      include: {
+        jadwal: {
+          select: {
+            dokter: true,
+          },
+        },
+        episodePendaftaran: {
+          select: {
+            pasien: {
+              select: {
+                noRm: true,
+                namaPasien: true,
+                jenisKelamin: true,
+                kelurahan: true,
+                id: true,
+                paspor: true,
+              },
+            },
+          },
+        },
+      },
     });
   }
 
   @UseGuards(AuthGuard)
   @Post()
-  async create(@Body() pasien: CreatePasienDto): Promise<Pasien> {
-    return this.pasienService.create(pasien);
+  async create(
+    @Body()
+    data: {
+      pasienData: any;
+      userRole: string;
+      userPackage: string;
+    },
+  ): Promise<Pasien> {
+    try {
+      return await this.pasienService.create(
+        data.pasienData,
+        data.userRole,
+        data.userPackage,
+      );
+    } catch (error) {
+      // Return error message instead of throwing a new Error
+      console.error(error);
+      throw new BadRequestException(error.message || 'Failed to create pasien');
+    }
   }
 
   @UseGuards(AuthGuard)
-  @Post("/registrasi")
-  async createRegis(@Body() pasien: RegisPasienDto): Promise<Pendaftaran> {
-    return this.pasienService.createRegis(pasien);
+  @Post('/registrasi')
+  async createRegis(
+    @Body()
+    data: {
+      pasienData: RegisPasienDto;
+      userRole: string;
+      userPackage: string;
+    },
+  ): Promise<Pendaftaran> {
+    console.log(data);
+    try {
+      return await this.pasienService.createRegis(
+        data.pasienData,
+        data.userRole,
+        data.userPackage,
+      );
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(error.message || 'Failed to create pasien');
+    }
   }
 
   @UseGuards(AuthGuard)
-  @Get(":idfasyankes")
-  async findAll(@Param("idfasyankes") idfasyankes: string): Promise<Pasien[]> {
+  @Get(':idfasyankes')
+  async findAll(@Param('idfasyankes') idfasyankes: string): Promise<Pasien[]> {
     return this.pasienService.findAll({
       where: {
-        idFasyankes: idfasyankes
+        idFasyankes: idfasyankes,
       },
       orderBy: {
-        id: 'desc'
+        id: 'desc',
       },
-      take: 150
+      take: 150,
     });
   }
 
@@ -134,29 +172,27 @@ export class PasienController {
   async findOne(@Param('id') id: string): Promise<Pasien> {
     return this.pasienService.findOne({
       where: {
-        id: Number(id)
-      }
+        id: Number(id),
+      },
     });
   }
 
-
   @UseGuards(AuthGuard)
   @Get('/riwayatregistrasi/byfaskes/:idfasyankes')
-  async riwayatRegisByIdfaskes(@Param('idfasyankes') idfasyankes: string): Promise<EpisodePendaftaran[]> {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
+  async riwayatRegisByIdfaskes(
+    @Param('idfasyankes') idfasyankes: string,
+  ): Promise<EpisodePendaftaran[]> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
     return this.pasienService.riwayatRegistrasi({
       where: {
-        AND: [
-          { createdAt: { gte: today } },
-          { createdAt: { lt: tomorrow } },
-        ],
-        idFasyankes: idfasyankes
+        AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
+        idFasyankes: idfasyankes,
       },
       include: {
-        pasien: true
+        pasien: true,
       },
       orderBy: {
         id: 'desc',
@@ -168,15 +204,15 @@ export class PasienController {
   @Get('/riwayatregistrasi/byepisode/:idepisode/:idfasyankes')
   async riwayatRegisByEpisode(
     @Param('idepisode') idepisode: string,
-    @Param('idfasyankes') idfasyankes: string): Promise<Pendaftaran[]> {
-
+    @Param('idfasyankes') idfasyankes: string,
+  ): Promise<Pendaftaran[]> {
     return this.pasienService.findAllRegistrasi({
       where: {
         episodePendaftaranId: Number(idepisode),
-        idFasyankes: idfasyankes
+        idFasyankes: idfasyankes,
       },
       orderBy: {
-        id: 'desc'
+        id: 'desc',
       },
       include: {
         billPasien: true,
@@ -184,12 +220,12 @@ export class PasienController {
           include: {
             dokter: {
               include: {
-                poliklinik: true
-              }
-            }
-          }
-        }
-      }
+                poliklinik: true,
+              },
+            },
+          },
+        },
+      },
     });
   }
 
@@ -208,33 +244,35 @@ export class PasienController {
             namaAsuransi: true,
             createdAt: true,
             jadwal: {
-
               include: {
                 dokter: {
                   include: {
                     poliklinik: {
                       select: {
-                        namaPoli: true
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                        namaPoli: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
   }
 
   @UseGuards(AuthGuard)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updatePasienDto: UpdatePasienDto): Promise<Pasien> {
+  async update(
+    @Param('id') id: string,
+    @Body() updatePasienDto: UpdatePasienDto,
+  ): Promise<Pasien> {
     return this.pasienService.update({
       where: {
-        id: Number(id)
+        id: Number(id),
       },
-      data: updatePasienDto
+      data: updatePasienDto,
     });
   }
 }

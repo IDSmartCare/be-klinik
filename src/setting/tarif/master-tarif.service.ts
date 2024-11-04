@@ -40,7 +40,7 @@ export class MasterTarifService {
       return newTarif;
     } catch (error) {
       console.error(error);
-      throw new Error('Failed to create Tarif');
+      throw new NotFoundException('Failed to create Tarif');
     }
   }
 }
