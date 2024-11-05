@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { SettingService } from './setting.service';
 import { CreateJadwalDto, CreatePoliDto } from './dto/create-setting.dto';
