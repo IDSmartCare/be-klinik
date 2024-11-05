@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { CpptService } from './cppt.service';
 import { CpptController } from './cppt.controller';
@@ -6,6 +7,6 @@ import { PrismaModule } from 'src/service/prisma.module';
 @Module({
   controllers: [CpptController],
   providers: [CpptService],
-  imports: [PrismaModule]
+  imports: [PrismaModule],
 })
-export class CpptModule { }
+export class CpptModule {}

@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 export class CreatePoliDto {
   namaPoli: string;
   kodePoli?: string;
