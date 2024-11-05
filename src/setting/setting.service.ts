@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateJadwalDto, CreatePoliDto } from './dto/create-setting.dto';
 import { UpdateSettingDto } from './dto/update-setting.dto';

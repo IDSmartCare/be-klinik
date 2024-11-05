@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 export class CreateCpptDto {
     subjective: string
     objective: string
