@@ -21,7 +21,7 @@ export class MasterTarifService {
       return tarif;
     } catch (error) {
       console.error(error);
-      throw error; // Re-throw error so it can be handled globally
+      throw error;
     }
   }
 
