@@ -8,12 +8,13 @@ import {
   Param,
   Delete,
   UseGuards,
-  NotFoundException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { SettingService } from './setting.service';
 import { CreateJadwalDto, CreatePoliDto } from './dto/create-setting.dto';
 import { UpdateSettingDto } from './dto/update-setting.dto';
-import { JadwalDokter, PoliKlinik, Profile } from '@prisma/client';
+import { JadwalDokter, PoliKlinik } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('setting')
@@ -72,19 +73,19 @@ export class SettingController {
 
   @UseGuards(AuthGuard)
   @Get('/listdokter/:idFasyankes')
-  async findAllDokter(
-    @Param('idFasyankes') idFasyankes: string,
-  ): Promise<Profile[]> {
+  async findAllDokter(@Param('idFasyankes') idFasyankes: string) {
     try {
-      const doctors = await this.settingService.findAllDokter(idFasyankes);
-
-      if (doctors.length === 0) {
-        throw new NotFoundException('No doctor found for this Fasyankes');
-      }
-
-      return doctors;
+      const data = await this.settingService.findAllDokter(idFasyankes);
+      return { success: true, data };
     } catch (error) {
-      throw error;
+      // Cek apakah error merupakan error yang tidak ditemukan atau error lainnya
+      throw new HttpException(
+        {
+          success: false,
+          message: error.message,
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
   }
 

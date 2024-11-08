@@ -88,13 +88,12 @@ export class SettingService {
       });
 
       if (data.length === 0) {
-        throw new Error('No doctor found for this Fasyankes');
+        throw new Error('No doctors found for this Fasyankes');
       }
 
       return data;
     } catch (error) {
-      // You can customize the error message here
-      throw new Error(`Failed to fetch doctors: ${error.message}`);
+      throw new Error(error.message);
     }
   }
 
