@@ -10,10 +10,11 @@ import {
   UseGuards,
   HttpException,
   HttpStatus,
+  Put,
 } from '@nestjs/common';
 import { SettingService } from './setting.service';
 import { CreateJadwalDto, CreatePoliDto } from './dto/create-setting.dto';
-import { UpdateSettingDto } from './dto/update-setting.dto';
+import { UpdateJadwalDto, UpdateSettingDto } from './dto/update-setting.dto';
 import { JadwalDokter, PoliKlinik } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
 
@@ -33,6 +34,32 @@ export class SettingController {
     @Body() createSettingDto: CreateJadwalDto,
   ): Promise<JadwalDokter> {
     return this.settingService.createJadwal(createSettingDto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Put('/editjadwal/:id')
+  async updateJadwal(
+    @Param('id') id: number,
+    @Body() updateJadwalDto: UpdateJadwalDto,
+  ) {
+    try {
+      // Call the updateJadwal service method
+      const result = await this.settingService.updateJadwal(
+        id,
+        updateJadwalDto,
+      );
+
+      return {
+        status: result.status,
+        message: result.message,
+        data: result.data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message || 'Internal server error', status: 'error' },
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @UseGuards(AuthGuard)

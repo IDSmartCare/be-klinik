@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateJadwalDto, CreatePoliDto } from './dto/create-setting.dto';
-import { UpdateSettingDto } from './dto/update-setting.dto';
+import { UpdateJadwalDto, UpdateSettingDto } from './dto/update-setting.dto';
 import { JadwalDokter, PoliKlinik, Prisma, Profile } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { format, isWithinInterval } from 'date-fns';
@@ -49,6 +49,58 @@ export class SettingService {
         data: createjadwal,
       });
     }
+  }
+
+  async updateJadwal(
+    id: number,
+    updateJadwalDto: UpdateJadwalDto,
+  ): Promise<any> {
+    const existingJadwal = await this.prisma.jadwalDokter.findUnique({
+      where: {
+        id: Number(id),
+      },
+    });
+
+    if (!existingJadwal) {
+      throw new HttpException(
+        { message: 'Jadwal tidak ditemukan!', status: 'error' },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const conflictingJadwal = await this.prisma.jadwalDokter.findFirst({
+      where: {
+        dokterId: existingJadwal.dokterId,
+        hari: updateJadwalDto.hari,
+        jamPraktek: updateJadwalDto.jamPraktek,
+        idFasyankes: updateJadwalDto.idFasyankes,
+        id: { not: Number(id) },
+      },
+    });
+
+    if (conflictingJadwal) {
+      throw new HttpException(
+        {
+          message: 'Jadwal dokter sudah ada pada waktu tersebut!',
+          status: 'error',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const updatedJadwal = await this.prisma.jadwalDokter.update({
+      where: { id: Number(id) },
+      data: {
+        hari: updateJadwalDto.hari,
+        jamPraktek: updateJadwalDto.jamPraktek,
+      },
+    });
+
+    return {
+      status: 'success',
+      message: 'Jadwal updated successfully',
+      data: updatedJadwal,
+    };
   }
 
   async createPoli(createPoli: CreatePoliDto): Promise<PoliKlinik> {
