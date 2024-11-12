@@ -12,3 +12,5 @@ export class CreateJadwalDto {
   jamPraktek: string;
   idFasyankes: string;
 }
+
+
