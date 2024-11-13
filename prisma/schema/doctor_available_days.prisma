@@ -12,7 +12,4 @@ model DoctorAvailableDays {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
 
-
-
-  @@map("doctor_available_days") 
 }

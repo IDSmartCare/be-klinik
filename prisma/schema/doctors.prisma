@@ -1,9 +1,6 @@
 model Doctors {
   id            Int      @id @default(autoincrement())
   name          String
-  userId        Int?        
-  polisId       Int?       
-  specialization String?
   phone         String?
   unit          String?
   idFasyankes   String?

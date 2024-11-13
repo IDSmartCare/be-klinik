@@ -13,6 +13,10 @@ import { MasterSubjectiveModule } from './master-subjective/master-subjective.mo
 import { MasterObjectiveModule } from './master-objective/master-objective.module';
 import { MasterPlanModule } from './master-plan/master-plan.module';
 import { MasterAssessmentModule } from './master-assessment/master-assessment.module';
+import { DoctorsModule } from './aidiva/doctors/doctors.module';
+import { DoctorAvailableDaysModule } from './aidiva/doctor_available_days/doctor_available_days.module';
+import { DoctorAvailableTimesModule } from './aidiva/doctor_available_times/doctor_available_times.module';
+import { DoctorAvailableSlotsModule } from './aidiva/doctor_available_slots/doctor_available_slots.module';
 
 @Module({
   imports: [
@@ -29,6 +33,10 @@ import { MasterAssessmentModule } from './master-assessment/master-assessment.mo
     MasterObjectiveModule,
     MasterPlanModule,
     MasterAssessmentModule,
+    DoctorsModule,
+    DoctorAvailableDaysModule,
+    DoctorAvailableTimesModule,
+    DoctorAvailableSlotsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
