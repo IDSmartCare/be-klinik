@@ -21,7 +21,7 @@ export class DoctorAvailableTimesService {
         throw new HttpException('Doctor not found', HttpStatus.NOT_FOUND);
       }
       return {
-        doctor_id: doctorId,
+        doctorId: doctorId,
         times: data.map(({ from, to }) => ({ from, to })),
       };
     } catch (error) {
