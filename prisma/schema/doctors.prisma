@@ -1,0 +1,19 @@
+model Doctors {
+  id            Int      @id @default(autoincrement())
+  name          String
+  userId        Int?        
+  polisId       Int?       
+  specialization String?
+  phone         String?
+  unit          String?
+  idFasyankes   String?
+  str           String?
+  sip           String?
+  isAktif       Boolean  @default(true)
+  status        String   @default("active")
+  deletedAt     DateTime? @map("deleted_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+}
+
+
