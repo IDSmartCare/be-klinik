@@ -17,6 +17,7 @@ import { DoctorsModule } from './aidiva/doctors/doctors.module';
 import { DoctorAvailableDaysModule } from './aidiva/doctor_available_days/doctor_available_days.module';
 import { DoctorAvailableTimesModule } from './aidiva/doctor_available_times/doctor_available_times.module';
 import { DoctorAvailableSlotsModule } from './aidiva/doctor_available_slots/doctor_available_slots.module';
+import { DoctorsModule as DoctorsCoreModule } from './doctors/doctors.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { DoctorAvailableSlotsModule } from './aidiva/doctor_available_slots/doct
     MasterPlanModule,
     MasterAssessmentModule,
     DoctorsModule,
+    DoctorsCoreModule,
     DoctorAvailableDaysModule,
     DoctorAvailableTimesModule,
     DoctorAvailableSlotsModule,

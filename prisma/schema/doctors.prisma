@@ -6,6 +6,8 @@ model Doctors {
   idFasyankes   String?
   str           String?
   sip           String?
+  kodeDokter    String?
+  idProfile     Int?
   isAktif       Boolean  @default(true)
   status        String   @default("active")
   deletedAt     DateTime? @map("deleted_at")
