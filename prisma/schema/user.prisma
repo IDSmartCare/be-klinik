@@ -14,4 +14,6 @@ model Profile {
   poliklinik    PoliKlinik?    @relation(fields: [poliKlinikId], references: [id])
   poliKlinikId  Int?
   cppt          SOAP[]
+  
+  doctors       Doctors[]     
 }

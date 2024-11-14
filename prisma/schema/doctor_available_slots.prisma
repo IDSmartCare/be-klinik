@@ -1,0 +1,7 @@
+model DoctorAvailableSlots {
+  id              Int     @id @default(autoincrement())
+  message         String
+  slot_id         Int
+  is_booked       Boolean
+  consultation_id Int
+}
