@@ -47,4 +47,16 @@ export class DoctorsService {
       );
     }
   }
+
+  async updateDoctorStatus(id: number, isAktif: boolean): Promise<Doctors> {
+    const doctorId = Number(id);
+    return this.prisma.doctors.update({
+      where: {
+        id: doctorId,
+      },
+      data: {
+        isAktif: isAktif,
+      },
+    });
+  }
 }

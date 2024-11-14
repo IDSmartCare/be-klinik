@@ -1,8 +1,8 @@
 model MasterPlan {
-    id          Int      @id @default(autoincrement())
-    idFasyankes Int
-    text        String
-    createdBy   DateTime   
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  idFasyankes Int
+  text        String
+  createdBy   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

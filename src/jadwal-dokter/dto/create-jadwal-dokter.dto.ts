@@ -1,4 +1,4 @@
-export class CreateDokterDto {
+export class CreateJadwalDokterDto {
   name: string;
   phone: string;
   idFasyankes: string;
@@ -9,5 +9,4 @@ export class CreateDokterDto {
   status?: string;
   idProfile: number;
   kodeDokter?: string;
-  idPoliKlinik: number;
 }

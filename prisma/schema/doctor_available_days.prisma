@@ -1,5 +1,5 @@
 model DoctorAvailableDays {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   doctorId  Int
   sun       String?
   mon       String?
@@ -11,5 +11,4 @@ model DoctorAvailableDays {
   deletedAt DateTime? @map("deleted_at")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
-
 }
