@@ -4,6 +4,7 @@ model DoctorAvailableSlots {
   from                      String
   to                        String
   doctor_available_times_id Int
+  consultation_id           Int?
   doctorId                  Int
   deletedAt                 DateTime? @map("deleted_at")
   createdAt                 DateTime  @default(now()) @map("created_at")
