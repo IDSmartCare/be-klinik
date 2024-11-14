@@ -4,11 +4,14 @@ model DoctorAvailableDays {
   sun       String?
   mon       String?
   tue       String?
-  wen       String?
+  wed       String?
   thu       String?
   fri       String?
   sat       String?
+  slot      Int
   deletedAt DateTime? @map("deleted_at")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
+
+  doctor    Doctors   @relation("DoctorAvailableDaysForDoctor", fields: [doctorId], references: [id])
 }
