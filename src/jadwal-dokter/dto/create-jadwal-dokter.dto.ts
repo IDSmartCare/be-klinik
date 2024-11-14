@@ -1,12 +1,12 @@
+class TimeRangeDto {
+  from: string;
+
+  to: string;
+}
+
 export class CreateJadwalDokterDto {
-  name: string;
-  phone: string;
-  idFasyankes: string;
-  unit: string;
-  str: string;
-  sip: string;
-  isAktif?: boolean;
-  status?: string;
-  idProfile: number;
-  kodeDokter?: string;
+  dokter_id: number;
+  slot: number;
+  days: string[];
+  times: TimeRangeDto[];
 }
