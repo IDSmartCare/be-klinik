@@ -129,6 +129,7 @@ export class JadwalDokterService {
       });
 
       const formattedResponse = doctors.map((doctor) => ({
+        id: doctor.id,
         name: doctor.name,
         hari:
           doctor.availableDays
