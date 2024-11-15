@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateJadwalDokterDto } from './dto/create-jadwal-dokter.dto';
 import { PrismaService } from 'src/service/prisma.service';
 
@@ -75,6 +75,84 @@ export class JadwalDokterService {
     });
 
     return formattedSchedules;
+  }
+
+  async findJadwalDokterToday(
+    idFasyankes: string,
+    dayNumber: string,
+  ): Promise<any> {
+    try {
+      const dayMap = {
+        '0': { column: 'sun', indo: 'Minggu' },
+        '1': { column: 'mon', indo: 'Senin' },
+        '2': { column: 'tue', indo: 'Selasa' },
+        '3': { column: 'wed', indo: 'Rabu' },
+        '4': { column: 'thu', indo: 'Kamis' },
+        '5': { column: 'fri', indo: 'Jumat' },
+        '6': { column: 'sat', indo: 'Sabtu' },
+      };
+
+      if (!dayMap[dayNumber]) {
+        throw new BadRequestException(
+          'Invalid day number. Please use 0-6 (0 = Sunday, 6 = Saturday)',
+        );
+      }
+
+      const { column: dayColumn, indo: hariIndonesia } = dayMap[dayNumber];
+
+      const doctors = await this.prisma.doctors.findMany({
+        where: {
+          idFasyankes: idFasyankes,
+          isAktif: true,
+          status: 'active',
+          availableDays: {
+            some: {
+              [dayColumn]: '1',
+            },
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          availableDays: {
+            select: {
+              [dayColumn]: true,
+            },
+          },
+          availableTimes: {
+            select: {
+              from: true,
+              to: true,
+            },
+          },
+        },
+      });
+
+      const formattedResponse = doctors.map((doctor) => ({
+        name: doctor.name,
+        hari:
+          doctor.availableDays
+            .map((day) => day[dayColumn])
+            .filter((day) => day === '1').length > 0
+            ? hariIndonesia
+            : null,
+        jam_praktek: doctor.availableTimes.map((time) => ({
+          from: time.from,
+          to: time.to,
+        })),
+      }));
+
+      return {
+        success: true,
+        data: formattedResponse,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'An error occurred',
+        data: null,
+      };
+    }
   }
 
   async createSchedule(createJadwalDokterDto: CreateJadwalDokterDto) {
