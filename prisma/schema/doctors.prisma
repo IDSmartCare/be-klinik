@@ -19,6 +19,8 @@ model Doctors {
   poliKlinik   PoliKlinik?           @relation(fields: [idPoliKlinik], references: [id])
   idPoliKlinik Int?
 
+  pendaftaran Pendaftaran[]
+
   availableTimes DoctorAvailableTimes[] @relation("DoctorAvailableTimesForDoctor")
   availableDays  DoctorAvailableDays[]  @relation("DoctorAvailableDaysForDoctor")
   availableSlots DoctorAvailableSlots[] @relation("DoctorAvailableSlotsForDoctor")
