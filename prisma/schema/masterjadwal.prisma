@@ -21,6 +21,6 @@ model JadwalDokter {
   updatedAt   DateTime      @updatedAt @db.Timestamptz
   dokterId    Int
   dokter      Profile       @relation(fields: [dokterId], references: [id])
-  registrasi  Pendaftaran[]
+  // registrasi  Pendaftaran[]
   idFasyankes String?       @db.VarChar(30)
 }

@@ -1,7 +1,10 @@
 model Pendaftaran {
   id                   Int                 @id @default(autoincrement())
-  jadwal               JadwalDokter?       @relation(fields: [jadwalDokterId], references: [id])
-  jadwalDokterId       Int
+  // jadwal               JadwalDokter?       @relation(fields: [jadwalDokterId], references: [id])
+  // jadwalDokterId       Int
+  doctorId             Int
+  doctor               Doctors?            @relation(fields: [doctorId], references: [id])
+
   penjamin             String              @db.VarChar(50)
   namaAsuransi         String?             @db.VarChar(50)
   isSoapPerawat        Boolean?            @default(false)

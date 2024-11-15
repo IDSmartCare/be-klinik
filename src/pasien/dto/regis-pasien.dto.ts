@@ -1,6 +1,6 @@
 export class RegisPasienDto {
   pasienId: number;
-  jadwalDokterId: number;
+  doctorId: number;
   idFasyankes?: string;
   penjamin: string;
   namaAsuransi?: string;
