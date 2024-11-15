@@ -218,10 +218,13 @@ export class PasienController {
       include: {
         billPasien: true,
         doctor: {
-          select: {
-            availableDays: true,
-            availableTimes: true,
-            poliKlinik: true,
+          include: {
+            poliKlinik: {
+              select: {
+                namaPoli: true,
+                kodePoli: true,
+              },
+            },
           },
         },
       },

@@ -1,7 +1,14 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+} from '@nestjs/common';
 import { Doctors } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateDokterDto } from './dto/create-dokter.dto';
+import { UpdateDokterDto } from './dto/update-dokter.dto';
+import { UpdatePoliKlinikDto } from './dto/update-poliKlinik.dto';
 
 @Injectable()
 export class DoctorsService {
@@ -58,5 +65,28 @@ export class DoctorsService {
         isAktif: isAktif,
       },
     });
+  }
+
+  async updateDokter(
+    id: number,
+    updateDokterDto: UpdateDokterDto,
+    updatePoliKlinikDto: UpdatePoliKlinikDto,
+  ) {
+    const doctor = await this.prisma.doctors.findUnique({ where: { id } });
+    if (!doctor) {
+      throw new NotFoundException(`Doctor with id ${id} not found`);
+    }
+
+    const updatedDoctor = await this.prisma.doctors.update({
+      where: { id },
+      data: {
+        ...updateDokterDto,
+        poliKlinik: {
+          update: updatePoliKlinikDto, 
+        },
+      },
+    });
+
+    return updatedDoctor;
   }
 }

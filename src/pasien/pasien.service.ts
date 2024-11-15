@@ -126,7 +126,7 @@ export class PasienService {
               harga: tarifAdm?.hargaTarif,
               jenisBill: 'Admin',
               deskripsi: tarifAdm?.namaTarif ?? 'No Tarif Found',
-              billPasienId: bill?.id,
+              billPasienId: bill.id,
               jumlah: 1,
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
             },
