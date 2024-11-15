@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ResepService } from './resep.service';
 import { CreateResepDto } from './dto/create-resep.dto';

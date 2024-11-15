@@ -98,23 +98,23 @@ export class SettingController {
     });
   }
 
-  @UseGuards(AuthGuard)
-  @Get('/listdokter/:idFasyankes')
-  async findAllDokter(@Param('idFasyankes') idFasyankes: string) {
-    try {
-      const data = await this.settingService.findAllDokter(idFasyankes);
-      return { success: true, data };
-    } catch (error) {
-      // Cek apakah error merupakan error yang tidak ditemukan atau error lainnya
-      throw new HttpException(
-        {
-          success: false,
-          message: error.message,
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-  }
+  // @UseGuards(AuthGuard)
+  // @Get('/listdokter/:idFasyankes')
+  // async findAllDokter(@Param('idFasyankes') idFasyankes: string) {
+  //   try {
+  //     const data = await this.settingService.findAllDokter(idFasyankes);
+  //     return { success: true, data };
+  //   } catch (error) {
+  //     // Cek apakah error merupakan error yang tidak ditemukan atau error lainnya
+  //     throw new HttpException(
+  //       {
+  //         success: false,
+  //         message: error.message,
+  //       },
+  //       HttpStatus.NOT_FOUND,
+  //     );
+  //   }
+  // }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateSettingDto: UpdateSettingDto) {

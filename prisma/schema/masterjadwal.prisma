@@ -5,8 +5,10 @@ model PoliKlinik {
   isAktif     Boolean?  @default(true)
   createdAt   DateTime  @default(now()) @db.Timestamptz
   updatedAt   DateTime  @updatedAt @db.Timestamptz
-  dokter      Profile[]
+  dokter      Doctors[]
   idFasyankes String?   @db.VarChar(30)
+
+  Profile Profile[]
 }
 
 model JadwalDokter {
