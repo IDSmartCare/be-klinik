@@ -22,6 +22,15 @@ export class JadwalDokterController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('/jadwaldokter/:hari/:idFasyankes')
+  async findJadwalDokterToday(
+    @Param('idFasyankes') idFasyankes: string,
+    @Param('hari') hari: string,
+  ) {
+    return this.jadwalDocterService.findJadwalDokterToday(idFasyankes, hari);
+  }
+
+  @UseGuards(AuthGuard)
   @Post('/createjadwal')
   async create(@Body() createJadwalDokterDto: CreateJadwalDokterDto) {
     return this.jadwalDocterService.createSchedule(createJadwalDokterDto);

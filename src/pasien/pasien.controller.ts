@@ -34,8 +34,8 @@ export class PasienController {
         isClose: false,
         idFasyankes: idfasyankes,
         AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
-        jadwal: {
-          dokterId: Number(iddokter),
+        doctor: {
+          id: Number(iddokter),
         },
         isSoapPerawat: true,
       },
@@ -43,9 +43,10 @@ export class PasienController {
         id: 'desc',
       },
       include: {
-        jadwal: {
+        doctor: {
           select: {
-            dokter: true,
+            availableDays: true,
+            availableTimes: true,
           },
         },
         episodePendaftaran: {
@@ -84,9 +85,10 @@ export class PasienController {
         id: 'desc',
       },
       include: {
-        jadwal: {
+        doctor: {
           select: {
-            dokter: true,
+            availableDays: true,
+            availableTimes: true,
           },
         },
         episodePendaftaran: {
@@ -124,7 +126,6 @@ export class PasienController {
         data.userPackage,
       );
     } catch (error) {
-      // Return error message instead of throwing a new Error
       console.error(error);
       throw new BadRequestException(error.message || 'Failed to create pasien');
     }
@@ -216,11 +217,12 @@ export class PasienController {
       },
       include: {
         billPasien: true,
-        jadwal: {
+        doctor: {
           include: {
-            dokter: {
-              include: {
-                poliklinik: true,
+            poliKlinik: {
+              select: {
+                namaPoli: true,
+                kodePoli: true,
               },
             },
           },
@@ -243,17 +245,11 @@ export class PasienController {
             id: true,
             namaAsuransi: true,
             createdAt: true,
-            jadwal: {
+            doctor: {
               include: {
-                dokter: {
-                  include: {
-                    poliklinik: {
-                      select: {
-                        namaPoli: true,
-                      },
-                    },
-                  },
-                },
+                availableDays: true,
+                availableSlots: true,
+                poliKlinik: true,
               },
             },
           },

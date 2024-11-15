@@ -1,8 +1,6 @@
 import {
   Controller,
   Get,
-  HttpException,
-  HttpStatus,
   Param,
   UseGuards,
   ParseIntPipe,
@@ -19,21 +17,6 @@ export class DoctorAvailableDaysController {
   @UseGuards(AuthGuard)
   @Get('/:doctorId/availability/days')
   async findAll(@Param('doctorId', ParseIntPipe) doctorId: number) {
-    try {
-      const data =
-        await this.doctorAvailableDaysService.findAvailableDaysDoctor(doctorId);
-      return {
-        success: true,
-        data: data,
-      };
-    } catch (error) {
-      throw new HttpException(
-        {
-          success: false,
-          message: error.message,
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
+    return this.doctorAvailableDaysService.findAvailableDaysDoctor(doctorId);
   }
 }

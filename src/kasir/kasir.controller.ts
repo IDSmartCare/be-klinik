@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { KasirService } from './kasir.service';
 import { CreateKasirDto } from './dto/create-kasir.dto';
