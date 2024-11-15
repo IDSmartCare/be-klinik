@@ -1,0 +1,14 @@
+model MasterAsuransi {
+  id             Int      @id @default(autoincrement())
+  kodeAsuransi   String   @unique
+  namaAsuransi   String
+  namaPic        String
+  alamat         String
+  picEmail       String   @unique
+  picPhone       String
+  from           String
+  to             String
+  isAktif        Boolean
+  tarif          String
+  idFasyankes    String
+}
