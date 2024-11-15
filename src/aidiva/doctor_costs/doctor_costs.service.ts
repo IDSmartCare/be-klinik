@@ -2,10 +2,10 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/service/prisma.service';
 
 @Injectable()
-export class DoctorAvailableTimesService {
+export class DoctorCostsService {
   constructor(private prisma: PrismaService) {}
 
-  async findAvailableTimesDoctor(doctorId: number) {
+  async findDoctorCosts(doctorId: number) {
     const doctor = await this.prisma.doctors.findUnique({
       where: { id: doctorId },
     });
@@ -16,28 +16,27 @@ export class DoctorAvailableTimesService {
       );
     }
 
-    const data = await this.prisma.doctorAvailableTimes.findMany({
+    const data = await this.prisma.doctorCosts.findFirst({
       where: { doctorId },
-      select: {
-        id: true,
-        from: true,
-        to: true,
-      },
     });
 
-    if (data.length === 0) {
+    if (!data) {
       throw new HttpException(
-        { success: false, message: 'No availability found for this doctor' },
+        { success: false, message: 'No costs available for this doctor' },
         HttpStatus.NOT_FOUND,
       );
     }
 
-    return {
-      success: true,
-      data: {
-        doctorId: doctorId,
-        times: data.map(({ id, from, to }) => ({ id, from, to })),
+    const formattedData = {
+      id: data.id,
+      doctorId: data.doctorId,
+      base_fee: Number(data.baseFee),
+      extra_fee: {
+        emergency: Number(data.emergency),
+        consultation: Number(data.consultation),
       },
     };
+
+    return { success: true, data: formattedData };
   }
 }

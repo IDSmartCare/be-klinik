@@ -13,6 +13,7 @@ export class JadwalDokterService {
       select: {
         id: true,
         name: true,
+        avatar: true,
         unit: true,
         availableDays: {
           select: {
@@ -64,6 +65,7 @@ export class JadwalDokterService {
         name: doctor.name,
         unit: doctor.unit,
         slot: slot,
+        avatar: doctor.avatar ?? process.env.AVATAR_DUMMY,
         days: days,
         times: doctor.availableTimes.map((time) => ({
           from: time.from,
