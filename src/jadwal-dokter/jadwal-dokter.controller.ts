@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { JadwalDokterService } from './jadwal-dokter.service';
 import { CreateJadwalDokterDto } from './dto/create-jadwal-dokter.dto';
 import { AuthGuard } from 'src/auth/auth.guard';

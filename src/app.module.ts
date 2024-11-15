@@ -19,6 +19,9 @@ import { DoctorAvailableTimesModule } from './aidiva/doctor_available_times/doct
 import { DoctorAvailableSlotsModule } from './aidiva/doctor_available_slots/doctor_available_slots.module';
 import { DoctorsModule as DoctorsCoreModule } from './doctors/doctors.module';
 import { JadwalDokterModule } from './jadwal-dokter/jadwal-dokter.module';
+import { MasterAsuransiController } from './master-asuransi/master-asuransi.controller';
+import { MasterAsuransiService } from './master-asuransi/master-asuransi.service';
+import { MasterAsuransiModule } from './master-asuransi/master-asuransi.module';
 
 @Module({
   imports: [
@@ -41,6 +44,7 @@ import { JadwalDokterModule } from './jadwal-dokter/jadwal-dokter.module';
     DoctorAvailableTimesModule,
     DoctorAvailableSlotsModule,
     JadwalDokterModule,
+    MasterAsuransiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

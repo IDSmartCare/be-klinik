@@ -82,7 +82,7 @@ export class DoctorsService {
       data: {
         ...updateDokterDto,
         poliKlinik: {
-          update: updatePoliKlinikDto, 
+          update: updatePoliKlinikDto,
         },
       },
     });

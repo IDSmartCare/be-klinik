@@ -77,7 +77,7 @@ export class JadwalDokterService {
 
   async createSchedule(createJadwalDokterDto: CreateJadwalDokterDto) {
     const { dokter_id, slot, days, times } = createJadwalDokterDto;
-
+  
     return this.prisma.$transaction(async (prisma) => {
       const availableDays = await prisma.doctorAvailableDays.create({
         data: {
@@ -92,30 +92,35 @@ export class JadwalDokterService {
           slot,
         },
       });
-
+  
       const allSlots = [];
       for (const time of times) {
         const { from, to } = time;
         const newFrom = new Date(`1970-01-01T${from}:00`);
         const newTo = new Date(`1970-01-01T${to}:00`);
-
+  
         const existingSlots = await prisma.doctorAvailableTimes.findMany({
           where: {
             doctorId: dokter_id,
           },
         });
-
+  
+        // Validasi waktu baru agar tidak berada di antara waktu yang ada
         for (const slot of existingSlots) {
           const existingFrom = new Date(`1970-01-01T${slot.from}:00`);
           const existingTo = new Date(`1970-01-01T${slot.to}:00`);
-
-          if (newFrom < existingTo && newTo > existingFrom) {
+  
+          if (
+            (newFrom >= existingFrom && newFrom < existingTo) || 
+            (newTo > existingFrom && newTo <= existingTo) || 
+            (newFrom <= existingFrom && newTo >= existingTo) 
+          ) {
             throw new Error(
-              `Jadwal waktu ${from} - ${to} tumpang tindih dengan jadwal lainnya.`,
+              `Jadwal waktu ${from} - ${to} tumpang tindih dengan jadwal ${slot.from} - ${slot.to}.`,
             );
           }
         }
-
+  
         const availableTime = await prisma.doctorAvailableTimes.create({
           data: {
             doctorId: dokter_id,
@@ -123,15 +128,15 @@ export class JadwalDokterService {
             to,
           },
         });
-
+  
         let current = new Date(`1970-01-01T${from}:00`);
         const end = new Date(`1970-01-01T${to}:00`);
-
+  
         while (current < end) {
           const slotFrom = current.toTimeString().slice(0, 5);
           current.setMinutes(current.getMinutes() + slot);
           const slotTo = current.toTimeString().slice(0, 5);
-
+  
           if (current <= end) {
             const slotEntry = {
               doctorId: dokter_id,
@@ -140,20 +145,21 @@ export class JadwalDokterService {
               doctor_available_times_id: availableTime.id,
               is_booked: false,
             };
-
+  
             const savedSlot = await prisma.doctorAvailableSlots.create({
               data: slotEntry,
             });
-
+  
             allSlots.push(savedSlot);
           }
         }
       }
-
+  
       return {
         success: true,
         message: 'Berhasil membuat Jadwal Dokter',
       };
     });
   }
+  
 }
