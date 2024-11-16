@@ -87,6 +87,7 @@ export class PasienController {
       include: {
         doctor: {
           select: {
+            name: true,
             availableDays: true,
             availableTimes: true,
           },
