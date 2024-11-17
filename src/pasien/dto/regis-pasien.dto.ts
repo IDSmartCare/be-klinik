@@ -5,6 +5,8 @@ export class RegisPasienDto {
   idFasyankes: string;
   penjamin: string;
   namaAsuransi?: string;
-  availableDayId?: number;
+  nomorAsuransi?: string;
+  // availableDayId?: number;
   availableTimeId?: number;
+  hari: number;
 }

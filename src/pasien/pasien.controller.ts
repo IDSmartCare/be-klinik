@@ -34,8 +34,10 @@ export class PasienController {
         isClose: false,
         idFasyankes: idfasyankes,
         AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
-        jadwal: {
-          doctorId: Number(iddokter),
+        riwayat: {
+          some: {
+            doctorId: Number(iddokter),
+          },
         },
         isSoapPerawat: true,
       },
@@ -43,7 +45,7 @@ export class PasienController {
         id: 'desc',
       },
       include: {
-        jadwal: {
+        riwayat: {
           select: {
             doctor: {
               select: {
@@ -221,7 +223,7 @@ export class PasienController {
       },
       include: {
         billPasien: true,
-        jadwal: {
+        riwayat: {
           include: {
             doctor: {
               include: {
@@ -253,9 +255,8 @@ export class PasienController {
             id: true,
             namaAsuransi: true,
             createdAt: true,
-            jadwal: {
+            riwayat: {
               include: {
-                availableDay: true,
                 availableTime: true,
                 doctor: {
                   include: {

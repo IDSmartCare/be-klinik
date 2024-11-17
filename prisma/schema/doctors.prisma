@@ -22,6 +22,7 @@ model Doctors {
   pendaftaran Pendaftaran[]
 
   jadwalDokter JadwalDokter[]        
+  riwayatPendaftaran RiwayatPendaftaran[]        
 
 
   availableTimes DoctorAvailableTimes[] @relation("DoctorAvailableTimesForDoctor")

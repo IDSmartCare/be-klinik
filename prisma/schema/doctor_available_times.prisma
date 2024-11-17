@@ -10,6 +10,6 @@ model DoctorAvailableTimes {
   doctor    Doctors   @relation("DoctorAvailableTimesForDoctor", fields: [doctorId], references: [id])
   availableSlots DoctorAvailableSlots[] @relation("DoctorAvailableSlotsForAvailableTimes")
 
-  jadwalDokter JadwalDokter[] 
+  riwayatPendaftaran RiwayatPendaftaran[] 
 
 }

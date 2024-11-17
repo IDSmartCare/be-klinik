@@ -1,0 +1,14 @@
+model RiwayatPendaftaran {
+    id                Int                   @id @default(autoincrement())
+    doctorId          Int
+    doctor            Doctors               @relation(fields: [doctorId], references: [id])
+    hari              String?
+    availableTimeId   Int
+    availableTime     DoctorAvailableTimes  @relation(fields: [availableTimeId], references: [id])
+    pendaftaranId     Int
+    pendaftaran       Pendaftaran?          @relation(fields: [pendaftaranId], references: [id])
+    isAktif           Boolean               @default(true)
+    createdAt         DateTime              @default(now()) @db.Timestamptz
+    updatedAt         DateTime              @updatedAt @db.Timestamptz
+    idFasyankes       String?               @db.VarChar(30)
+}

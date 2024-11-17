@@ -16,11 +16,13 @@ model JadwalDokter {
   doctorId          Int
   //new
   doctor            Doctors               @relation(fields: [doctorId], references: [id])
-  availableDayId    Int
-  availableDay      DoctorAvailableDays   @relation(fields: [availableDayId], references: [id])
-  availableTimeId   Int
-  availableTime     DoctorAvailableTimes  @relation(fields: [availableTimeId], references: [id])
-  registrasi        Pendaftaran[]
+  // availableDayId    Int
+  // availableDay      DoctorAvailableDays   @relation(fields: [availableDayId], references: [id])
+
+  hari              String?
+  // availableTimeId   Int
+  // availableTime     DoctorAvailableTimes  @relation(fields: [availableTimeId], references: [id])
+  // registrasi        Pendaftaran[]
   // dokterId          Int
   // dokter            Profile               @relation(fields: [dokterId], references: [id])
   isAktif           Boolean               @default(true)

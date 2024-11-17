@@ -14,6 +14,36 @@ import { RegisPasienDto } from './dto/regis-pasien.dto';
 export class PasienService {
   constructor(private prisma: PrismaService) {}
 
+  private convertDay(num) {
+    let dayName;
+    switch (num) {
+      case 0:
+        dayName = 'Minggu';
+        break;
+      case 1:
+        dayName = 'Senin';
+        break;
+      case 2:
+        dayName = 'Selasa';
+        break;
+      case 3:
+        dayName = 'Rabu';
+        break;
+      case 4:
+        dayName = 'Kamis';
+        break;
+      case 5:
+        dayName = 'Jumat';
+        break;
+      case 6:
+        dayName = 'Sabtu';
+        break;
+      default:
+        dayName = 'Invalid Day';
+    }
+    return dayName;
+  }
+
   async createRegis(
     data: RegisPasienDto,
     userRole?: string,
@@ -67,22 +97,24 @@ export class PasienService {
             idFasyankes: data.idFasyankes,
           },
         });
-        const jadwalDokter = await tx.jadwalDokter.create({
-          data: {
-            doctorId: data.doctorId,
-            availableDayId: data.availableDayId,
-            availableTimeId: data.availableTimeId,
-            idFasyankes: data.idFasyankes,
-          },
-        });
+
         const registrasi = await tx.pendaftaran.create({
           data: {
             episodePendaftaranId: episodeBaru.id,
-            jadwalDokterId: jadwalDokter.id,
             doctorId: data.doctorId,
             penjamin: data.penjamin,
             namaAsuransi: data.namaAsuransi,
+            nomorAsuransi: data.nomorAsuransi,
             idFasyankes: data.idFasyankes,
+          },
+        });
+        const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
+          data: {
+            pendaftaranId: registrasi.id,
+            doctorId: data.doctorId,
+            availableTimeId: data.availableTimeId,
+            idFasyankes: data.idFasyankes,
+            hari: this.convertDay(data.hari) as string,
           },
         });
 
@@ -115,23 +147,23 @@ export class PasienService {
           },
         });
         if (count > 0) {
-          const jadwalDokter = await tx.jadwalDokter.create({
-            data: {
-              doctorId: data.doctorId,
-              availableDayId: data.availableDayId,
-              availableTimeId: data.availableTimeId,
-              idFasyankes: data.idFasyankes,
-            },
-          });
-
           const registrasi = await tx.pendaftaran.create({
             data: {
               episodePendaftaranId: lastEpisode[0].id,
               doctorId: data.doctorId,
-              jadwalDokterId: jadwalDokter.id,
               penjamin: data.penjamin,
               namaAsuransi: data.namaAsuransi,
+              nomorAsuransi: data.nomorAsuransi,
               idFasyankes: data.idFasyankes,
+            },
+          });
+          const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
+            data: {
+              pendaftaranId: registrasi.id,
+              doctorId: data.doctorId,
+              availableTimeId: data.availableTimeId,
+              idFasyankes: data.idFasyankes,
+              hari: this.convertDay(data.hari) as string,
             },
           });
           const bill = await tx.billPasien.create({
@@ -159,25 +191,26 @@ export class PasienService {
               idFasyankes: data.idFasyankes,
             },
           });
-          const jadwalDokter = await tx.jadwalDokter.create({
-            data: {
-              doctorId: data.doctorId,
-              availableDayId: data.availableDayId,
-              availableTimeId: data.availableTimeId,
-              idFasyankes: data.idFasyankes,
-            },
-          });
           const registrasi = await tx.pendaftaran.create({
             data: {
               episodePendaftaranId: episodeBaru.id,
-              jadwalDokterId: jadwalDokter.id,
               doctorId: data.doctorId,
               penjamin: data.penjamin,
               namaAsuransi: data.namaAsuransi,
+              nomorAsuransi: data.nomorAsuransi,
               idFasyankes: data.idFasyankes,
             },
           });
 
+          const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
+            data: {
+              pendaftaranId: registrasi.id,
+              doctorId: data.doctorId,
+              availableTimeId: data.availableTimeId,
+              idFasyankes: data.idFasyankes,
+              hari: this.convertDay(data.hari) as string,
+            },
+          });
           const bill = await tx.billPasien.create({
             data: {
               pendaftaranId: registrasi.id,
