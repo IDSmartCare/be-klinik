@@ -70,7 +70,7 @@ export class MasterAsuransiService {
           from: newAsuransi.from,
           to: newAsuransi.to,
           isAktif: newAsuransi.isAktif,
-          tarif: newAsuransi.tarif,
+          // tarif: newAsuransi.tarif,
           idFasyankes: newAsuransi.idFasyankes,
         },
       ],

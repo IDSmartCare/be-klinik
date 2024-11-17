@@ -13,6 +13,6 @@ export class CreateMasterAsuransiDto {
     from: string;
     to: string;
     isAktif: boolean;
-    tarif: string;
+    // tarif: string;
     idFasyankes: string;
 }

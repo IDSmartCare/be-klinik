@@ -9,6 +9,6 @@ model MasterAsuransi {
   from           String
   to             String
   isAktif        Boolean
-  tarif          String
+  // tarif          String
   idFasyankes    String
 }

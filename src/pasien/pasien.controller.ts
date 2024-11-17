@@ -35,9 +35,7 @@ export class PasienController {
         idFasyankes: idfasyankes,
         AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
         riwayat: {
-          some: {
-            doctorId: Number(iddokter),
-          },
+          doctorId: Number(iddokter),
         },
         isSoapPerawat: true,
       },
