@@ -22,81 +22,81 @@ import { AuthGuard } from 'src/auth/auth.guard';
 export class SettingController {
   constructor(private readonly settingService: SettingService) {}
 
-  @UseGuards(AuthGuard)
-  @Post('/createpoli')
-  async create(@Body() createSettingDto: CreatePoliDto): Promise<PoliKlinik> {
-    return this.settingService.createPoli(createSettingDto);
-  }
+  // @UseGuards(AuthGuard)
+  // @Post('/createpoli')
+  // async create(@Body() createSettingDto: CreatePoliDto): Promise<PoliKlinik> {
+  //   return this.settingService.createPoli(createSettingDto);
+  // }
 
-  @UseGuards(AuthGuard)
-  @Post('/createjadwal')
-  async createJadwal(
-    @Body() createSettingDto: CreateJadwalDto,
-  ): Promise<JadwalDokter> {
-    return this.settingService.createJadwal(createSettingDto);
-  }
+  // @UseGuards(AuthGuard)
+  // @Post('/createjadwal')
+  // async createJadwal(
+  //   @Body() createSettingDto: CreateJadwalDto,
+  // ): Promise<JadwalDokter> {
+  //   return this.settingService.createJadwal(createSettingDto);
+  // }
 
-  @UseGuards(AuthGuard)
-  @Put('/editjadwal/:id')
-  async updateJadwal(
-    @Param('id') id: number,
-    @Body() updateJadwalDto: UpdateJadwalDto,
-  ) {
-    try {
-      // Call the updateJadwal service method
-      const result = await this.settingService.updateJadwal(
-        id,
-        updateJadwalDto,
-      );
+  // @UseGuards(AuthGuard)
+  // @Put('/editjadwal/:id')
+  // async updateJadwal(
+  //   @Param('id') id: number,
+  //   @Body() updateJadwalDto: UpdateJadwalDto,
+  // ) {
+  //   try {
+  //     // Call the updateJadwal service method
+  //     const result = await this.settingService.updateJadwal(
+  //       id,
+  //       updateJadwalDto,
+  //     );
 
-      return {
-        status: result.status,
-        message: result.message,
-        data: result.data,
-      };
-    } catch (error) {
-      throw new HttpException(
-        { message: error.message || 'Internal server error', status: 'error' },
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
+  //     return {
+  //       status: result.status,
+  //       message: result.message,
+  //       data: result.data,
+  //     };
+  //   } catch (error) {
+  //     throw new HttpException(
+  //       { message: error.message || 'Internal server error', status: 'error' },
+  //       error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
 
-  @UseGuards(AuthGuard)
-  @Get('/listpoli/:idfasyankes')
-  async findPoli(
-    @Param('idfasyankes') idfasyankes: string,
-  ): Promise<PoliKlinik[]> {
-    return this.settingService.findPoli({
-      where: {
-        idFasyankes: idfasyankes,
-      },
-    });
-  }
+  // @UseGuards(AuthGuard)
+  // @Get('/listpoli/:idfasyankes')
+  // async findPoli(
+  //   @Param('idfasyankes') idfasyankes: string,
+  // ): Promise<PoliKlinik[]> {
+  //   return this.settingService.findPoli({
+  //     where: {
+  //       idFasyankes: idfasyankes,
+  //     },
+  //   });
+  // }
 
-  @UseGuards(AuthGuard)
-  @Get('/listjadwal/:idfasyankes')
-  async findOne(
-    @Param('idfasyankes') idfasyankes: string,
-  ): Promise<JadwalDokter[]> {
-    return this.settingService.findJadwalDokter({
-      where: {
-        idFasyankes: idfasyankes,
-      },
-      include: {
-        dokter: {
-          include: {
-            poliklinik: {
-              select: {
-                namaPoli: true,
-                kodePoli: true,
-              },
-            },
-          },
-        },
-      },
-    });
-  }
+  // @UseGuards(AuthGuard)
+  // @Get('/listjadwal/:idfasyankes')
+  // async findOne(
+  //   @Param('idfasyankes') idfasyankes: string,
+  // ): Promise<JadwalDokter[]> {
+  //   return this.settingService.findJadwalDokter({
+  //     where: {
+  //       idFasyankes: idfasyankes,
+  //     },
+  //     include: {
+  //       dokter: {
+  //         include: {
+  //           poliklinik: {
+  //             select: {
+  //               namaPoli: true,
+  //               kodePoli: true,
+  //             },
+  //           },
+  //         },
+  //       },
+  //     },
+  //   });
+  // }
 
   // @UseGuards(AuthGuard)
   // @Get('/listdokter/:idFasyankes')
@@ -116,13 +116,13 @@ export class SettingController {
   //   }
   // }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSettingDto: UpdateSettingDto) {
-    return this.settingService.update(+id, updateSettingDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateSettingDto: UpdateSettingDto) {
+  //   return this.settingService.update(+id, updateSettingDto);
+  // }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.settingService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.settingService.remove(+id);
+  // }
 }

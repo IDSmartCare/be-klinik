@@ -1,7 +1,7 @@
 model Pendaftaran {
   id                   Int                 @id @default(autoincrement())
-  // jadwal               JadwalDokter?       @relation(fields: [jadwalDokterId], references: [id])
-  // jadwalDokterId       Int
+  jadwalDokterId       Int
+  jadwal               JadwalDokter? @relation(fields: [jadwalDokterId], references: [id])
   doctor               Doctors?            @relation(fields: [doctorId], references: [id])
   doctorId             Int
 

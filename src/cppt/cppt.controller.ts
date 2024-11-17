@@ -55,6 +55,15 @@ export class CpptController {
                 },
               },
             },
+            jadwal: {
+              select: {
+                doctor: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
           },
         },
       },

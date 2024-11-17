@@ -34,8 +34,8 @@ export class PasienController {
         isClose: false,
         idFasyankes: idfasyankes,
         AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
-        doctor: {
-          id: Number(iddokter),
+        jadwal: {
+          doctorId: Number(iddokter),
         },
         isSoapPerawat: true,
       },
@@ -43,10 +43,14 @@ export class PasienController {
         id: 'desc',
       },
       include: {
-        doctor: {
+        jadwal: {
           select: {
-            availableDays: true,
-            availableTimes: true,
+            doctor: {
+              select: {
+                availableDays: true,
+                availableTimes: true,
+              },
+            },
           },
         },
         episodePendaftaran: {
@@ -87,7 +91,6 @@ export class PasienController {
       include: {
         doctor: {
           select: {
-            name: true,
             availableDays: true,
             availableTimes: true,
           },
@@ -218,12 +221,16 @@ export class PasienController {
       },
       include: {
         billPasien: true,
-        doctor: {
+        jadwal: {
           include: {
-            poliKlinik: {
-              select: {
-                namaPoli: true,
-                kodePoli: true,
+            doctor: {
+              include: {
+                poliKlinik: {
+                  select: {
+                    namaPoli: true,
+                    kodePoli: true,
+                  },
+                },
               },
             },
           },
@@ -246,11 +253,15 @@ export class PasienController {
             id: true,
             namaAsuransi: true,
             createdAt: true,
-            doctor: {
+            jadwal: {
               include: {
-                availableDays: true,
-                availableSlots: true,
-                poliKlinik: true,
+                availableDay: true,
+                availableTime: true,
+                doctor: {
+                  include: {
+                    poliKlinik: true,
+                  },
+                },
               },
             },
           },
