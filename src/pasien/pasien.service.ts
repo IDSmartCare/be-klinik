@@ -67,7 +67,7 @@ export class PasienService {
             idFasyankes: data.idFasyankes,
           },
         });
-        await tx.jadwalDokter.create({
+        const jadwalDokter = await tx.jadwalDokter.create({
           data: {
             doctorId: data.doctorId,
             availableDayId: data.availableDayId,
@@ -78,7 +78,7 @@ export class PasienService {
         const registrasi = await tx.pendaftaran.create({
           data: {
             episodePendaftaranId: episodeBaru.id,
-            jadwalDokterId: data.jadwalDokterId,
+            jadwalDokterId: jadwalDokter.id,
             doctorId: data.doctorId,
             penjamin: data.penjamin,
             namaAsuransi: data.namaAsuransi,
@@ -115,11 +115,20 @@ export class PasienService {
           },
         });
         if (count > 0) {
+          const jadwalDokter = await tx.jadwalDokter.create({
+            data: {
+              doctorId: data.doctorId,
+              availableDayId: data.availableDayId,
+              availableTimeId: data.availableTimeId,
+              idFasyankes: data.idFasyankes,
+            },
+          });
+
           const registrasi = await tx.pendaftaran.create({
             data: {
               episodePendaftaranId: lastEpisode[0].id,
               doctorId: data.doctorId,
-              jadwalDokterId: data.jadwalDokterId,
+              jadwalDokterId: jadwalDokter.id,
               penjamin: data.penjamin,
               namaAsuransi: data.namaAsuransi,
               idFasyankes: data.idFasyankes,
@@ -141,14 +150,6 @@ export class PasienService {
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
             },
           });
-          await tx.jadwalDokter.create({
-            data: {
-              doctorId: data.doctorId,
-              availableDayId: data.availableDayId,
-              availableTimeId: data.availableTimeId,
-              idFasyankes: data.idFasyankes,
-            },
-          });
           return registrasi;
         } else {
           const episodeBaru = await tx.episodePendaftaran.create({
@@ -158,17 +159,7 @@ export class PasienService {
               idFasyankes: data.idFasyankes,
             },
           });
-          const registrasi = await tx.pendaftaran.create({
-            data: {
-              episodePendaftaranId: episodeBaru.id,
-              jadwalDokterId: data.jadwalDokterId,
-              doctorId: data.doctorId,
-              penjamin: data.penjamin,
-              namaAsuransi: data.namaAsuransi,
-              idFasyankes: data.idFasyankes,
-            },
-          });
-          await tx.jadwalDokter.create({
+          const jadwalDokter = await tx.jadwalDokter.create({
             data: {
               doctorId: data.doctorId,
               availableDayId: data.availableDayId,
@@ -176,6 +167,17 @@ export class PasienService {
               idFasyankes: data.idFasyankes,
             },
           });
+          const registrasi = await tx.pendaftaran.create({
+            data: {
+              episodePendaftaranId: episodeBaru.id,
+              jadwalDokterId: jadwalDokter.id,
+              doctorId: data.doctorId,
+              penjamin: data.penjamin,
+              namaAsuransi: data.namaAsuransi,
+              idFasyankes: data.idFasyankes,
+            },
+          });
+
           const bill = await tx.billPasien.create({
             data: {
               pendaftaranId: registrasi.id,
