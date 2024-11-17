@@ -1,6 +1,6 @@
 model Pendaftaran {
   id                   Int                 @id @default(autoincrement())
-  riwayat              RiwayatPendaftaran[]
+  riwayat              RiwayatPendaftaran?
   doctor               Doctors?            @relation(fields: [doctorId], references: [id])
   doctorId             Int
 
