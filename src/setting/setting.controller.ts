@@ -22,11 +22,11 @@ import { AuthGuard } from 'src/auth/auth.guard';
 export class SettingController {
   constructor(private readonly settingService: SettingService) {}
 
-  // @UseGuards(AuthGuard)
-  // @Post('/createpoli')
-  // async create(@Body() createSettingDto: CreatePoliDto): Promise<PoliKlinik> {
-  //   return this.settingService.createPoli(createSettingDto);
-  // }
+  @UseGuards(AuthGuard)
+  @Post('/createpoli')
+  async create(@Body() createSettingDto: CreatePoliDto): Promise<PoliKlinik> {
+    return this.settingService.createPoli(createSettingDto);
+  }
 
   // @UseGuards(AuthGuard)
   // @Post('/createjadwal')
@@ -62,17 +62,17 @@ export class SettingController {
   //   }
   // }
 
-  // @UseGuards(AuthGuard)
-  // @Get('/listpoli/:idfasyankes')
-  // async findPoli(
-  //   @Param('idfasyankes') idfasyankes: string,
-  // ): Promise<PoliKlinik[]> {
-  //   return this.settingService.findPoli({
-  //     where: {
-  //       idFasyankes: idfasyankes,
-  //     },
-  //   });
-  // }
+  @UseGuards(AuthGuard)
+  @Get('/listpoli/:idfasyankes')
+  async findPoli(
+    @Param('idfasyankes') idfasyankes: string,
+  ): Promise<PoliKlinik[]> {
+    return this.settingService.findPoli({
+      where: {
+        idFasyankes: idfasyankes,
+      },
+    });
+  }
 
   // @UseGuards(AuthGuard)
   // @Get('/listjadwal/:idfasyankes')
@@ -98,31 +98,31 @@ export class SettingController {
   //   });
   // }
 
-  // @UseGuards(AuthGuard)
-  // @Get('/listdokter/:idFasyankes')
-  // async findAllDokter(@Param('idFasyankes') idFasyankes: string) {
-  //   try {
-  //     const data = await this.settingService.findAllDokter(idFasyankes);
-  //     return { success: true, data };
-  //   } catch (error) {
-  //     // Cek apakah error merupakan error yang tidak ditemukan atau error lainnya
-  //     throw new HttpException(
-  //       {
-  //         success: false,
-  //         message: error.message,
-  //       },
-  //       HttpStatus.NOT_FOUND,
-  //     );
-  //   }
-  // }
+  @UseGuards(AuthGuard)
+  @Get('/listdokter/:idFasyankes')
+  async findAllDokter(@Param('idFasyankes') idFasyankes: string) {
+    try {
+      const data = await this.settingService.findAllDokter(idFasyankes);
+      return { success: true, data };
+    } catch (error) {
+      // Cek apakah error merupakan error yang tidak ditemukan atau error lainnya
+      throw new HttpException(
+        {
+          success: false,
+          message: error.message,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateSettingDto: UpdateSettingDto) {
-  //   return this.settingService.update(+id, updateSettingDto);
-  // }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateSettingDto: UpdateSettingDto) {
+    return this.settingService.update(+id, updateSettingDto);
+  }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.settingService.remove(+id);
-  // }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.settingService.remove(+id);
+  }
 }

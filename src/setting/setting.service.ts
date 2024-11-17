@@ -103,57 +103,57 @@ export class SettingService {
   //   };
   // }
 
-  // async createPoli(createPoli: CreatePoliDto): Promise<PoliKlinik> {
-  //   return this.prisma.poliKlinik.create({
-  //     data: createPoli,
-  //   });
-  // }
+  async createPoli(createPoli: CreatePoliDto): Promise<PoliKlinik> {
+    return this.prisma.poliKlinik.create({
+      data: createPoli,
+    });
+  }
 
-  // async findPoli(params: {
-  //   where: Prisma.PoliKlinikWhereInput;
-  // }): Promise<PoliKlinik[]> {
-  //   const { where } = params;
-  //   return this.prisma.poliKlinik.findMany({
-  //     where,
-  //   });
-  // }
+  async findPoli(params: {
+    where: Prisma.PoliKlinikWhereInput;
+  }): Promise<PoliKlinik[]> {
+    const { where } = params;
+    return this.prisma.poliKlinik.findMany({
+      where,
+    });
+  }
 
-  // async findJadwalDokter(params: {
-  //   where: Prisma.JadwalDokterWhereInput;
-  //   include: Prisma.JadwalDokterInclude;
-  // }): Promise<JadwalDokter[]> {
-  //   const { where, include } = params;
-  //   return this.prisma.jadwalDokter.findMany({
-  //     where,
-  //     include,
-  //   });
-  // }
+  async findJadwalDokter(params: {
+    where: Prisma.JadwalDokterWhereInput;
+    include: Prisma.JadwalDokterInclude;
+  }): Promise<JadwalDokter[]> {
+    const { where, include } = params;
+    return this.prisma.jadwalDokter.findMany({
+      where,
+      include,
+    });
+  }
 
-  // async findAllDokter(idFasyankes: string): Promise<Profile[]> {
-  //   try {
-  //     const data = await this.prisma.profile.findMany({
-  //       where: {
-  //         isAktif: true,
-  //         profesi: 'DOKTER',
-  //         idFasyankes,
-  //       },
-  //     });
+  async findAllDokter(idFasyankes: string): Promise<Profile[]> {
+    try {
+      const data = await this.prisma.profile.findMany({
+        where: {
+          isAktif: true,
+          profesi: 'DOKTER',
+          idFasyankes,
+        },
+      });
 
-  //     if (data.length === 0) {
-  //       throw new Error('No doctors found for this Fasyankes');
-  //     }
+      if (data.length === 0) {
+        throw new Error('No doctors found for this Fasyankes');
+      }
 
-  //     return data;
-  //   } catch (error) {
-  //     throw new Error(error.message);
-  //   }
-  // }
+      return data;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  }
 
-  // update(id: number, updateSettingDto: UpdateSettingDto) {
-  //   return `This action updates a #${id} setting`;
-  // }
+  update(id: number, updateSettingDto: UpdateSettingDto) {
+    return `This action updates a #${id} setting`;
+  }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} setting`;
-  // }
+  remove(id: number) {
+    return `This action removes a #${id} setting`;
+  }
 }
