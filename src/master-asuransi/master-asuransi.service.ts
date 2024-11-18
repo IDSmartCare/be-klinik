@@ -54,10 +54,8 @@ export class MasterAsuransiService {
       increment = (lastIncrement + 1).toString().padStart(4, '0');
     }
 
-    // Buat kodeAsuransi
     const kodeAsuransi = `AS-${year}${month}${increment}`;
 
-    // Tambahkan data baru ke database
     const newAsuransi = await this.prisma.masterAsuransi.create({
       data: {
         ...createMasterAsuransiDto,
@@ -65,7 +63,6 @@ export class MasterAsuransiService {
       },
     });
 
-    // Format respons sesuai permintaan
     return {
       success: true,
       data: [
@@ -91,9 +88,8 @@ export class MasterAsuransiService {
     data: Partial<MasterAsuransi>,
   ): Promise<{ success: boolean; message: string; data: MasterAsuransi }> {
     try {
-      // Periksa apakah ID asuransi ada
       const masterAsuransi = await this.prisma.masterAsuransi.findUnique({
-        where: { id: id }, // ID harus berupa angka (integer)
+        where: { id: id },
       });
 
       if (!masterAsuransi) {
