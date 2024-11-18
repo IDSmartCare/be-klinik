@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { CreateKasirDto } from './dto/create-kasir.dto';
 import { PrismaService } from 'src/service/prisma.service';

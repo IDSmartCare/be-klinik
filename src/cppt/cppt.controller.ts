@@ -55,9 +55,13 @@ export class CpptController {
                 },
               },
             },
-            doctor: {
+            riwayat: {
               select: {
-                name: true,
+                doctor: {
+                  select: {
+                    name: true,
+                  },
+                },
               },
             },
           },

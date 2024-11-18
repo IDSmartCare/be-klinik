@@ -34,8 +34,8 @@ export class PasienController {
         isClose: false,
         idFasyankes: idfasyankes,
         AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
-        doctor: {
-          id: Number(iddokter),
+        riwayat: {
+          doctorId: Number(iddokter),
         },
         isSoapPerawat: true,
       },
@@ -43,10 +43,14 @@ export class PasienController {
         id: 'desc',
       },
       include: {
-        doctor: {
+        riwayat: {
           select: {
-            availableDays: true,
-            availableTimes: true,
+            doctor: {
+              select: {
+                availableDays: true,
+                availableTimes: true,
+              },
+            },
           },
         },
         episodePendaftaran: {
@@ -217,11 +221,18 @@ export class PasienController {
       },
       include: {
         billPasien: true,
-        doctor: {
-          select: {
-            availableDays: true,
-            availableTimes: true,
-            poliKlinik: true,
+        riwayat: {
+          include: {
+            doctor: {
+              include: {
+                poliKlinik: {
+                  select: {
+                    namaPoli: true,
+                    kodePoli: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -242,11 +253,14 @@ export class PasienController {
             id: true,
             namaAsuransi: true,
             createdAt: true,
-            doctor: {
+            riwayat: {
               include: {
-                availableDays: true,
-                availableSlots: true,
-                poliKlinik: true,
+                availableTime: true,
+                doctor: {
+                  include: {
+                    poliKlinik: true,
+                  },
+                },
               },
             },
           },

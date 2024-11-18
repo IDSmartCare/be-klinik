@@ -10,7 +10,7 @@ model Profile {
   isAktif       Boolean?       @default(true)
   createdAt     DateTime       @default(now()) @db.Timestamptz
   updatedAt     DateTime       @updatedAt @db.Timestamptz
-  jadwalPraktek JadwalDokter[]
+  // jadwalPraktek JadwalDokter[]
   poliklinik    PoliKlinik?    @relation(fields: [poliKlinikId], references: [id])
   poliKlinikId  Int?
   cppt          SOAP[]

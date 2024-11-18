@@ -14,6 +14,36 @@ import { RegisPasienDto } from './dto/regis-pasien.dto';
 export class PasienService {
   constructor(private prisma: PrismaService) {}
 
+  private convertDay(num) {
+    let dayName;
+    switch (num) {
+      case 0:
+        dayName = 'Minggu';
+        break;
+      case 1:
+        dayName = 'Senin';
+        break;
+      case 2:
+        dayName = 'Selasa';
+        break;
+      case 3:
+        dayName = 'Rabu';
+        break;
+      case 4:
+        dayName = 'Kamis';
+        break;
+      case 5:
+        dayName = 'Jumat';
+        break;
+      case 6:
+        dayName = 'Sabtu';
+        break;
+      default:
+        dayName = 'Invalid Day';
+    }
+    return dayName;
+  }
+
   async createRegis(
     data: RegisPasienDto,
     userRole?: string,
@@ -67,13 +97,24 @@ export class PasienService {
             idFasyankes: data.idFasyankes,
           },
         });
+
         const registrasi = await tx.pendaftaran.create({
           data: {
             episodePendaftaranId: episodeBaru.id,
             doctorId: data.doctorId,
             penjamin: data.penjamin,
             namaAsuransi: data.namaAsuransi,
+            nomorAsuransi: data.nomorAsuransi,
             idFasyankes: data.idFasyankes,
+          },
+        });
+        const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
+          data: {
+            pendaftaranId: registrasi.id,
+            doctorId: data.doctorId,
+            availableTimeId: data.availableTimeId,
+            idFasyankes: data.idFasyankes,
+            hari: this.convertDay(data.hari) as string,
           },
         });
 
@@ -112,7 +153,17 @@ export class PasienService {
               doctorId: data.doctorId,
               penjamin: data.penjamin,
               namaAsuransi: data.namaAsuransi,
+              nomorAsuransi: data.nomorAsuransi,
               idFasyankes: data.idFasyankes,
+            },
+          });
+          const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
+            data: {
+              pendaftaranId: registrasi.id,
+              doctorId: data.doctorId,
+              availableTimeId: data.availableTimeId,
+              idFasyankes: data.idFasyankes,
+              hari: this.convertDay(data.hari) as string,
             },
           });
           const bill = await tx.billPasien.create({
@@ -126,7 +177,7 @@ export class PasienService {
               harga: tarifAdm?.hargaTarif,
               jenisBill: 'Admin',
               deskripsi: tarifAdm?.namaTarif ?? 'No Tarif Found',
-              billPasienId: bill?.id,
+              billPasienId: bill.id,
               jumlah: 1,
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
             },
@@ -146,7 +197,18 @@ export class PasienService {
               doctorId: data.doctorId,
               penjamin: data.penjamin,
               namaAsuransi: data.namaAsuransi,
+              nomorAsuransi: data.nomorAsuransi,
               idFasyankes: data.idFasyankes,
+            },
+          });
+
+          const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
+            data: {
+              pendaftaranId: registrasi.id,
+              doctorId: data.doctorId,
+              availableTimeId: data.availableTimeId,
+              idFasyankes: data.idFasyankes,
+              hari: this.convertDay(data.hari) as string,
             },
           });
           const bill = await tx.billPasien.create({
@@ -179,7 +241,7 @@ export class PasienService {
     if (userRole === 'admin' && userPackage === 'FREE' && data.idFasyankes) {
       const patientCount = await this.prisma.pasien.count({
         where: {
-          idFasyankes: data.idFasyankes, // filter by idFasyankes
+          idFasyankes: data.idFasyankes,
         },
       });
 
