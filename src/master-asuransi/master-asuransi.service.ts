@@ -40,14 +40,22 @@ export class MasterAsuransiService {
     const year = date.getFullYear().toString().slice(-2);
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
 
-    // Hitung jumlah data untuk membuat increment ID
-    const count = await this.prisma.masterAsuransi.count();
-    const increment = (count + 1).toString().padStart(4, '0');
+    // Ambil data terakhir berdasarkan kodeAsuransi
+    const lastAsuransi = await this.prisma.masterAsuransi.findFirst({
+      orderBy: {
+        kodeAsuransi: 'desc',
+      },
+    });
 
-    // Buat kodeAsuransi
+    let increment = '0001';
+    if (lastAsuransi) {
+      // Ambil 4 digit terakhir dari kodeAsuransi sebelumnya dan tambahkan 1
+      const lastIncrement = parseInt(lastAsuransi.kodeAsuransi.slice(-4));
+      increment = (lastIncrement + 1).toString().padStart(4, '0');
+    }
+
     const kodeAsuransi = `AS-${year}${month}${increment}`;
 
-    // Tambahkan data baru ke database
     const newAsuransi = await this.prisma.masterAsuransi.create({
       data: {
         ...createMasterAsuransiDto,
@@ -55,7 +63,6 @@ export class MasterAsuransiService {
       },
     });
 
-    // Format respons sesuai permintaan
     return {
       success: true,
       data: [
@@ -70,7 +77,6 @@ export class MasterAsuransiService {
           from: newAsuransi.from,
           to: newAsuransi.to,
           isAktif: newAsuransi.isAktif,
-          // tarif: newAsuransi.tarif,
           idFasyankes: newAsuransi.idFasyankes,
         },
       ],
@@ -82,9 +88,8 @@ export class MasterAsuransiService {
     data: Partial<MasterAsuransi>,
   ): Promise<{ success: boolean; message: string; data: MasterAsuransi }> {
     try {
-      // Periksa apakah ID asuransi ada
       const masterAsuransi = await this.prisma.masterAsuransi.findUnique({
-        where: { id: id }, // ID harus berupa angka (integer)
+        where: { id: id },
       });
 
       if (!masterAsuransi) {
