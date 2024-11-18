@@ -70,7 +70,7 @@ export class PasienService {
         const registrasi = await tx.pendaftaran.create({
           data: {
             episodePendaftaranId: episodeBaru.id,
-            jadwalDokterId: data.jadwalDokterId,
+            doctorId: data.doctorId,
             penjamin: data.penjamin,
             namaAsuransi: data.namaAsuransi,
             idFasyankes: data.idFasyankes,
@@ -109,7 +109,7 @@ export class PasienService {
           const registrasi = await tx.pendaftaran.create({
             data: {
               episodePendaftaranId: lastEpisode[0].id,
-              jadwalDokterId: data.jadwalDokterId,
+              doctorId: data.doctorId,
               penjamin: data.penjamin,
               namaAsuransi: data.namaAsuransi,
               idFasyankes: data.idFasyankes,
@@ -143,7 +143,7 @@ export class PasienService {
           const registrasi = await tx.pendaftaran.create({
             data: {
               episodePendaftaranId: episodeBaru.id,
-              jadwalDokterId: data.jadwalDokterId,
+              doctorId: data.doctorId,
               penjamin: data.penjamin,
               namaAsuransi: data.namaAsuransi,
               idFasyankes: data.idFasyankes,

@@ -9,13 +9,6 @@ export class DoctorsController {
   @UseGuards(AuthGuard)
   @Get()
   async findAll() {
-    const data = await this.doctorsService.findAll();
-    if (data.length < 1) {
-      return {
-        success: true,
-        data: [],
-      };
-    }
-    return { success: true, data: data };
+    return this.doctorsService.findAll();
   }
 }

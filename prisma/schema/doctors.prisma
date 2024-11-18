@@ -6,6 +6,7 @@ model Doctors {
   idFasyankes  String?
   str          String?
   sip          String?
+  avatar       String?
   isAktif      Boolean               @default(true)
   status       String                @default("active")
   deletedAt    DateTime?             @map("deleted_at")
@@ -17,6 +18,8 @@ model Doctors {
 
   poliKlinik   PoliKlinik?           @relation(fields: [idPoliKlinik], references: [id])
   idPoliKlinik Int?
+
+  pendaftaran Pendaftaran[]
 
   availableTimes DoctorAvailableTimes[] @relation("DoctorAvailableTimesForDoctor")
   availableDays  DoctorAvailableDays[]  @relation("DoctorAvailableDaysForDoctor")
