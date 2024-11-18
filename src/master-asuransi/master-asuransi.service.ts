@@ -40,9 +40,19 @@ export class MasterAsuransiService {
     const year = date.getFullYear().toString().slice(-2);
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
 
-    // Hitung jumlah data untuk membuat increment ID
-    const count = await this.prisma.masterAsuransi.count();
-    const increment = (count + 1).toString().padStart(4, '0');
+    // Ambil data terakhir berdasarkan kodeAsuransi
+    const lastAsuransi = await this.prisma.masterAsuransi.findFirst({
+      orderBy: {
+        kodeAsuransi: 'desc',
+      },
+    });
+
+    let increment = '0001';
+    if (lastAsuransi) {
+      // Ambil 4 digit terakhir dari kodeAsuransi sebelumnya dan tambahkan 1
+      const lastIncrement = parseInt(lastAsuransi.kodeAsuransi.slice(-4));
+      increment = (lastIncrement + 1).toString().padStart(4, '0');
+    }
 
     // Buat kodeAsuransi
     const kodeAsuransi = `AS-${year}${month}${increment}`;
@@ -70,7 +80,6 @@ export class MasterAsuransiService {
           from: newAsuransi.from,
           to: newAsuransi.to,
           isAktif: newAsuransi.isAktif,
-          // tarif: newAsuransi.tarif,
           idFasyankes: newAsuransi.idFasyankes,
         },
       ],
