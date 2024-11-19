@@ -86,25 +86,25 @@ export class MasterAsuransiService {
   async updateAsuransi(
     id: number,
     data: Partial<MasterAsuransi>,
-  ): Promise<{ success: boolean; message: string; data: MasterAsuransi }> {
+  ): Promise<{ success: boolean; message: string; data?: MasterAsuransi }> {
     try {
       const masterAsuransi = await this.prisma.masterAsuransi.findUnique({
         where: { id: id },
       });
 
       if (!masterAsuransi) {
-        throw new HttpException(
-          `Data asuransi dengan ID ${id} tidak ditemukan.`,
-          HttpStatus.NOT_FOUND,
-        );
+        return {
+          success: false,
+          message: `Data asuransi dengan ID ${id} tidak ditemukan.`,
+        };
       }
 
       // Periksa ID Fasyankes jika disertakan
       if (data.idFasyankes && data.idFasyankes !== masterAsuransi.idFasyankes) {
-        throw new HttpException(
-          `ID Fasyankes ${data.idFasyankes} tidak cocok dengan data asuransi.`,
-          HttpStatus.BAD_REQUEST,
-        );
+        return {
+          success: false,
+          message: `ID Fasyankes ${data.idFasyankes} tidak cocok dengan data asuransi.`,
+        };
       }
 
       // Update data asuransi
@@ -125,21 +125,18 @@ export class MasterAsuransiService {
         data: updatedAsuransi,
       };
     } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new HttpException(
-        `Gagal memperbarui data asuransi: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      // Tangani error jika terjadi kesalahan
+      return {
+        success: false,
+        message: `Gagal memperbarui data asuransi: ${error.message}`,
+      };
     }
   }
 
   async deleteAsuransi(
     id: string,
     idFasyankes: string,
-  ): Promise<{ message: string }> {
+  ): Promise<{ message: string; success: boolean }> {
     try {
       const masterAsuransi = await this.prisma.masterAsuransi.findFirst({
         where: { id: Number(id), idFasyankes: idFasyankes },
@@ -159,12 +156,46 @@ export class MasterAsuransiService {
 
       return {
         message: `Data asuransi dengan ID ${id} berhasil dihapus.`,
+        success: true,
       };
     } catch (error) {
-      throw new HttpException(
-        `Gagal menghapus data asuransi: ${error.message}`,
-        HttpStatus.BAD_REQUEST,
-      );
+      // Menangani error dan memberikan respon gagal
+      return {
+        message: `Gagal menghapus data asuransi: ${error.message}`,
+        success: false,
+      };
     }
   }
+
+  async findByIdWithResponse(id: number, idFasyankes: string) {
+    try {
+      const result = await this.prisma.masterAsuransi.findUnique({
+        where: { 
+          id: Number(id),        
+          idFasyankes: idFasyankes,  
+        },
+      });
+  
+      if (!result) {
+        throw new NotFoundException({
+          success: false,
+          message: `Data dengan id ${id} dan idFasyankes ${idFasyankes} tidak ditemukan.`,
+        });
+      }
+  
+      return {
+        success: true,
+        message: 'Data berhasil ditemukan.',
+        data: result,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error fetching data:', error);
+      throw new Error('Terjadi kesalahan pada server.');
+    }
+  }
+  
+
 }

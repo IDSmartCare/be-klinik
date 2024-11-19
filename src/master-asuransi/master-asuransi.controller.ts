@@ -42,8 +42,14 @@ export class MasterAsuransiController {
   async updateAsuransi(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateData: UpdateMasterAsuransiDto,
-  ): Promise<{ success: boolean; message: string; data: MasterAsuransi }> {
-    return this.masterAsuransiService.updateAsuransi(id, updateData);
+  ): Promise<{ success: boolean; message: string; data?: MasterAsuransi }> {
+    const result = await this.masterAsuransiService.updateAsuransi(id, updateData);
+  
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
+    }
+  
+    return result;
   }
 
   @UseGuards(AuthGuard)
@@ -51,7 +57,23 @@ export class MasterAsuransiController {
   async deleteAsuransi(
     @Param('id') id: string,
     @Body('idFasyankes') idFasyankes: string,
-  ): Promise<{ message: string; data?: any }> {
-    return this.masterAsuransiService.deleteAsuransi(id, idFasyankes);
+  ): Promise<{ message: string; success: boolean }> {
+    const result = await this.masterAsuransiService.deleteAsuransi(id, idFasyankes);
+  
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
+    }
+  
+    return result;
   }
+
+  @UseGuards(AuthGuard)
+  @Get('detail/:id')
+  async detailAsuransi(
+    @Param('id') id: number,
+    @Body('idFasyankes') idFasyankes: string,
+  ) {
+    return this.masterAsuransiService.findByIdWithResponse(id, idFasyankes);
+  }
+  
 }

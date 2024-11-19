@@ -1,6 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateJadwalDokterDto } from './dto/create-jadwal-dokter.dto';
 import { PrismaService } from 'src/service/prisma.service';
+import { UpdateDoctorScheduleDto } from './dto/update-jadwal-dokter.dto';
 
 @Injectable()
 export class JadwalDokterService {
@@ -162,88 +167,154 @@ export class JadwalDokterService {
     }
   }
 
-  async createSchedule(createJadwalDokterDto: CreateJadwalDokterDto) {
+  async createSchedule(createJadwalDokterDto: CreateJadwalDokterDto): Promise<{ success: boolean; message: string; data?: any }> {
     const { dokter_id, slot, days, times } = createJadwalDokterDto;
-    return this.prisma.$transaction(async (prisma) => {
-      const availableDays = await prisma.doctorAvailableDays.create({
-        data: {
-          doctorId: dokter_id,
-          sun: days.includes('sun') ? '1' : '0',
-          mon: days.includes('mon') ? '1' : '0',
-          tue: days.includes('tue') ? '1' : '0',
-          wed: days.includes('wed') ? '1' : '0',
-          thu: days.includes('thu') ? '1' : '0',
-          fri: days.includes('fri') ? '1' : '0',
-          sat: days.includes('sat') ? '1' : '0',
-          slot,
-        },
-      });
-
-      const allSlots = [];
-      for (const time of times) {
-        const { from, to } = time;
-        const newFrom = new Date(`1970-01-01T${from}:00`);
-        const newTo = new Date(`1970-01-01T${to}:00`);
-
-        const existingSlots = await prisma.doctorAvailableTimes.findMany({
-          where: {
-            doctorId: dokter_id,
-          },
-        });
-
-        for (const slot of existingSlots) {
-          const existingFrom = new Date(`1970-01-01T${slot.from}:00`);
-          const existingTo = new Date(`1970-01-01T${slot.to}:00`);
-
-          if (
-            (newFrom >= existingFrom && newFrom < existingTo) ||
-            (newTo > existingFrom && newTo <= existingTo) ||
-            (newFrom <= existingFrom && newTo >= existingTo)
-          ) {
-            throw new Error(
-              `Jadwal waktu ${from} - ${to} tumpang tindih dengan jadwal ${slot.from} - ${slot.to}.`,
-            );
-          }
-        }
-
-        const availableTime = await prisma.doctorAvailableTimes.create({
+  
+    try {
+      return await this.prisma.$transaction(async (prisma) => {
+        const availableDays = await prisma.doctorAvailableDays.create({
           data: {
             doctorId: dokter_id,
-            from,
-            to,
+            sun: days.includes('sun') ? '1' : '0',
+            mon: days.includes('mon') ? '1' : '0',
+            tue: days.includes('tue') ? '1' : '0',
+            wed: days.includes('wed') ? '1' : '0',
+            thu: days.includes('thu') ? '1' : '0',
+            fri: days.includes('fri') ? '1' : '0',
+            sat: days.includes('sat') ? '1' : '0',
+            slot,
           },
         });
-
-        let current = new Date(`1970-01-01T${from}:00`);
-        const end = new Date(`1970-01-01T${to}:00`);
-
-        while (current < end) {
-          const slotFrom = current.toTimeString().slice(0, 5);
-          current.setMinutes(current.getMinutes() + slot);
-          const slotTo = current.toTimeString().slice(0, 5);
-
-          if (current <= end) {
-            const slotEntry = {
+  
+        const allSlots = [];
+        for (const time of times) {
+          const { from, to } = time;
+          const newFrom = new Date(`1970-01-01T${from}:00`);
+          const newTo = new Date(`1970-01-01T${to}:00`);
+  
+          const existingSlots = await prisma.doctorAvailableTimes.findMany({
+            where: {
               doctorId: dokter_id,
-              from: slotFrom,
-              to: slotTo,
-              doctor_available_times_id: availableTime.id,
-              is_booked: false,
-            };
-
-            const savedSlot = await prisma.doctorAvailableSlots.create({
-              data: slotEntry,
-            });
-
-            allSlots.push(savedSlot);
+            },
+          });
+  
+          for (const slot of existingSlots) {
+            const existingFrom = new Date(`1970-01-01T${slot.from}:00`);
+            const existingTo = new Date(`1970-01-01T${slot.to}:00`);
+  
+            if (
+              (newFrom >= existingFrom && newFrom < existingTo) ||
+              (newTo > existingFrom && newTo <= existingTo) ||
+              (newFrom <= existingFrom && newTo >= existingTo)
+            ) {
+              throw new Error(
+                `Jadwal waktu ${from} - ${to} tumpang tindih dengan jadwal ${slot.from} - ${slot.to}.`,
+              );
+            }
+          }
+  
+          const availableTime = await prisma.doctorAvailableTimes.create({
+            data: {
+              doctorId: dokter_id,
+              from,
+              to,
+            },
+          });
+  
+          let current = new Date(`1970-01-01T${from}:00`);
+          const end = new Date(`1970-01-01T${to}:00`);
+  
+          while (current < end) {
+            const slotFrom = current.toTimeString().slice(0, 5);
+            current.setMinutes(current.getMinutes() + slot);
+            const slotTo = current.toTimeString().slice(0, 5);
+  
+            if (current <= end) {
+              const slotEntry = {
+                doctorId: dokter_id,
+                from: slotFrom,
+                to: slotTo,
+                doctor_available_times_id: availableTime.id,
+                is_booked: false,
+              };
+  
+              const savedSlot = await prisma.doctorAvailableSlots.create({
+                data: slotEntry,
+              });
+  
+              allSlots.push(savedSlot);
+            }
           }
         }
-      }
-
+  
+        return {
+          success: true,
+          message: 'Berhasil membuat Jadwal Dokter',
+          data: allSlots,
+        };
+      });
+    } catch (error) {
+      // Tangani error dan kembalikan respon gagal
       return {
-        success: true,
-        message: 'Berhasil membuat Jadwal Dokter',
+        success: false,
+        message: `Gagal membuat Jadwal Dokter: ${error.message}`,
       };
-    });
+    }
   }
+  
+
+  // async updateJadwalDokter(id: number, updateData: UpdateDoctorScheduleDto) {
+  //   // Cari jadwal dokter berdasarkan id
+  //   const jadwalDokter = await this.prisma.jadwalDokter.findUnique({
+  //     where: { id },
+  //     include: {
+  //       availableSlots: true, // Untuk menambahkan slots yang terkait
+  //     },
+  //   });
+
+  //   if (!jadwalDokter) {
+  //     throw new NotFoundException(`Jadwal dokter dengan id ${id} tidak ditemukan`);
+  //   }
+
+  //   // Update jadwal dokter
+  //   const updatedJadwalDokter = await this.prisma.jadwalDokter.update({
+  //     where: { id },
+  //     data: {
+  //       hari: updateData.hari,
+  //     },
+  //   });
+
+  //   // Jika ada perubahan pada slot atau jam (from, to), update DoctorAvailableSlots
+  //   if (updateData.from && updateData.to) {
+  //     // Ambil ID slot yang akan diupdate
+  //     const existingSlot = jadwalDokter.availableSlots.find(
+  //       (slot) => slot.doctorId === jadwalDokter.doctorId
+  //     );
+
+  //     if (!existingSlot) {
+  //       throw new NotFoundException('Slot tersedia tidak ditemukan untuk jadwal dokter ini');
+  //     }
+
+  //     const updatedSlotEntry = {
+  //       from: updateData.from,
+  //       to: updateData.to,
+  //     };
+
+  //     // Update slot yang sudah ada
+  //     await this.prisma.doctorAvailableSlots.update({
+  //       where: { id: existingSlot.id },
+  //       data: updatedSlotEntry, // Update data yang diinginkan (from, to)
+  //     });
+  //   }
+
+  //   // Update slot, jika ada perubahan pada slot jumlah
+  //   if (updateData.slot) {
+  //     await this.prisma.doctorAvailableDays.updateMany({
+  //       where: { doctorId: jadwalDokter.doctorId },
+  //       data: { slot: updateData.slot },
+  //     });
+  //   }
+
+  //   return updatedJadwalDokter;
+  // }
 }
