@@ -1,0 +1,19 @@
+model Transaction {
+  id                  Int       @id @default(autoincrement())
+  customerId          Int
+  consultationId      Int
+  uniqueId            String    @unique
+  amount              Int       @db.Integer
+  discount            Int       @default(0) @db.Integer
+  tax                 Int       @default(0) @db.Integer
+  paymentMethod       String    @db.Enum("credit_card", "bank_transfer", "ewallet")
+  status              Int       @default(0)
+  deletedAt           DateTime? @db.Date
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  customer            Customer @relation(fields: [customerId], references: [id])
+  consultation        Consultation @relation(fields: [consultationId], references: [id])
+
+
+}
