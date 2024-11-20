@@ -1,13 +1,12 @@
-import { IsEmail } from "class-validator";
-
+import { IsEmail } from 'class-validator';
 
 export class CreateMasterAsuransiDto {
-    namaAsuransi: string;
-    namaPic: string;
-    alamat: string;
+  namaAsuransi: string;
+  namaPic: string;
+  alamat: string;
 
-    @IsEmail()
-    picEmail: string;
+  @IsEmail()
+  picEmail: string;
 
     picPhone: string;
     from: string;

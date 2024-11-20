@@ -19,21 +19,10 @@ import { DoctorAvailableTimesModule } from './aidiva/doctor_available_times/doct
 import { DoctorAvailableSlotsModule } from './aidiva/doctor_available_slots/doctor_available_slots.module';
 import { DoctorsModule as DoctorsCoreModule } from './doctors/doctors.module';
 import { JadwalDokterModule } from './jadwal-dokter/jadwal-dokter.module';
-<<<<<<< HEAD
 import { MasterAsuransiModule } from './master-asuransi/master-asuransi.module';
 import { DoctorCostsModule } from './aidiva/doctor_costs/doctor_costs.module';
 import { MasterInstructionModule } from './master-instruction/master-instruction.module';
-import { SoapService } from './soap/soap.service';
-import { SoapController } from './soap/soap.controller';
 import { SoapModule } from './soap/soap.module';
-=======
-
-import { MasterAsuransiService } from './master-asuransi/master-asuransi.service';
-import { MasterAsuransiModule } from './master-asuransi/master-asuransi.module';
-import { BukuController } from './buku/buku.controller';
-import { BukuModule } from './buku/buku.module';
-
->>>>>>> c7765069b9d3cd48acfcd2fc959a1d81a6bdb7e6
 
 @Module({
   imports: [
@@ -57,14 +46,9 @@ import { BukuModule } from './buku/buku.module';
     DoctorAvailableSlotsModule,
     JadwalDokterModule,
     MasterAsuransiModule,
-<<<<<<< HEAD
     DoctorCostsModule,
     MasterInstructionModule,
     SoapModule,
-=======
-    BukuModule,
-
->>>>>>> c7765069b9d3cd48acfcd2fc959a1d81a6bdb7e6
   ],
   controllers: [AppController],
   providers: [AppService],
