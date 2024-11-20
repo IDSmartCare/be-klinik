@@ -1,6 +1,8 @@
 /* eslint-disable prettier/prettier */
 export class CreateMasterPlanDto {
-    idFasyankes: number;
-    text: string;
-    createdBy: Date;
+  idFasyankes: string;
+  questionType: string;
+  category: string;
+  question: string;
+  createdBy?: string;
 }

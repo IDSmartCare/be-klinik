@@ -42,8 +42,8 @@ model Pasien {
   rwDomisili          Int
   kodePosDomisili     String?              @db.VarChar(10)
   isAktif             Boolean?             @default(true)
-  createdAt           DateTime             @default(now()) @db.Timestamptz
-  updatedAt           DateTime             @updatedAt @db.Timestamptz
-  episodePasien       EpisodePendaftaran[]
+  createdAt           DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime             @updatedAt @db.Timestamptz(6)
   idFasyankes         String?              @db.VarChar(30)
+  episodePasien       EpisodePendaftaran[]
 }

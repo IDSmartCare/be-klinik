@@ -1,19 +1,17 @@
 model Profile {
-  id            Int            @id @default(autoincrement())
-  namaLengkap   String         @db.VarChar(200)
-  profesi       String         @db.VarChar(50)
-  unit          String?        @db.VarChar(50)
-  kodeDokter    String?        @db.VarChar(30)
-  idFasyankes   String?        @db.VarChar(30)
-  str           String?        @db.VarChar(100)
-  sip           String?        @db.VarChar(100)
-  isAktif       Boolean?       @default(true)
-  createdAt     DateTime       @default(now()) @db.Timestamptz
-  updatedAt     DateTime       @updatedAt @db.Timestamptz
-  // jadwalPraktek JadwalDokter[]
-  poliklinik    PoliKlinik?    @relation(fields: [poliKlinikId], references: [id])
-  poliKlinikId  Int?
-  cppt          SOAP[]
-  
-  doctors       Doctors[]     
+  id           Int         @id @default(autoincrement())
+  namaLengkap  String      @db.VarChar(200)
+  profesi      String      @db.VarChar(50)
+  unit         String?     @db.VarChar(50)
+  kodeDokter   String?     @db.VarChar(30)
+  idFasyankes  String?     @db.VarChar(30)
+  str          String?     @db.VarChar(100)
+  sip          String?     @db.VarChar(100)
+  isAktif      Boolean?    @default(true)
+  createdAt    DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime    @updatedAt @db.Timestamptz(6)
+  poliKlinikId Int?
+  doctors      Doctors[]
+  poliklinik   PoliKlinik? @relation(fields: [poliKlinikId], references: [id])
+  cppt         SOAP[]
 }

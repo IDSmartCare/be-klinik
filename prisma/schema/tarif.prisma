@@ -6,6 +6,6 @@ model MasterTarif {
   penjamin      String   @db.VarChar(100)
   idFasyankes   String?  @db.VarChar(50)
   isAktif       Boolean? @default(true)
-  createdAt     DateTime @default(now()) @db.Timestamptz
-  updatedAt     DateTime @updatedAt @db.Timestamptz
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(6)
 }

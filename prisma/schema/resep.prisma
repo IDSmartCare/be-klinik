@@ -11,8 +11,8 @@ model ResepDokter {
   hargaJual   String?  @db.VarChar(40)
   stok        Int?
   catatan     String?
-  SOAP        SOAP?    @relation(fields: [sOAPId], references: [id])
   sOAPId      Int?
-  createdAt   DateTime @default(now()) @db.Timestamptz
-  updatedAt   DateTime @updatedAt @db.Timestamptz
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  SOAP        SOAP?    @relation(fields: [sOAPId], references: [id])
 }
