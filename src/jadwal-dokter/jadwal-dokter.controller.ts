@@ -5,8 +5,10 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { JadwalDokterService } from './jadwal-dokter.service';
@@ -14,6 +16,7 @@ import { CreateJadwalDokterDto } from './dto/create-jadwal-dokter.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UpdateJadwalDto } from 'src/setting/dto/update-setting.dto';
 import { JadwalDokter } from '@prisma/client';
+import { UpdateJadwalDokterDto } from './dto/update-jadwal-dokter.dto';
 
 @Controller('dokter')
 export class JadwalDokterController {
@@ -50,18 +53,22 @@ export class JadwalDokterController {
     return result;
   }
 
-  // @UseGuards(AuthGuard)
-  // @Patch('/update/:id')
-  // async updateJadwal(
-  //   @Param('id') id: string,
-  //   @Body() updateJadwalDto: UpdateJadwalDto,
-  // ): Promise <{ success: boolean; message: string; data?: JadwalDokter }> {
-  //   const result = await this.jadwalDocterService.updateJadwal(id, updateJadwalDto);
+  @UseGuards(AuthGuard)
+  @Put('/updatejadwal')
+  async updateSchedule(@Body() updateJadwalDokterDto: UpdateJadwalDokterDto) {
+    return await this.jadwalDocterService.updateSchedule(updateJadwalDokterDto);
+  }
 
-  //   if (!result.success) {
-  //     throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
-  //   }
-
-  //   return result;
-  // }
+  @UseGuards(AuthGuard)
+  @Get('/detailjadwal/:doctorId/:idFasyankes')
+  async getDetailSchedule(
+    @Param('doctorId', ParseIntPipe) doctorId: number,
+    @Param('idFasyankes') idFasyankes: string,
+  ) {
+    const result = await this.jadwalDocterService.detailSchedule(
+      doctorId,
+      idFasyankes,
+    );
+    return result;
+  }
 }
