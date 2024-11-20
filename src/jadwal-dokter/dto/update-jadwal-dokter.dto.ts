@@ -1,9 +1,3 @@
-export class UpdateDoctorScheduleDto {
-  hari?: string;
-
-  from?: string;
-
-  to?: string;
-
-  slot?: number;
+export class UpdateJadwalDto {
+    
 }

@@ -1,9 +1,8 @@
 /* eslint-disable prettier/prettier */
-import { Injectable,  } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { MasterSubjective, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateMasterSubjectiveDto } from './dto/create-master-subjective.dto';
-
 
 @Injectable()
 export class MasterSubjectiveService {
@@ -27,21 +26,20 @@ export class MasterSubjectiveService {
     });
   }
 
- 
-
   async updateSubjective(params: {
-    where: Prisma.MasterSubjectiveWhereUniqueInput; 
-    data: Prisma.MasterSubjectiveUpdateInput; 
+    where: Prisma.MasterSubjectiveWhereUniqueInput;
+    data: Prisma.MasterSubjectiveUpdateInput;
   }): Promise<MasterSubjective> {
-    const { where, data } = params; 
+    const { where, data } = params;
     return this.prisma.masterSubjective.update({
-        where, 
-        data, 
+      where,
+      data,
     });
-  }  
+  }
 
-
-  async deleteUser(where: Prisma.MasterSubjectiveWhereUniqueInput): Promise<MasterSubjective> {
+  async deleteUser(
+    where: Prisma.MasterSubjectiveWhereUniqueInput,
+  ): Promise<MasterSubjective> {
     return this.prisma.masterSubjective.delete({
       where,
     });
