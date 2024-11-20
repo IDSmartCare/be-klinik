@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -10,6 +12,8 @@ import {
 import { JadwalDokterService } from './jadwal-dokter.service';
 import { CreateJadwalDokterDto } from './dto/create-jadwal-dokter.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { UpdateJadwalDto } from 'src/setting/dto/update-setting.dto';
+import { JadwalDokter } from '@prisma/client';
 
 @Controller('dokter')
 export class JadwalDokterController {
@@ -32,7 +36,32 @@ export class JadwalDokterController {
 
   @UseGuards(AuthGuard)
   @Post('/createjadwal')
-  async create(@Body() createJadwalDokterDto: CreateJadwalDokterDto) {
-    return this.jadwalDocterService.createSchedule(createJadwalDokterDto);
+  async create(
+    @Body() createJadwalDokterDto: CreateJadwalDokterDto,
+  ): Promise<{ success: boolean; message: string; data?: any }> {
+    const result = await this.jadwalDocterService.createSchedule(
+      createJadwalDokterDto,
+    );
+
+    if (!result.success) {
+      throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
+    }
+
+    return result;
   }
+
+  // @UseGuards(AuthGuard)
+  // @Patch('/update/:id')
+  // async updateJadwal(
+  //   @Param('id') id: string,
+  //   @Body() updateJadwalDto: UpdateJadwalDto,
+  // ): Promise <{ success: boolean; message: string; data?: JadwalDokter }> {
+  //   const result = await this.jadwalDocterService.updateJadwal(id, updateJadwalDto);
+
+  //   if (!result.success) {
+  //     throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
+  //   }
+
+  //   return result;
+  // }
 }

@@ -11,14 +11,14 @@ model SOAP {
   namaDiagnosa     String?
   isVerifDokter    Boolean?      @default(false)
   isBillingFarmasi Boolean?      @default(false)
-  jamVerifDokter   DateTime?     @db.Timestamptz
+  jamVerifDokter   DateTime?     @db.Timestamptz(6)
   isAktif          Boolean?      @default(true)
-  createdAt        DateTime      @default(now()) @db.Timestamptz
-  updatedAt        DateTime      @updatedAt @db.Timestamptz
-  pendaftaran      Pendaftaran?  @relation(fields: [pendaftaranId], references: [id])
+  createdAt        DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime      @updatedAt @db.Timestamptz(6)
   pendaftaranId    Int?
   idFasyankes      String?       @db.VarChar(30)
-  inputBy          Profile?      @relation(fields: [profileId], references: [id])
   profileId        Int?
   resep            ResepDokter[]
+  pendaftaran      Pendaftaran?  @relation(fields: [pendaftaranId], references: [id])
+  inputBy          Profile?      @relation(fields: [profileId], references: [id])
 }

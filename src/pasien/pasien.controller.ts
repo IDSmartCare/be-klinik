@@ -145,7 +145,6 @@ export class PasienController {
       userPackage: string;
     },
   ): Promise<Pendaftaran> {
-    console.log(data);
     try {
       return await this.pasienService.createRegis(
         data.pasienData,
@@ -252,6 +251,7 @@ export class PasienController {
             penjamin: true,
             id: true,
             namaAsuransi: true,
+            nomorAsuransi: true,
             createdAt: true,
             riwayat: {
               include: {

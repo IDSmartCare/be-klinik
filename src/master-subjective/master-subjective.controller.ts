@@ -23,9 +23,9 @@ export class MasterSubjectiveController {
   ) {}
 
   @UseGuards(AuthGuard)
-  @Get()
-  async findAll() {
-    return this.MasterSubjectiveService.findAll();
+  @Get(':idFasyankes')
+  async getSubjective(@Param('idFasyankes') idFasyankes: string) {
+    return this.MasterSubjectiveService.getSubjective(idFasyankes);
   }
 
   @UseGuards(AuthGuard)
@@ -49,15 +49,13 @@ export class MasterSubjectiveController {
     @Param('id') id: number,
     @Body() UpdateMasterSubjectiveDto: UpdateMasterSubjectiveDto,
   ): Promise<MasterSubjective> {
-    
     return this.MasterSubjectiveService.updateSubjective({
-        where: { 
-            id: Number(id), 
-        },
-        data: UpdateMasterSubjectiveDto, 
-      });
+      where: {
+        id: Number(id),
+      },
+      data: UpdateMasterSubjectiveDto,
+    });
   }
-  
 
   @UseGuards(AuthGuard)
   @Delete('/delete/:id')

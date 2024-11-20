@@ -1,4 +1,4 @@
-model MasterObjective {
+model MasterInstruction {
   id            Int      @id @default(autoincrement())
   idFasyankes   String
   category      String

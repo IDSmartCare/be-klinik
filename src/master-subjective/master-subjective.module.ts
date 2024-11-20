@@ -5,8 +5,8 @@ import { MasterSubjectiveService } from './master-subjective.service';
 import { PrismaService } from 'src/service/prisma.service';
 
 @Module({
-    controllers: [MasterSubjectiveController],
-    providers: [MasterSubjectiveService, PrismaService],
-    imports: []
+  controllers: [MasterSubjectiveController],
+  providers: [MasterSubjectiveService, PrismaService],
+  imports: [],
 })
 export class MasterSubjectiveModule {}
