@@ -23,7 +23,7 @@ export class MasterSubjectiveController {
   ) {}
 
   @UseGuards(AuthGuard)
-  @Get(':idFasyankes')
+  @Get('/:idFasyankes')
   async getSubjective(@Param('idFasyankes') idFasyankes: string) {
     return this.MasterSubjectiveService.getSubjective(idFasyankes);
   }
@@ -44,9 +44,16 @@ export class MasterSubjectiveController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('/detail/:id')
+  async getSubjectiveDetail(@Param('id') id: string) {
+    const result = await this.MasterSubjectiveService.getSubjectiveDetail(+id);
+    return { success: true, data: result };
+  }
+
+  @UseGuards(AuthGuard)
   @Patch('/update/:id')
   async updateSubjective(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() UpdateMasterSubjectiveDto: UpdateMasterSubjectiveDto,
   ): Promise<MasterSubjective> {
     return this.MasterSubjectiveService.updateSubjective({

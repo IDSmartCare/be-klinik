@@ -23,6 +23,7 @@ import { MasterAsuransiModule } from './master-asuransi/master-asuransi.module';
 import { DoctorCostsModule } from './aidiva/doctor_costs/doctor_costs.module';
 import { MasterInstructionModule } from './master-instruction/master-instruction.module';
 import { SoapModule } from './soap/soap.module';
+import { SubjectiveAnswerModule } from './subjective-answer/subjective-answer.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { SoapModule } from './soap/soap.module';
     DoctorCostsModule,
     MasterInstructionModule,
     SoapModule,
+    SubjectiveAnswerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
