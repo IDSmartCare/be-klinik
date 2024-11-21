@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { MasterSubjective, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateMasterSubjectiveDto } from './dto/create-master-subjective.dto';
@@ -25,11 +25,28 @@ export class MasterSubjectiveService {
     }
   }
 
+  async getSubjectiveDetail(id: number): Promise<MasterSubjective> {
+    try {
+      const subjective = await this.prisma.masterSubjective.findUnique({
+        where: { id },
+        include: { SubjectiveAnswer: true },
+      });
+
+      if (!subjective) {
+        throw new NotFoundException(`Subjective with ID ${id} not found`);
+      }
+
+      return subjective;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
   // async findAll(): Promise<MasterSubjective[]> {
   //   return this.prisma.masterSubjective.findMany();
   // }
 
-  // Buat entri baru
   async createSubjective(
     data: CreateMasterSubjectiveDto,
   ): Promise<MasterSubjective> {

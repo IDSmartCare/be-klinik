@@ -122,6 +122,7 @@ export class JadwalDokterService {
         select: {
           id: true,
           name: true,
+          unit: true,
           availableDays: {
             where: {
               deletedAt: null,
@@ -151,6 +152,7 @@ export class JadwalDokterService {
         return {
           id: doctor.id,
           name: doctor.name,
+          unit: doctor.unit,
           hari: {
             id: availableDay?.id || null,
             name: availableDay ? hariIndonesia : null,
