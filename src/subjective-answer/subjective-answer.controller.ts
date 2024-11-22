@@ -30,12 +30,15 @@ export class SubjectiveAnswerController {
   @UseGuards(AuthGuard)
   @Post('/create')
   async create(@Body() createSubjectiveAnswerDto: CreateSubjectiveAnswerDto) {
-    // Call the service to create the new answer with validated data
-    const result = await this.subjectiveAnswerService.create(
-      createSubjectiveAnswerDto,
-    );
-    return { success: true, data: result };
-  }
+    try {
+      const result = await this.subjectiveAnswerService.create(
+        createSubjectiveAnswerDto,
+      );
+      return { success: true, data: result };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  } 
 
   @UseGuards(AuthGuard)
   @Get('/:id')
