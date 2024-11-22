@@ -39,20 +39,19 @@ export class MasterAsuransiController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/update/:id')
+  @Patch('update/:id')
   async updateAsuransi(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateData: UpdateMasterAsuransiDto,
   ): Promise<{ success: boolean; message: string; data: MasterAsuransi }> {
     return this.masterAsuransiService.updateAsuransi(
-      Number(id),
-      updateData.idFasyankes,
+      id,
       updateData,
     ) as Promise<{ success: boolean; message: string; data: MasterAsuransi }>;
   }
 
   @UseGuards(AuthGuard)
-  @Delete('/delete/:id')
+  @Delete('delete/:id')
   async deleteAsuransi(
     @Param('id') id: string,
     @Body('idFasyankes') idFasyankes: string,
@@ -60,15 +59,14 @@ export class MasterAsuransiController {
     return this.masterAsuransiService.deleteAsuransi(id, idFasyankes);
   }
 
-  @UseGuards(AuthGuard)
-  @Get('/:id/:idFasyankes')
+  @Get(':id/:idFasyankes')
   async findByIdWithResponse(
-    @Param('id') id: string,
+    @Param('id') id: number,
     @Param('idFasyankes') idFasyankes: string,
   ) {
     try {
       const result = await this.masterAsuransiService.findByIdWithResponse(
-        Number(id),
+        id,
         idFasyankes,
       );
       return result;

@@ -24,6 +24,15 @@ import { DoctorCostsModule } from './aidiva/doctor_costs/doctor_costs.module';
 import { MasterInstructionModule } from './master-instruction/master-instruction.module';
 import { SoapModule } from './soap/soap.module';
 import { SubjectiveAnswerModule } from './subjective-answer/subjective-answer.module';
+import { ObjectiveAnswerController } from './objective-answer/objective-answer.controller';
+import { ObjectiveAnswerService } from './objective-answer/objective-answer.service';
+import { ObjectiveAnswerModule } from './objective-answer/objective-answer.module';
+import { AssessmentAnswerController } from './assessment-answer/assessment-answer.controller';
+import { AssessmentAnswerService } from './assessment-answer/assessment-answer.service';
+import { AssessmentAnswerModule } from './assessment-answer/assessment-answer.module';
+import { PlanAnswerController } from './plan-answer/plan-answer.controller';
+import { PlanAnswerService } from './plan-answer/plan-answer.service';
+import { PlanAnswerModule } from './plan-answer/plan-answer.module';
 
 @Module({
   imports: [
@@ -51,8 +60,11 @@ import { SubjectiveAnswerModule } from './subjective-answer/subjective-answer.mo
     MasterInstructionModule,
     SoapModule,
     SubjectiveAnswerModule,
+    ObjectiveAnswerModule,
+    AssessmentAnswerModule,
+    PlanAnswerModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, ObjectiveAnswerController, AssessmentAnswerController, PlanAnswerController],
+  providers: [AppService, ObjectiveAnswerService, AssessmentAnswerService, PlanAnswerService],
 })
 export class AppModule {}
