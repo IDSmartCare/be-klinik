@@ -68,7 +68,7 @@ import { InstructionAnswerModule } from './instruction-answer/instruction-answer
     PlanAnswerModule,
     InstructionAnswerModule,
   ],
-  controllers: [AppController, InstructionAnswerController],
-  providers: [AppService, InstructionAnswerService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
