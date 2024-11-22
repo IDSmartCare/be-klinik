@@ -50,18 +50,5 @@ export class JadwalDokterController {
     return result;
   }
 
-  // @UseGuards(AuthGuard)
-  // @Patch('/update/:id')
-  // async updateJadwal(
-  //   @Param('id') id: string,
-  //   @Body() updateJadwalDto: UpdateJadwalDto,
-  // ): Promise <{ success: boolean; message: string; data?: JadwalDokter }> {
-  //   const result = await this.jadwalDocterService.updateJadwal(id, updateJadwalDto);
-
-  //   if (!result.success) {
-  //     throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
-  //   }
-
-  //   return result;
-  // }
+  
 }

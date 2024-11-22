@@ -1,13 +1,11 @@
 model Chats {
   id            Int         @id @default(autoincrement())
   customerId    Int
-  customer      Customer    @relation(fields: [customerId], references: [id])
+  // customer      Customer    @relation(fields: [customerId], references: [id])
   conversations Json?
   deletedAt     DateTime?   @db.Date
-  createdAt     DateTime    default(now())
+  createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-
-
 }
 
 model Channels {
@@ -15,7 +13,6 @@ model Channels {
   uniqueCode  String    @unique
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-
 }
 
 
@@ -26,8 +23,8 @@ model ChannelUser {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  channel      Channels @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // channel      Channels @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  // user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model LiveChat {
@@ -40,7 +37,7 @@ model LiveChat {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ // user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model ChannelCustomer {
@@ -51,8 +48,8 @@ model ChannelCustomer {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  channel       Channels  @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  // channel       Channels  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  //customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 }
 
 
