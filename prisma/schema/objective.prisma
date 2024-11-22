@@ -7,4 +7,6 @@ model MasterObjective {
   createdBy    String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  ObjectiveAnswer ObjectiveAnswer[]
 }

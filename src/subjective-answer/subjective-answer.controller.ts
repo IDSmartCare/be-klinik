@@ -14,6 +14,7 @@ import { SubjectiveAnswerService } from './subjective-answer.service';
 import { Prisma } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateSubjectiveAnswerDto } from './dto/create-subjective-answer.dto';
+import { UpdateSubjectiveAnswerDto } from './dto/update-subjective-answer.dto';
 
 @Controller('subjective-answer')
 export class SubjectiveAnswerController {
@@ -30,12 +31,15 @@ export class SubjectiveAnswerController {
   @UseGuards(AuthGuard)
   @Post('/create')
   async create(@Body() createSubjectiveAnswerDto: CreateSubjectiveAnswerDto) {
-    // Call the service to create the new answer with validated data
-    const result = await this.subjectiveAnswerService.create(
-      createSubjectiveAnswerDto,
-    );
-    return { success: true, data: result };
-  }
+    try {
+      const result = await this.subjectiveAnswerService.create(
+        createSubjectiveAnswerDto,
+      );
+      return { success: true, data: result };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  } 
 
   @UseGuards(AuthGuard)
   @Get('/:id')
@@ -51,12 +55,19 @@ export class SubjectiveAnswerController {
   @Patch('/:id')
   async update(
     @Param('id') id: string,
-    @Body() data: Prisma.SubjectiveAnswerUpdateInput,
+    @Body() data: UpdateSubjectiveAnswerDto,
   ) {
     try {
-      return await this.subjectiveAnswerService.update(+id, data);
+      const updatedAnswer = await this.subjectiveAnswerService.update(
+        +id,
+        data,
+      );
+      return { message: 'Update successful', data: updatedAnswer };
     } catch (error) {
-      throw new HttpException('Update failed', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        error.message || 'Update failed',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 

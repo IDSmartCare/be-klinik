@@ -67,6 +67,6 @@ export class MasterSubjectiveController {
   @UseGuards(AuthGuard)
   @Delete('/delete/:id')
   async deleteUser(@Param('id') id: number): Promise<MasterSubjective> {
-    return this.MasterSubjectiveService.deleteUser({ id: Number(id) }); // Memanggil metode deleteUser dengan parameter
+    return this.MasterSubjectiveService.deleteUser({ id: Number(id) });
   }
 }
