@@ -39,7 +39,7 @@ export class SubjectiveAnswerController {
     } catch (error) {
       return { success: false, message: error.message };
     }
-  } 
+  }
 
   @UseGuards(AuthGuard)
   @Get('/:id')
