@@ -48,7 +48,7 @@ export class MasterInstructionService {
     try {
       const instruction = await this.prisma.masterInstruction.findUnique({
         where: { id },
-        // include: { keyword: true },
+        include: { keyword: true },
       });
 
       if (!instruction) {
