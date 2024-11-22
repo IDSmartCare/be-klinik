@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { MasterObjective, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateMasterObjectiveDto } from './dto/create-master-objective.dto';
@@ -39,6 +39,24 @@ export class MasterObjectiveService {
         createdBy: data.createdBy,
       },
     });
+  }
+
+  async getObjectiveDetail(id: number): Promise<MasterObjective> {
+    try {
+      const objective = await this.prisma.masterObjective.findUnique({
+        where: { id },
+        include: { keyword: true },
+      });
+
+      if (!objective) {
+        throw new NotFoundException(`Objective with ID ${id} not found`);
+      }
+
+      return objective;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
   async updateObjective(params: {

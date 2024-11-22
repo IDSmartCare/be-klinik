@@ -8,5 +8,5 @@ model MasterPlan {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  PlanAnswer PlanAnswer[]
+  keyword PlanAnswer[]
 }

@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
-import { MasterSubjective, Prisma } from '@prisma/client';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { MasterInstruction, MasterSubjective, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateMasterInstructionDto } from './dto/create-master-instruction.dto';
 
@@ -42,6 +42,24 @@ export class MasterInstructionService {
         createdBy: data.createdBy,
       },
     });
+  }
+
+  async getInstructionDetail(id: number): Promise<MasterInstruction> {
+    try {
+      const instruction = await this.prisma.masterInstruction.findUnique({
+        where: { id },
+        // include: { keyword: true },
+      });
+
+      if (!instruction) {
+        throw new NotFoundException(`Instruction with ID ${id} not found`);
+      }
+
+      return instruction;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
   //   async updateSubjective(params: {

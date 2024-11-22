@@ -4,6 +4,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Patch,
   Post,
@@ -33,6 +34,13 @@ export class MasterPlanController {
       console.error(error);
       throw new BadRequestException(error.message || 'Failed to Create');
     }
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/detail/:id')
+  async getSubjectiveDetail(@Param('id') id: string) {
+    const result = await this.MasterPlanService.getPlanDetail(+id);
+    return { success: true, data: result };
   }
 
   @UseGuards(AuthGuard)

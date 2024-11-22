@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { MasterPlan, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateMasterPlanDto } from './dto/create-master-plan.dto';
@@ -39,6 +39,24 @@ export class MasterPlanService {
         createdBy: data.createdBy,
       },
     });
+  }
+
+  async getPlanDetail(id: number): Promise<MasterPlan> {
+    try {
+      const plan = await this.prisma.masterPlan.findUnique({
+        where: { id },
+        include: { keyword: true },
+      });
+
+      if (!plan) {
+        throw new NotFoundException(`Plan with ID ${id} not found`);
+      }
+
+      return plan;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
   async updatePlan(params: {

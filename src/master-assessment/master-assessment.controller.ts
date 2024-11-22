@@ -44,6 +44,13 @@ export class MasterAssessmentController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('/detail/:id')
+  async getSubjectiveDetail(@Param('id') id: string) {
+    const result = await this.masterAssessmentService.getAssessmentDetail(+id);
+    return { success: true, data: result };
+  }
+
+  @UseGuards(AuthGuard)
   @Patch('/update/:id')
   async updateAssessment(
     @Param('id') id: number,

@@ -6,52 +6,51 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PlanAnswerService {
-    constructor (private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
-    async create(data: CreatePlanAnswerDto) {
-        const { questionId, answer, createdBy } = data;
+  async create(data: CreatePlanAnswerDto) {
+    const { questionId, answer, createdBy } = data;
 
-        const existingQuestion = await this.prisma.masterPlan.findUnique({
-            where: { id: questionId },
-        });
+    const existingQuestion = await this.prisma.masterPlan.findUnique({
+      where: { id: questionId },
+      include: { keyword: true },
+    });
 
-        if (!existingQuestion) {
-            throw new Error(
-                `MasterPlan record with ID ${questionId} not found`,
-            );
-        }
-
-        return this.prisma.planAnswer.create({
-            data: {
-                question: {
-                    connect: { id: questionId },
-                },
-                answer,
-                createdBy,
-            },
-        });
+    if (!existingQuestion) {
+      throw new Error(`MasterPlan record with ID ${questionId} not found`);
     }
 
-    async findAll() {
-        return this.prisma.planAnswer.findMany();
-    }
+    return this.prisma.planAnswer.create({
+      data: {
+        question: {
+          connect: { id: questionId },
+        },
+        answer,
+        createdBy,
+      },
+    });
+  }
 
-    async findOne(id: number) {
-        return this.prisma.planAnswer.findUnique({
-            where: { id },
-        });
-    }
+  async findAll() {
+    return this.prisma.planAnswer.findMany();
+  }
 
-    async update(id: number, data: Prisma.PlanAnswerUpdateInput) {
-        return this.prisma.planAnswer.update({
-            where: { id},
-            data,
-        })
-    }
+  async findOne(id: number) {
+    return this.prisma.planAnswer.findUnique({
+      where: { id },
+    });
+  }
 
-    async delete(id: number) {
-        return this.prisma.planAnswer.delete({
-            where: { id },
-        });
-    }
+  async update(id: number, data: Prisma.PlanAnswerUpdateInput) {
+    return this.prisma.planAnswer.update({
+      where: { id },
+      data,
+    });
+  }
+
+  async delete(id: number) {
+    return this.prisma.planAnswer.delete({
+      where: { id },
+    });
+  }
 }
