@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { MasterAssessment, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateMasterAssessmentDto } from './dto/create-master-assessment.dto';
@@ -41,6 +41,24 @@ export class MasterAssessmentService {
         createdBy: data.createdBy,
       },
     });
+  }
+
+  async getAssessmentDetail(id: number): Promise<MasterAssessment> {
+    try {
+      const assessment = await this.prisma.masterAssessment.findUnique({
+        where: { id },
+        include: { keyword: true },
+      });
+
+      if (!assessment) {
+        throw new NotFoundException(`Assessment with ID ${id} not found`);
+      }
+
+      return assessment;
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
   async updateAssessment(params: {

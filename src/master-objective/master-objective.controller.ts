@@ -42,6 +42,13 @@ export class MasterObjectiveController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('/detail/:id')
+  async getSubjectiveDetail(@Param('id') id: string) {
+    const result = await this.MasterObjectiveService.getObjectiveDetail(+id);
+    return { success: true, data: result };
+  }
+
+  @UseGuards(AuthGuard)
   @Patch('/update/:id')
   async updateObjective(
     @Param('id') id: number,

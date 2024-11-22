@@ -33,6 +33,9 @@ import { AssessmentAnswerModule } from './assessment-answer/assessment-answer.mo
 import { PlanAnswerController } from './plan-answer/plan-answer.controller';
 import { PlanAnswerService } from './plan-answer/plan-answer.service';
 import { PlanAnswerModule } from './plan-answer/plan-answer.module';
+import { InstructionAnswerController } from './instruction-answer/instruction-answer.controller';
+import { InstructionAnswerService } from './instruction-answer/instruction-answer.service';
+import { InstructionAnswerModule } from './instruction-answer/instruction-answer.module';
 
 @Module({
   imports: [
@@ -63,6 +66,7 @@ import { PlanAnswerModule } from './plan-answer/plan-answer.module';
     ObjectiveAnswerModule,
     AssessmentAnswerModule,
     PlanAnswerModule,
+    InstructionAnswerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

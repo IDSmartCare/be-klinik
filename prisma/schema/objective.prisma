@@ -8,5 +8,5 @@ model MasterObjective {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  ObjectiveAnswer ObjectiveAnswer[]
+  keyword ObjectiveAnswer[]
 }

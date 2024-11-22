@@ -8,5 +8,5 @@ model MasterSubjective {
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
-  SubjectiveAnswer SubjectiveAnswer[]
+  keyword SubjectiveAnswer[]
 }

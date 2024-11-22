@@ -40,6 +40,13 @@ export class MasterInstructionController {
     }
   }
 
+  @UseGuards(AuthGuard)
+  @Get('/detail/:id')
+  async getSubjectiveDetail(@Param('id') id: string) {
+    const result = await this.MasterInstructionService.getInstructionDetail(+id);
+    return { success: true, data: result };
+  }
+
 //   @UseGuards(AuthGuard)
 //   @Patch('/update/:id')
 //   async updateObjective(
