@@ -64,7 +64,7 @@ import { PlanAnswerModule } from './plan-answer/plan-answer.module';
     AssessmentAnswerModule,
     PlanAnswerModule,
   ],
-  controllers: [AppController, ObjectiveAnswerController, AssessmentAnswerController, PlanAnswerController],
-  providers: [AppService, ObjectiveAnswerService, AssessmentAnswerService, PlanAnswerService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
