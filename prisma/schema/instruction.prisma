@@ -8,5 +8,5 @@ model MasterInstruction {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  InstructionAnswer InstructionAnswer[]
+  keyword InstructionAnswer[]
 }

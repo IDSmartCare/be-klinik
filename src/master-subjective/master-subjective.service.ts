@@ -29,7 +29,7 @@ export class MasterSubjectiveService {
     try {
       const subjective = await this.prisma.masterSubjective.findUnique({
         where: { id },
-        include: { SubjectiveAnswer: true },
+        include: { keyword: true },
       });
 
       if (!subjective) {

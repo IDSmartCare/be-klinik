@@ -8,5 +8,5 @@ model MasterAssessment {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  AssessmentAnswer AssessmentAnswer[]
+  keyword AssessmentAnswer[]
 }
