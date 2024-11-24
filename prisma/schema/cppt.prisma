@@ -2,11 +2,6 @@ model SOAP {
   id               Int           @id @default(autoincrement())
   profesi          String        @db.VarChar(50)
   isDokter         Boolean?      @default(false)
-  subjective       String
-  objective        String
-  assesment        String
-  plan             String
-  instruksi        String
   kodeDiagnosa     String?
   namaDiagnosa     String?
   isVerifDokter    Boolean?      @default(false)
@@ -18,7 +13,20 @@ model SOAP {
   pendaftaranId    Int?
   idFasyankes      String?       @db.VarChar(30)
   profileId        Int?
-  resep            ResepDokter[]
+  resep            ResepDokter[] 
   pendaftaran      Pendaftaran?  @relation(fields: [pendaftaranId], references: [id])
   inputBy          Profile?      @relation(fields: [profileId], references: [id])
+  detailSOAP       DetailSOAP?   
+}
+
+model DetailSOAP {
+  id                  Int           @id @default(autoincrement())
+  subjective          Json 
+  objective           Json
+  assessment          Json
+  plan                Json
+  soapId              Int           @unique    
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  soap                SOAP          @relation(fields: [soapId], references: [id])
 }
