@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { Body, Injectable } from '@nestjs/common';
 import {
   Prisma,
   Pasien,
@@ -44,6 +44,26 @@ export class PasienService {
     return dayName;
   }
 
+  async generateQueueNumber(idFasyankes: string): Promise<string> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const countToday = await this.prisma.antrianPasien.count({
+      where: {
+        idFasyankes: idFasyankes,
+        createdAt: {
+          gte: today,
+          lt: tomorrow,
+        },
+      },
+    });
+    const nextQueueNumber = countToday + 1;
+    const paddedNumber = nextQueueNumber.toString().padStart(4, '0');
+    return `P-${paddedNumber}`;
+  }
+
   async createRegis(
     data: RegisPasienDto,
     userRole?: string,
@@ -70,6 +90,7 @@ export class PasienService {
     }
 
     const transaksi = await this.prisma.$transaction(async (tx) => {
+      const nomorAntrian = await this.generateQueueNumber(data.idFasyankes);
       const tarifAdm = await tx.masterTarif.findFirst({
         where: {
           idFasyankes: data.idFasyankes,
@@ -106,6 +127,16 @@ export class PasienService {
             namaAsuransi: data.namaAsuransi,
             nomorAsuransi: data.nomorAsuransi,
             idFasyankes: data.idFasyankes,
+          },
+        });
+        await tx.antrianPasien.create({
+          data: {
+            nomor: nomorAntrian,
+            tanggal: new Date(),
+            jumlahPanggil: 0,
+            status: 'Belum Dipanggil',
+            idFasyankes: data.idFasyankes,
+            pendaftaranId: registrasi.id,
           },
         });
         const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
@@ -157,6 +188,16 @@ export class PasienService {
               idFasyankes: data.idFasyankes,
             },
           });
+          await tx.antrianPasien.create({
+            data: {
+              nomor: nomorAntrian,
+              tanggal: new Date(),
+              jumlahPanggil: 0,
+              status: 'Belum Dipanggil',
+              idFasyankes: data.idFasyankes,
+              pendaftaranId: registrasi.id,
+            },
+          });
           const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
             data: {
               pendaftaranId: registrasi.id,
@@ -199,6 +240,16 @@ export class PasienService {
               namaAsuransi: data.namaAsuransi,
               nomorAsuransi: data.nomorAsuransi,
               idFasyankes: data.idFasyankes,
+            },
+          });
+          await tx.antrianPasien.create({
+            data: {
+              nomor: nomorAntrian,
+              tanggal: new Date(),
+              jumlahPanggil: 0,
+              status: 'Belum Dipanggil',
+              idFasyankes: data.idFasyankes,
+              pendaftaranId: registrasi.id,
             },
           });
 
@@ -380,5 +431,32 @@ export class PasienService {
       data,
       where,
     });
+  }
+
+  async checkPasien(rm?: string, nik?: string): Promise<any> {
+    if (!rm && !nik) {
+      return {
+        success: false,
+        message:
+          'Harap masukkan Nomor Rekam Medis atau Nomor Induk Kependudukan.',
+      };
+    }
+
+    const pasien = await this.prisma.pasien.findFirst({
+      where: rm ? { noRm: rm } : { nik: nik },
+    });
+
+    if (!pasien) {
+      return {
+        success: false,
+        message: `${rm ? 'Nomor Rekam Medis' : 'Nomor Induk Kependudukan'} tidak ditemukan.`,
+      };
+    }
+
+    return {
+      success: true,
+      message: `${rm ? 'Nomor Rekam Medis' : 'Nomor Induk Kependudukan'} ditemukan.`,
+      data: pasien,
+    };
   }
 }

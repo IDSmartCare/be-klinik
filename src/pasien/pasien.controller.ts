@@ -14,6 +14,7 @@ import { EpisodePendaftaran, Pasien, Pendaftaran } from '@prisma/client';
 import { UpdatePasienDto } from './dto/update-pasien.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { RegisPasienDto } from './dto/regis-pasien.dto';
+import { CheckPasienDto } from './dto/check-pasien.dto';
 
 @Controller('pasien')
 export class PasienController {
@@ -97,6 +98,13 @@ export class PasienController {
           },
         },
         episodePendaftaran: {
+          include: {
+            pendaftaran: {
+              include: {
+                antrian: true,
+              },
+            },
+          },
           select: {
             pasien: {
               select: {
@@ -282,5 +290,12 @@ export class PasienController {
       },
       data: updatePasienDto,
     });
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/apm/check')
+  async checkPasien(@Body() checkPasienDto: CheckPasienDto) {
+    const { rm, nik } = checkPasienDto;
+    return this.pasienService.checkPasien(rm, nik);
   }
 }

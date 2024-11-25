@@ -8,49 +8,44 @@ export class AntrianService {
 
   async storeAntrianAdmisi(dto: CreateAntrianAdmisiDto) {
     const { tanggal, status, jumlahPanggil, idFasyankes } = dto;
-  
+
     try {
-      // Ambil tanggal hari ini dan besok
       const today = new Date();
-      today.setHours(0, 0, 0, 0); 
+      today.setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1); 
-  
-      // Hitung jumlah antrian untuk hari ini
+      tomorrow.setDate(today.getDate() + 1);
+
       const countToday = await this.prisma.antrianAdmisi.count({
         where: {
           tanggal: {
-            gte: today,      // Lebih besar atau sama dengan hari ini
-            lt: tomorrow,    // Lebih kecil dari besok
-          },
-        },
-      });
-  
-      // Menambahkan jumlah antrian yang ada hari ini ke jumlahPanggil
-      const updatedJumlahPanggil = jumlahPanggil + countToday;
-  
-      
-      const lastAntrian = await this.prisma.antrianAdmisi.findFirst({
-        orderBy: {
-          nomor: 'desc', 
-        },
-        where: {
-          tanggal: {
-            gte: today,  
+            gte: today,
             lt: tomorrow,
           },
         },
       });
-  
-      let nomorBaru = 'A-0001'; 
+
+      const updatedJumlahPanggil = jumlahPanggil + countToday;
+
+      const lastAntrian = await this.prisma.antrianAdmisi.findFirst({
+        orderBy: {
+          nomor: 'desc',
+        },
+        where: {
+          tanggal: {
+            gte: today,
+            lt: tomorrow,
+          },
+        },
+      });
+
+      let nomorBaru = 'A-0001';
       if (lastAntrian) {
         const lastNomor = lastAntrian.nomor;
-        const lastNumber = parseInt(lastNomor.split('-')[1]); 
-        const newNumber = lastNumber + 1; 
-        nomorBaru = `A-${newNumber.toString().padStart(4, '0')}`;  
+        const lastNumber = parseInt(lastNomor.split('-')[1]);
+        const newNumber = lastNumber + 1;
+        nomorBaru = `A-${newNumber.toString().padStart(4, '0')}`;
       }
-  
-      // Menyusun data untuk disimpan
+
       const newAntrian = {
         nomor: nomorBaru,
         tanggal,
@@ -58,20 +53,17 @@ export class AntrianService {
         jumlahPanggil: updatedJumlahPanggil,
         idFasyankes,
       };
-  
-      // Simpan data ke database
+
       const antrian = await this.prisma.antrianAdmisi.create({
         data: newAntrian,
       });
-  
-      
+
       return {
         status: 'success',
         message: 'Antrian berhasil disimpan',
         data: antrian,
       };
     } catch (error) {
-      
       return {
         status: 'error',
         message: 'Terjadi kesalahan saat menyimpan antrian',
@@ -79,5 +71,40 @@ export class AntrianService {
       };
     }
   }
-  
+  async panggilAntrianAdmisi() {}
+
+  async panggilAntrianPasien(id: number, idFasyankes: string) {
+    const pasien = await this.prisma.antrianPasien.findFirst({
+      where: {
+        id,
+        idFasyankes,
+      },
+      include: {
+        pendaftaran: true,
+      },
+    });
+
+    if (!pasien) {
+      return {
+        success: false,
+        message: 'Pasien tidak ditemukan.',
+      };
+    }
+
+    await this.prisma.antrianPasien.update({
+      where: {
+        id: id,
+      },
+      data: {
+        status: 'Sudah Dipanggil',
+        jumlahPanggil: pasien.jumlahPanggil + 1,
+        updatedAt: new Date(),
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Memanggil Nomor : ' + pasien.nomor,
+    };
+  }
 }
