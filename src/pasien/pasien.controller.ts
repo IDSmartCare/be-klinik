@@ -90,6 +90,7 @@ export class PasienController {
         id: 'desc',
       },
       include: {
+        antrian: true,
         doctor: {
           select: {
             name: true,
@@ -99,13 +100,6 @@ export class PasienController {
         },
         episodePendaftaran: {
           include: {
-            pendaftaran: {
-              include: {
-                antrian: true,
-              },
-            },
-          },
-          select: {
             pasien: {
               select: {
                 noRm: true,

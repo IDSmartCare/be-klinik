@@ -50,7 +50,7 @@ export class PasienService {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const countToday = await this.prisma.antrianPasien.count({
+    const countToday = await this.prisma.episodePendaftaran.count({
       where: {
         idFasyankes: idFasyankes,
         createdAt: {
@@ -129,6 +129,7 @@ export class PasienService {
             idFasyankes: data.idFasyankes,
           },
         });
+
         await tx.antrianPasien.create({
           data: {
             nomor: nomorAntrian,
@@ -139,6 +140,7 @@ export class PasienService {
             pendaftaranId: registrasi.id,
           },
         });
+
         const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
           data: {
             pendaftaranId: registrasi.id,
@@ -198,6 +200,7 @@ export class PasienService {
               pendaftaranId: registrasi.id,
             },
           });
+
           const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
             data: {
               pendaftaranId: registrasi.id,
