@@ -118,6 +118,16 @@ export class PasienService {
             idFasyankes: data.idFasyankes,
           },
         });
+        await tx.antrianPasien.create({
+          data: {
+            nomor: nomorAntrian,
+            tanggal: new Date(),
+            jumlahPanggil: 0,
+            status: 'Belum Dipanggil',
+            idFasyankes: data.idFasyankes,
+            episodePendaftaranId: episodeBaru.id,
+          },
+        });
 
         const registrasi = await tx.pendaftaran.create({
           data: {
@@ -129,16 +139,7 @@ export class PasienService {
             idFasyankes: data.idFasyankes,
           },
         });
-        await tx.antrianPasien.create({
-          data: {
-            nomor: nomorAntrian,
-            tanggal: new Date(),
-            jumlahPanggil: 0,
-            status: 'Belum Dipanggil',
-            idFasyankes: data.idFasyankes,
-            pendaftaranId: registrasi.id,
-          },
-        });
+
         const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
           data: {
             pendaftaranId: registrasi.id,
@@ -188,16 +189,7 @@ export class PasienService {
               idFasyankes: data.idFasyankes,
             },
           });
-          await tx.antrianPasien.create({
-            data: {
-              nomor: nomorAntrian,
-              tanggal: new Date(),
-              jumlahPanggil: 0,
-              status: 'Belum Dipanggil',
-              idFasyankes: data.idFasyankes,
-              pendaftaranId: registrasi.id,
-            },
-          });
+
           const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
             data: {
               pendaftaranId: registrasi.id,
@@ -232,6 +224,16 @@ export class PasienService {
               idFasyankes: data.idFasyankes,
             },
           });
+          await tx.antrianPasien.create({
+            data: {
+              nomor: nomorAntrian,
+              tanggal: new Date(),
+              jumlahPanggil: 0,
+              status: 'Belum Dipanggil',
+              idFasyankes: data.idFasyankes,
+              episodePendaftaranId: episodeBaru.id,
+            },
+          });
           const registrasi = await tx.pendaftaran.create({
             data: {
               episodePendaftaranId: episodeBaru.id,
@@ -240,16 +242,6 @@ export class PasienService {
               namaAsuransi: data.namaAsuransi,
               nomorAsuransi: data.nomorAsuransi,
               idFasyankes: data.idFasyankes,
-            },
-          });
-          await tx.antrianPasien.create({
-            data: {
-              nomor: nomorAntrian,
-              tanggal: new Date(),
-              jumlahPanggil: 0,
-              status: 'Belum Dipanggil',
-              idFasyankes: data.idFasyankes,
-              pendaftaranId: registrasi.id,
             },
           });
 
