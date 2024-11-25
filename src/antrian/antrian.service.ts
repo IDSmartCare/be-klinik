@@ -9,36 +9,32 @@ export class AntrianService {
   async panggilAntrianAdmisi(id: number, idFasyankes: string) {
     try {
       const antrian = await this.prisma.antrianAdmisi.findUnique({
-        where: { id,
-          idFasyankes
-         },
-        
+        where: { id, idFasyankes },
       });
-  
+
       if (antrian) {
         return {
-          status: 'success',
+          success: true,
           message: 'Antrian ditemukan',
           data: antrian,
         };
       } else {
         return {
-          status: 'failed',
+          success: false,
           message: 'Antrian tidak ditemukan',
         };
       }
     } catch (error) {
       return {
-        status: 'failed',
+        success: false,
         message: 'Terjadi kesalahan, silakan coba lagi.',
         error: error.message,
       };
     }
   }
-  
 
   async storeAntrianAdmisi(dto: CreateAntrianAdmisiDto) {
-    const { jumlahPanggil, idFasyankes } = dto;
+    const { idFasyankes } = dto;
 
     try {
       const today = new Date();
@@ -55,7 +51,7 @@ export class AntrianService {
         },
       });
 
-      const updatedJumlahPanggil = jumlahPanggil + countToday;
+      const updatedJumlahPanggil = countToday + 1;
 
       const lastAntrian = await this.prisma.antrianAdmisi.findFirst({
         orderBy: {
@@ -90,19 +86,18 @@ export class AntrianService {
       });
 
       return {
-        status: 'success',
+        success: true,
         message: 'Antrian berhasil disimpan',
         data: antrian,
       };
     } catch (error) {
       return {
-        status: 'error',
+        success: false,
         message: 'Terjadi kesalahan saat menyimpan antrian',
         error: error.message,
       };
     }
   }
-
 
   async panggilAntrianPasien(id: number, idFasyankes: string) {
     const pasien = await this.prisma.antrianPasien.findFirst({

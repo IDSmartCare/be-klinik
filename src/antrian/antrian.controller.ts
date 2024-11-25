@@ -7,7 +7,6 @@ import { CreateAntrianAdmisiDto } from './dto/create-admisi.dto';
 export class AntrianController {
   constructor(private readonly antrianService: AntrianService) {}
 
- 
   @UseGuards(AuthGuard)
   @Get('/admisi/:id/:idFasyankes')
   async findOne(
