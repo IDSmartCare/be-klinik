@@ -80,7 +80,7 @@ export class AntrianService {
         idFasyankes,
       },
       include: {
-        episodePendaftaran: true,
+        pendaftaran: true,
       },
     });
 
