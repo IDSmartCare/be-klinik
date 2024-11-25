@@ -54,19 +54,17 @@ export class MasterSubjectiveController {
   @Patch('/update/:id')
   async updateSubjective(
     @Param('id') id: string,
-    @Body() UpdateMasterSubjectiveDto: UpdateMasterSubjectiveDto,
+    @Body() updateMasterSubjectiveDto: UpdateMasterSubjectiveDto,
   ): Promise<MasterSubjective> {
-    return this.MasterSubjectiveService.updateSubjective({
-      where: {
-        id: Number(id),
-      },
-      data: UpdateMasterSubjectiveDto,
-    });
+    return this.MasterSubjectiveService.updateSubjective(
+      { id: +id }, 
+      updateMasterSubjectiveDto,
+    );
   }
 
   @UseGuards(AuthGuard)
   @Delete('/delete/:id')
-  async deleteUser(@Param('id') id: number): Promise<MasterSubjective> {
+  async deleteUser(@Param('id') id: string): Promise<MasterSubjective> {
     return this.MasterSubjectiveService.deleteUser({ id: Number(id) });
   }
 }

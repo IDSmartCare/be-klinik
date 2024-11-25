@@ -3,6 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { MasterSubjective, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateMasterSubjectiveDto } from './dto/create-master-subjective.dto';
+import { UpdateMasterSubjectiveDto } from './dto/update-master-subjective.dto';
 
 @Injectable()
 export class MasterSubjectiveService {
@@ -29,7 +30,17 @@ export class MasterSubjectiveService {
     try {
       const subjective = await this.prisma.masterSubjective.findUnique({
         where: { id },
-        include: { keyword: true },
+        include: {
+          keyword: {
+            include: {
+              question: {
+                select: {
+                  category: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!subjective) {
@@ -61,15 +72,18 @@ export class MasterSubjectiveService {
     });
   }
 
-  async updateSubjective(params: {
-    where: Prisma.MasterSubjectiveWhereUniqueInput;
-    data: Prisma.MasterSubjectiveUpdateInput;
-  }): Promise<MasterSubjective> {
-    const { where, data } = params;
-    return this.prisma.masterSubjective.update({
-      where,
-      data,
-    });
+  async updateSubjective(
+    where: { id: number },
+    data: UpdateMasterSubjectiveDto,
+  ): Promise<MasterSubjective> {
+    try {
+      return await this.prisma.masterSubjective.update({
+        where,
+        data: data,
+      });
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   async deleteUser(

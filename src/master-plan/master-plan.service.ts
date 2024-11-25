@@ -45,7 +45,17 @@ export class MasterPlanService {
     try {
       const plan = await this.prisma.masterPlan.findUnique({
         where: { id },
-        include: { keyword: true },
+        include: {
+          keyword: {
+            include: {
+              question: {
+                select: {
+                  category: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!plan) {

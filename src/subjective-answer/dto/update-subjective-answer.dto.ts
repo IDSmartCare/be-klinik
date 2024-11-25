@@ -1,5 +1,5 @@
 export class UpdateSubjectiveAnswerDto {
   questionId?: number;
-  answerText?: string;
+  answer?: string;
   createdBy?: string;
 }

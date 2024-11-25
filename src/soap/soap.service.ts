@@ -14,6 +14,7 @@ export class SoapService {
         question: true,
         createdAt: true,
         createdBy: true,
+        updatedAt: true,
         questionType: true,
       },
     });
@@ -26,6 +27,7 @@ export class SoapService {
         question: true,
         createdAt: true,
         createdBy: true,
+        updatedAt: true,
         questionType: true,
       },
     });
@@ -38,6 +40,7 @@ export class SoapService {
         question: true,
         createdAt: true,
         createdBy: true,
+        updatedAt: true,
         questionType: true,
       },
     });
@@ -50,6 +53,7 @@ export class SoapService {
         question: true,
         createdAt: true,
         createdBy: true,
+        updatedAt: true,
         questionType: true,
       },
     });
@@ -62,6 +66,7 @@ export class SoapService {
         question: true,
         createdAt: true,
         createdBy: true,
+        updatedAt: true,
         questionType: true,
       },
     });

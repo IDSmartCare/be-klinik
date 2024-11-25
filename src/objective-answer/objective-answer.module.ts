@@ -4,8 +4,8 @@ import { ObjectiveAnswerService } from './objective-answer.service';
 import { PrismaModule } from 'src/service/prisma.module';
 
 @Module({
-    controllers: [ ObjectiveAnswerController],
-    providers: [ ObjectiveAnswerService],
-    imports: [ PrismaModule],
+    controllers: [ObjectiveAnswerController],
+    providers: [ObjectiveAnswerService],
+    imports: [PrismaModule],
 })
 export class ObjectiveAnswerModule {}

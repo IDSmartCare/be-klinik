@@ -1,5 +1,5 @@
 export class UpdateObjectiveAnswerDto {
   questionId?: number;
-  answerText?: string;
+  answer?: string;
   createdBy?: string;
 }

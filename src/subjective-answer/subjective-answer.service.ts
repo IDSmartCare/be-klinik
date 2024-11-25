@@ -1,9 +1,9 @@
 // src/subjective-answer/subjective-answer.service.ts
 
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateSubjectiveAnswerDto } from './dto/create-subjective-answer.dto';
+import { UpdateSubjectiveAnswerDto } from './dto/update-subjective-answer.dto';
 
 @Injectable()
 export class SubjectiveAnswerService {
@@ -44,7 +44,7 @@ export class SubjectiveAnswerService {
     });
   }
 
-  async update(id: number, data: Prisma.SubjectiveAnswerUpdateInput) {
+  async update(id: number, data: UpdateSubjectiveAnswerDto) {
     return this.prisma.subjectiveAnswer.update({
       where: { id },
       data,

@@ -13,7 +13,6 @@ import {
 import { PlanAnswerService } from './plan-answer.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreatePlanAnswerDto } from './dto/create-plan-answer.dto';
-import { Prisma } from '@prisma/client';
 import { UpdatePlanAnswerDto } from './dto/update-plan-answer.dto';
 
 @Controller('plan-answer')
@@ -34,17 +33,17 @@ export class PlanAnswerController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('/:id')
+  @Get('/detail/:id')
   async findOne(@Param('id') id: string) {
     try {
       return await this.planAnswerService.findOne(+id);
     } catch (error) {
-      throw new HttpException(' Answer not found', HttpStatus.NOT_FOUND);
+      throw new HttpException('Answer not found', HttpStatus.NOT_FOUND);
     }
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/:id')
+  @Patch('/update/:id')
   async update(@Param('id') id: string, @Body() data: UpdatePlanAnswerDto) {
     try {
       const updatedAnswer = await this.planAnswerService.update(+id, data);
@@ -55,7 +54,7 @@ export class PlanAnswerController {
   }
 
   @UseGuards(AuthGuard)
-  @Delete('/:id')
+  @Delete('/delete/:id')
   async delete(@Param('id') id: string) {
     try {
       return await this.planAnswerService.delete(+id);
