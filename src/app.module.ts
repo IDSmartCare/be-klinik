@@ -28,6 +28,7 @@ import { ObjectiveAnswerModule } from './objective-answer/objective-answer.modul
 import { AssessmentAnswerModule } from './assessment-answer/assessment-answer.module';
 import { PlanAnswerModule } from './plan-answer/plan-answer.module';
 import { InstructionAnswerModule } from './instruction-answer/instruction-answer.module';
+import { AntrianModule } from './antrian/antrian.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { InstructionAnswerModule } from './instruction-answer/instruction-answer
     AssessmentAnswerModule,
     PlanAnswerModule,
     InstructionAnswerModule,
+    AntrianModule,
   ],
   controllers: [AppController],
   providers: [AppService],
