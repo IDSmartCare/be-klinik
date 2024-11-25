@@ -2,8 +2,8 @@ model AntrianPasien {
     id                      Int                     @id @default(autoincrement())
     tanggal                 DateTime
     status                  String
-    episodePendaftaranId    Int?                    @unique
-    episodePendaftaran      EpisodePendaftaran?     @relation(fields: [episodePendaftaranId], references: [id])
+    pendaftaranId           Int?                    @unique
+    pendaftaran             Pendaftaran?            @relation(fields: [pendaftaranId], references: [id])
     jumlahPanggil           Int
     nomor                   String
     idFasyankes             String
