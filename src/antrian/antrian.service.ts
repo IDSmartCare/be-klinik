@@ -6,6 +6,25 @@ import { CreateAntrianAdmisiDto } from './dto/create-admisi.dto';
 export class AntrianService {
   constructor(private prisma: PrismaService) {}
 
+  async findAll() {
+    try {
+      const antrian = await this.prisma.antrianAdmisi.findMany();
+      
+      return {
+        success: true,
+        message: "Data berhasil diambil.",
+        data: antrian,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: "Terjadi kesalahan saat mengambil data.",
+        error: error.message,
+      };
+    }
+  }
+  
+
   async panggilAntrianAdmisi(id: number, idFasyankes: string) {
     try {
       const antrian = await this.prisma.antrianAdmisi.findUnique({

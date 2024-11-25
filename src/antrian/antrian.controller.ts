@@ -8,6 +8,12 @@ export class AntrianController {
   constructor(private readonly antrianService: AntrianService) {}
 
   @UseGuards(AuthGuard)
+  @Get()
+  async findAll() {
+    return this.antrianService.findAll();
+  }
+
+  @UseGuards(AuthGuard)
   @Get('/admisi/:id/:idFasyankes')
   async findOne(
     @Param('id') id: string,
