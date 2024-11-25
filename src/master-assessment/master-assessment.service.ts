@@ -47,7 +47,17 @@ export class MasterAssessmentService {
     try {
       const assessment = await this.prisma.masterAssessment.findUnique({
         where: { id },
-        include: { keyword: true },
+        include: {
+          keyword: {
+            include: {
+              question: {
+                select: {
+                  category: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!assessment) {

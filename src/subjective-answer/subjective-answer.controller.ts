@@ -42,7 +42,7 @@ export class SubjectiveAnswerController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('/:id')
+  @Get('/detail/:id')
   async findOne(@Param('id') id: string) {
     try {
       return await this.subjectiveAnswerService.findOne(+id);
@@ -52,7 +52,7 @@ export class SubjectiveAnswerController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/:id')
+  @Patch('/update/:id')
   async update(
     @Param('id') id: string,
     @Body() data: UpdateSubjectiveAnswerDto,
@@ -72,7 +72,7 @@ export class SubjectiveAnswerController {
   }
 
   @UseGuards(AuthGuard)
-  @Delete('/:id')
+  @Delete('/delete/:id')
   async delete(@Param('id') id: string) {
     try {
       return await this.subjectiveAnswerService.delete(+id);

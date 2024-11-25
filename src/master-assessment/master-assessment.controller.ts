@@ -13,8 +13,8 @@ import {
 import { MasterAssessment } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateMasterAssessmentDto } from './dto/create-master-assessment.dto';
-import { UpdateMasterAsessmentDto } from './dto/update-master-assessment.dto';
 import { MasterAssessmentService } from './master-assessment.service';
+import { UpdateMasterAssessmentDto } from './dto/update-master-assessment.dto';
 
 @Controller('master-assessment')
 export class MasterAssessmentController {
@@ -54,7 +54,7 @@ export class MasterAssessmentController {
   @Patch('/update/:id')
   async updateAssessment(
     @Param('id') id: number,
-    @Body() UpdateMasterAsessmentDto: UpdateMasterAsessmentDto,
+    @Body() UpdateMasterAsessmentDto: UpdateMasterAssessmentDto,
   ): Promise<MasterAssessment> {
     return this.masterAssessmentService.updateAssessment({
       where: {
@@ -66,7 +66,7 @@ export class MasterAssessmentController {
 
   @UseGuards(AuthGuard)
   @Delete('/delete/:id')
-  async deleteAssessment(@Param('id') id: number): Promise<MasterAssessment> {
+  async deleteAssessment(@Param('id') id: string): Promise<MasterAssessment> {
     return this.masterAssessmentService.deleteAssessment({ id: Number(id) }); // Memanggil metode deleteAssessment dengan parameter
   }
 }

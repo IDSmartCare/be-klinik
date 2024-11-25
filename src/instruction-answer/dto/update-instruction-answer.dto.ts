@@ -1,5 +1,3 @@
-export class UpdateInstructionDto {
-  questionId?: number;
-  answerText?: string;
-  createdBy?: string;
+export class UpdateInstructionAnswerDto {
+  answer?: string;
 }

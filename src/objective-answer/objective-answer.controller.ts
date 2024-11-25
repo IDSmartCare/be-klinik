@@ -38,7 +38,7 @@ export class ObjectiveAnswerController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('/:id')
+  @Get('/detail/:id')
   async findOne(@Param('id') id: string) {
     try {
       return await this.objectiveAnswerService.findOne(+id);
@@ -48,21 +48,21 @@ export class ObjectiveAnswerController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/:id')
+  @Patch('/update/:id')
   async update(
     @Param('id') id: string,
     @Body() data: UpdateObjectiveAnswerDto,
   ) {
     try {
       const updatedAnswer = await this.objectiveAnswerService.update(+id, data);
-      return { message: 'Update successful', data: updatedAnswer}
+      return { message: 'Update successfully', data: updatedAnswer}
     } catch (error) {
       throw new HttpException('Update failed', HttpStatus.BAD_REQUEST);
     }
   }
 
   @UseGuards(AuthGuard)
-  @Delete(':id')
+  @Delete('/delete/:id')
   async delete(@Param('id') id: string) {
     try {
       return await this.objectiveAnswerService.delete(+id);

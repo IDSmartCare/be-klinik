@@ -27,7 +27,7 @@ export class AssessmentAnswerController {
     }
 
     @UseGuards(AuthGuard)
-    @Get('/:id')
+    @Get('/detail/:id')
     async findOne(@Param('id') id: string) {
         try {
             return await this.assessmentAnswerService.findOne(+id);
@@ -37,7 +37,7 @@ export class AssessmentAnswerController {
     }
 
     @UseGuards(AuthGuard)
-    @Patch('/:id')
+    @Patch('/update/:id')
     async update(
         @Param('id') id: string,
         @Body() data: UpdateAssessmentAnswerDto,
@@ -51,7 +51,7 @@ export class AssessmentAnswerController {
     }
 
     @UseGuards(AuthGuard)
-    @Delete('/:id')
+    @Delete('/delete/:id')
     async delete(@Param('id') id: string) {
         try {
             return await this.assessmentAnswerService.delete(+id);

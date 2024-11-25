@@ -1,5 +1,5 @@
 export class UpdatePlanAnswerDto {
     questionId?: number;
-    answerText?: string;
+    answer?: string;
     createdBy?: string;
 }

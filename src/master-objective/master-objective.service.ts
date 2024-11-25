@@ -45,7 +45,17 @@ export class MasterObjectiveService {
     try {
       const objective = await this.prisma.masterObjective.findUnique({
         where: { id },
-        include: { keyword: true },
+        include: {
+          keyword: {
+            include: {
+              question: {
+                select: {
+                  category: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!objective) {
