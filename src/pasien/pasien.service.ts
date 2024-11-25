@@ -50,7 +50,7 @@ export class PasienService {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const countToday = await this.prisma.episodePendaftaran.count({
+    const countToday = await this.prisma.pendaftaran.count({
       where: {
         idFasyankes: idFasyankes,
         createdAt: {

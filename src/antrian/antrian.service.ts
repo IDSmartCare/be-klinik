@@ -7,7 +7,7 @@ export class AntrianService {
   constructor(private prisma: PrismaService) {}
 
   async storeAntrianAdmisi(dto: CreateAntrianAdmisiDto) {
-    const { tanggal, status, jumlahPanggil, idFasyankes } = dto;
+    const { jumlahPanggil, idFasyankes } = dto;
 
     try {
       const today = new Date();
@@ -48,8 +48,8 @@ export class AntrianService {
 
       const newAntrian = {
         nomor: nomorBaru,
-        tanggal,
-        status,
+        tanggal: new Date(),
+        status: 'Belum Dipanggil',
         jumlahPanggil: updatedJumlahPanggil,
         idFasyankes,
       };
