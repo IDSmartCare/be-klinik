@@ -6,6 +6,37 @@ import { CreateAntrianAdmisiDto } from './dto/create-admisi.dto';
 export class AntrianService {
   constructor(private prisma: PrismaService) {}
 
+  async panggilAntrianAdmisi(id: number, idFasyankes: string) {
+    try {
+      const antrian = await this.prisma.antrianAdmisi.findUnique({
+        where: { id,
+          idFasyankes
+         },
+        
+      });
+  
+      if (antrian) {
+        return {
+          status: 'success',
+          message: 'Antrian ditemukan',
+          data: antrian,
+        };
+      } else {
+        return {
+          status: 'failed',
+          message: 'Antrian tidak ditemukan',
+        };
+      }
+    } catch (error) {
+      return {
+        status: 'failed',
+        message: 'Terjadi kesalahan, silakan coba lagi.',
+        error: error.message,
+      };
+    }
+  }
+  
+
   async storeAntrianAdmisi(dto: CreateAntrianAdmisiDto) {
     const { jumlahPanggil, idFasyankes } = dto;
 
@@ -71,7 +102,7 @@ export class AntrianService {
       };
     }
   }
-  async panggilAntrianAdmisi() {}
+
 
   async panggilAntrianPasien(id: number, idFasyankes: string) {
     const pasien = await this.prisma.antrianPasien.findFirst({
