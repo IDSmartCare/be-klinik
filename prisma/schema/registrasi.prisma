@@ -29,5 +29,5 @@ model EpisodePendaftaran {
   idFasyankes String?       @db.VarChar(30)
   pasien      Pasien?       @relation(fields: [pasienId], references: [id])
   pendaftaran Pendaftaran[]
-  antrian     Antrian[]
+  antrian     AntrianPasien[]
 }

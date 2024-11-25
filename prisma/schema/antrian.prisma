@@ -1,9 +1,18 @@
-model Antrian {
+model AntrianPasien {
  id                    Int      @id @default(autoincrement())
  tanggal               DateTime
  status                String
  episodePendaftaranId  Int? 
  episodePendaftaran    EpisodePendaftaran? @relation(fields: [episodePendaftaranId], references: [id])
+ jumlahPanggil         String
+ kategori              String
+}
+
+
+model AntrianAdmisi {
+ id                    Int      @id @default(autoincrement())
+ tanggal               DateTime
+ status                String
  jumlahPanggil         String
  kategori              String
 }
