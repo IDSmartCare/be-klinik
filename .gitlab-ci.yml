@@ -21,22 +21,19 @@ services:
 
 before_script:
   - echo $DOCKER_HOST
+    - until docker info; do
+      echo "Waiting for Docker daemon to be ready...";
+      sleep 5;
+    done
+  - echo "Attempting Docker login..."
   - docker version
   - cat /etc/*ease   
   - ps -ef
   - docker ps
   - hostname
   - df -hT
-  - until docker info; do
-      echo "Waiting for Docker daemon to be ready...";
-      sleep 1;
-    done
   - echo "Attempting Docker login..."
-  - |
-    until echo "$CI_REG_SANDY" | docker login -u "$CI_REG_USER" --password-stdin "$CI_REG_URL"; do
-      echo "Docker login failed. Retrying in 5 seconds...";
-      sleep 5;
-    done
+  - echo "$CI_REG_SANDY" | docker login -u "$CI_REG_USER" --password-stdin "$CI_REG_URL"
   - echo "Docker login successful."
 
   
