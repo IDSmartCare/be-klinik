@@ -21,7 +21,6 @@ services:
 
 before_script:
   - echo $DOCKER_HOST
-#  - apk update && apk add docker docker-compose && /etc/init.d/docker start
   - docker version
   - cat /etc/*ease   
   - ps -ef
@@ -79,17 +78,17 @@ release:
     - docker commit "$CI_REG_PROJECT_NAME" "$IMAGE_TAG_LATEST"
     - docker push "$IMAGE_TAG_LATEST"
 
-deploy-charta:
+deploy:
   stage: deploy
   script:
     - echo "Deploying $CI_REG_PROJECT_NAME to production..."
     - apk add curl
     - echo "Validating required environment variables..."
-    - echo "Using DEPLOYMENT_API ":"" "$DEPLOYMENT_CHARTA"
+    - echo "Using DEPLOYMENT_API ":"" "$DEPLOYMENT_API"
     - echo "Using RNC_TOKEN ":"" "(hidden)"
     - echo "Using IMAGE_TAG ":"" "$IMAGE_TAG"
     - >
-      if [ -z "$DEPLOYMENT_CHARTA" ] || [ -z "$TOKEN_CHARTA" ] || [ -z "$IMAGE_TAG" ]; then
+      if [ -z "$DEPLOYMENT_API" ] || [ -z "$TOKEN_API" ] || [ -z "$IMAGE_TAG" ]; then
       echo "Error: Required environment variables are not set." >&2;
       exit 1;
       fi
@@ -98,8 +97,8 @@ deploy-charta:
       curl --fail -o /tmp/curl-deploy.sh https://gitlab.com/go-public1/ci-library/-/raw/main/script-deployment-k8s.sh ||
       { echo "Error: Failed to download deployment script." >&2; exit 1; }
     - echo "Customizing deployment script..."
-    - sed -i "s|DEPLOYMENT_API|$DEPLOYMENT_CHARTA|g" /tmp/curl-deploy.sh
-    - sed -i "s|AUTHTOKEN|$TOKEN_CHARTA|g" /tmp/curl-deploy.sh
+    - sed -i "s|DEPLOYMENT_API|$DEPLOYMENT_API|g" /tmp/curl-deploy.sh
+    - sed -i "s|AUTHTOKEN|$TOKEN_API|g" /tmp/curl-deploy.sh
     - sed -i "s|IMAGETAG|$IMAGE_TAG|g" /tmp/curl-deploy.sh
     - chmod +x /tmp/curl-deploy.sh
     - cat /tmp/curl-deploy.sh
@@ -108,86 +107,3 @@ deploy-charta:
 #  when: manual # Deployment dilakukan manual
 
 
-deploy-charta-api:
-  stage: deploy
-  script:
-    - echo "Deploying $CI_REG_PROJECT_NAME to production..."
-    - apk add curl
-    - echo "Validating required environment variables..."
-    - echo "Using DEPLOYMENT_API ":"" "$DEPLOYMENT_CHARTA_API"
-    - echo "Using RNC_TOKEN ":"" "(hidden)"
-    - echo "Using IMAGE_TAG ":"" "$IMAGE_TAG"
-    - >
-      if [ -z "$DEPLOYMENT_CHARTA_API" ] || [ -z "$TOKEN_CHARTA" ] || [ -z "$IMAGE_TAG" ]; then
-      echo "Error: Required environment variables are not set." >&2;
-      exit 1;
-      fi
-    - echo "Downloading deployment script..."
-    - >
-      curl --fail -o /tmp/curl-deploy.sh https://gitlab.com/go-public1/ci-library/-/raw/main/script-deployment-k8s.sh ||
-      { echo "Error: Failed to download deployment script." >&2; exit 1; }
-    - echo "Customizing deployment script..."
-    - sed -i "s|DEPLOYMENT_API|$DEPLOYMENT_CHARTA_API|g" /tmp/curl-deploy.sh
-    - sed -i "s|AUTHTOKEN|$TOKEN_CHARTA|g" /tmp/curl-deploy.sh
-    - sed -i "s|IMAGETAG|$IMAGE_TAG|g" /tmp/curl-deploy.sh
-    - chmod +x /tmp/curl-deploy.sh
-    - cat /tmp/curl-deploy.sh
-    - echo "Executing deployment script..."
-    - sh /tmp/curl-deploy.sh
-#  when: manual # Deployment dilakukan manual
-
-deploy-trias:
-  stage: deploy
-  script:
-    - echo "Deploying $CI_REG_PROJECT_NAME to production..."
-    - apk add curl
-    - echo "Validating required environment variables..."
-    - echo "Using DEPLOYMENT_API ":"" "$DEPLOYMENT_TRIAS"
-    - echo "Using RNC_TOKEN ":"" "(hidden)"
-    - echo "Using IMAGE_TAG ":"" "$IMAGE_TAG"
-    - >
-      if [ -z "$DEPLOYMENT_TRIAS" ] || [ -z "$TOKEN_TRIAS" ] || [ -z "$IMAGE_TAG" ]; then
-      echo "Error: Required environment variables are not set." >&2;
-      exit 1;
-      fi
-    - echo "Downloading deployment script..."
-    - >
-      curl --fail -o /tmp/curl-deploy.sh https://gitlab.com/go-public1/ci-library/-/raw/main/script-deployment-k8s.sh ||
-      { echo "Error: Failed to download deployment script." >&2; exit 1; }
-    - echo "Customizing deployment script..."
-    - sed -i "s|DEPLOYMENT_API|$DEPLOYMENT_TRIAS|g" /tmp/curl-deploy.sh
-    - sed -i "s|AUTHTOKEN|$TOKEN_TRIAS|g" /tmp/curl-deploy.sh
-    - sed -i "s|IMAGETAG|$IMAGE_TAG|g" /tmp/curl-deploy.sh
-    - chmod +x /tmp/curl-deploy.sh
-    - cat /tmp/curl-deploy.sh
-    - echo "Executing deployment script..."
-    - sh /tmp/curl-deploy.sh
-#  when: manual # Deployment dilakukan manual
-
-deploy-puspoll:
-  stage: deploy
-  script:
-    - echo "Deploying $CI_REG_PROJECT_NAME to production..."
-    - apk add curl
-    - echo "Validating required environment variables..."
-    - echo "Using DEPLOYMENT_API ":"" "$DEPLOYMENT_PUSPOLL"
-    - echo "Using RNC_TOKEN ":"" "(hidden)"
-    - echo "Using IMAGE_TAG ":"" "$IMAGE_TAG"
-    - >
-      if [ -z "$DEPLOYMENT_PUSPOLL" ] || [ -z "$TOKEN_PUSPOLL" ] || [ -z "$IMAGE_TAG" ]; then
-      echo "Error: Required environment variables are not set." >&2;
-      exit 1;
-      fi
-    - echo "Downloading deployment script..."
-    - >
-      curl --fail -o /tmp/curl-deploy.sh https://gitlab.com/go-public1/ci-library/-/raw/main/script-deployment-k8s.sh ||
-      { echo "Error: Failed to download deployment script." >&2; exit 1; }
-    - echo "Customizing deployment script..."
-    - sed -i "s|DEPLOYMENT_API|$DEPLOYMENT_PUSPOLL|g" /tmp/curl-deploy.sh
-    - sed -i "s|AUTHTOKEN|$TOKEN_PUSPOLL|g" /tmp/curl-deploy.sh
-    - sed -i "s|IMAGETAG|$IMAGE_TAG|g" /tmp/curl-deploy.sh
-    - chmod +x /tmp/curl-deploy.sh
-    - cat /tmp/curl-deploy.sh
-    - echo "Executing deployment script..."
-    - sh /tmp/curl-deploy.sh
-#  when: manual # Deployment dilakukan manual
