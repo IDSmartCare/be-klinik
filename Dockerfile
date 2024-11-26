@@ -8,7 +8,7 @@ WORKDIR /app
 COPY package.json ./
 
 # Install hanya dependensi
-RUN npm install
+RUN npm install && npm install prisma --save-dev
 
 # Copy seluruh kode sumber ke dalam image
 COPY . ./
