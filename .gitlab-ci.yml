@@ -21,7 +21,7 @@ services:
 
 before_script:
   - echo $DOCKER_HOST
-    - until docker info; do
+  - until docker info; do
       echo "Waiting for Docker daemon to be ready...";
       sleep 5;
     done
