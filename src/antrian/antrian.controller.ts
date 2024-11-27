@@ -26,10 +26,7 @@ export class AntrianController {
   }
   @UseGuards(AuthGuard)
   @Get('/pasien/:id/:idFasyankes')
-  async panggilAntrianPasien(
-    @Param('id') id: number,
-    @Param('idFasyankes') idFasyankes: string,
-  ) {
-    return this.antrianService.panggilAntrianPasien(id, idFasyankes);
+  async panggilAntrianPasien(@Param('id') id: number) {
+    return this.antrianService.panggilAntrianPasien(id);
   }
 }
