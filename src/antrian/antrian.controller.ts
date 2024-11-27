@@ -8,13 +8,15 @@ export class AntrianController {
   constructor(private readonly antrianService: AntrianService) {}
 
   @UseGuards(AuthGuard)
-  @Get('/admisi/:id/:idFasyankes')
-  async findOne(
-    @Param('id') id: string,
-    @Param('idFasyankes') idFasyankes: string,
-  ) {
-    const idAsNumber = parseInt(id, 10);
-    return this.antrianService.panggilAntrianAdmisi(idAsNumber, idFasyankes);
+  @Get('/admisi/:id')
+  async findOne(@Param('id') id: string) {
+    return this.antrianService.panggilAntrianAdmisi(+id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/all/admisi/:idFasyankes')
+  async getAllAntrianAdmisiToday(@Param('idFasyankes') idFasyankes: string) {
+    return this.antrianService.getAllAntrianAdmisiToday(idFasyankes);
   }
 
   @UseGuards(AuthGuard)
