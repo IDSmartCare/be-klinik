@@ -1,18 +1,50 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateAntrianAdmisiDto } from './dto/create-admisi.dto';
+import { QueueGateway } from 'src/queue/queue.gateway';
 
 @Injectable()
 export class AntrianService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private queueGateway: QueueGateway,
+  ) {}
 
-  async panggilAntrianAdmisi(id: number, idFasyankes: string) {
+  async getAllAntrianAdmisiToday(idFasyankes: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const antrianToday = await this.prisma.antrianAdmisi.findMany({
+      where: {
+        idFasyankes: idFasyankes,
+        tanggal: {
+          gte: today,
+          lt: tomorrow,
+        },
+      },
+      orderBy: {
+        id: 'desc',
+      },
+    });
+
+    this.queueGateway.emitLastAntrianAdmisi(antrianToday);
+
+    return { antrianToday };
+  }
+
+  async panggilAntrianAdmisi(id: number) {
     try {
       const antrian = await this.prisma.antrianAdmisi.findUnique({
-        where: { id, idFasyankes },
+        where: { id },
       });
 
       if (antrian) {
+        const newNomor = antrian.nomor.replace(/-0*/g, '');
+        const message = newNomor;
+        await this.queueGateway.emitLastAntrian(antrian.nomor, message);
+
         return {
           success: true,
           message: 'Antrian ditemukan',
@@ -85,6 +117,9 @@ export class AntrianService {
         data: newAntrian,
       });
 
+      // Emit the updated latest antrian to connected clients
+      await this.getAllAntrianAdmisiToday(idFasyankes);
+
       return {
         success: true,
         message: 'Antrian berhasil disimpan',
@@ -117,7 +152,7 @@ export class AntrianService {
       };
     }
 
-    await this.prisma.antrianPasien.update({
+    const updatedPasien = await this.prisma.antrianPasien.update({
       where: {
         id: id,
       },
