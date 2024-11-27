@@ -9,10 +9,14 @@ import {
 import { formatISO } from 'date-fns';
 import { PrismaService } from 'src/service/prisma.service';
 import { RegisPasienDto } from './dto/regis-pasien.dto';
+import { QueueGateway } from 'src/queue/queue.gateway';
 
 @Injectable()
 export class PasienService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private queueGateway: QueueGateway,
+  ) {}
 
   private convertDay(num) {
     let dayName;
@@ -62,6 +66,48 @@ export class PasienService {
     const nextQueueNumber = countToday + 1;
     const paddedNumber = nextQueueNumber.toString().padStart(4, '0');
     return `P-${paddedNumber}`;
+  }
+
+  async queryFindFasyankes(idFasyankes: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return await this.findAllRegistrasi({
+      where: {
+        isClose: false,
+        AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
+        idFasyankes: idFasyankes,
+      },
+      orderBy: {
+        id: 'desc',
+      },
+      include: {
+        antrian: true,
+        doctor: {
+          select: {
+            name: true,
+            availableDays: true,
+            availableTimes: true,
+          },
+        },
+        episodePendaftaran: {
+          include: {
+            pasien: {
+              select: {
+                noRm: true,
+                namaPasien: true,
+                jenisKelamin: true,
+                kelurahan: true,
+                id: true,
+                paspor: true,
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   async createRegis(
@@ -166,7 +212,7 @@ export class PasienService {
             subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
           },
         });
-
+        await this.queryFindFasyankes(data.idFasyankes);
         return registrasi;
       } else {
         const count = await tx.pendaftaran.count({
@@ -226,6 +272,7 @@ export class PasienService {
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
             },
           });
+          await this.queryFindFasyankes(data.idFasyankes);
           return registrasi;
         } else {
           const episodeBaru = await tx.episodePendaftaran.create({
@@ -280,6 +327,7 @@ export class PasienService {
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
             },
           });
+          await this.queryFindFasyankes(data.idFasyankes);
           return registrasi;
         }
       }
@@ -411,11 +459,13 @@ export class PasienService {
     include?: Prisma.PendaftaranInclude;
   }): Promise<Pendaftaran[]> {
     const { where, orderBy, include } = params;
-    return this.prisma.pendaftaran.findMany({
+    const data = this.prisma.pendaftaran.findMany({
       where,
       orderBy,
       include,
     });
+    this.queueGateway.emitDataAntrianPasien(data);
+    return data;
   }
 
   async findOne(params: { where?: Prisma.PasienWhereInput }): Promise<Pasien> {

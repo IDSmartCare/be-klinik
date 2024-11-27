@@ -10,6 +10,7 @@ export class AntrianService {
     private queueGateway: QueueGateway,
   ) {}
 
+  // Di tampilan admin yang Pendaftaran/Antrian Admisi
   async getAllAntrianAdmisiToday(idFasyankes: string) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -29,7 +30,7 @@ export class AntrianService {
       },
     });
 
-    this.queueGateway.emitLastAntrianAdmisi(antrianToday);
+    this.queueGateway.emitDataAntrianAdmisi(antrianToday);
 
     return { antrianToday };
   }
@@ -43,7 +44,43 @@ export class AntrianService {
       if (antrian) {
         const newNomor = antrian.nomor.replace(/-0*/g, '');
         const message = newNomor;
-        await this.queueGateway.emitLastAntrian(antrian.nomor, message);
+        await this.queueGateway.emitPanggilAntrianAdmisi(
+          antrian.nomor,
+          message,
+        );
+
+        return {
+          success: true,
+          message: 'Antrian ditemukan',
+          data: antrian,
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Antrian tidak ditemukan',
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Terjadi kesalahan, silakan coba lagi.',
+        error: error.message,
+      };
+    }
+  }
+  async panggilAntrianPasien(id: number) {
+    try {
+      const antrian = await this.prisma.antrianPasien.findUnique({
+        where: { id },
+      });
+
+      if (antrian) {
+        const newNomor = antrian.nomor.replace(/-0*/g, '');
+        const message = newNomor;
+        await this.queueGateway.emitPanggilAntrianPasien(
+          antrian.nomor,
+          message,
+        );
 
         return {
           success: true,
@@ -117,7 +154,6 @@ export class AntrianService {
         data: newAntrian,
       });
 
-      // Emit the updated latest antrian to connected clients
       await this.getAllAntrianAdmisiToday(idFasyankes);
 
       return {
@@ -132,40 +168,5 @@ export class AntrianService {
         error: error.message,
       };
     }
-  }
-
-  async panggilAntrianPasien(id: number, idFasyankes: string) {
-    const pasien = await this.prisma.antrianPasien.findFirst({
-      where: {
-        id,
-        idFasyankes,
-      },
-      include: {
-        pendaftaran: true,
-      },
-    });
-
-    if (!pasien) {
-      return {
-        success: false,
-        message: 'Pasien tidak ditemukan.',
-      };
-    }
-
-    const updatedPasien = await this.prisma.antrianPasien.update({
-      where: {
-        id: id,
-      },
-      data: {
-        status: 'Sudah Dipanggil',
-        jumlahPanggil: pasien.jumlahPanggil + 1,
-        updatedAt: new Date(),
-      },
-    });
-
-    return {
-      success: true,
-      message: 'Memanggil Nomor : ' + pasien.nomor,
-    };
   }
 }
