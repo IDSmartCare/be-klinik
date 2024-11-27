@@ -114,7 +114,7 @@ export class PasienService {
     data: RegisPasienDto,
     userRole?: string,
     userPackage?: string,
-  ): Promise<Pendaftaran> {
+  ): Promise<{ registrasi: Pendaftaran; nomorAntrian: string }> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
@@ -213,7 +213,7 @@ export class PasienService {
           },
         });
         await this.queryFindFasyankes(data.idFasyankes);
-        return registrasi;
+        return { registrasi, nomorAntrian };
       } else {
         const count = await tx.pendaftaran.count({
           where: {
@@ -273,7 +273,7 @@ export class PasienService {
             },
           });
           await this.queryFindFasyankes(data.idFasyankes);
-          return registrasi;
+          return { registrasi, nomorAntrian };
         } else {
           const episodeBaru = await tx.episodePendaftaran.create({
             data: {
@@ -328,7 +328,7 @@ export class PasienService {
             },
           });
           await this.queryFindFasyankes(data.idFasyankes);
-          return registrasi;
+          return { registrasi, nomorAntrian };
         }
       }
     });
