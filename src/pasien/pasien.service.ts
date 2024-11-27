@@ -134,9 +134,9 @@ export class PasienService {
         );
       }
     }
+    const nomorAntrian = await this.generateQueueNumber(data.idFasyankes);
 
     const transaksi = await this.prisma.$transaction(async (tx) => {
-      const nomorAntrian = await this.generateQueueNumber(data.idFasyankes);
       const tarifAdm = await tx.masterTarif.findFirst({
         where: {
           idFasyankes: data.idFasyankes,
@@ -212,7 +212,7 @@ export class PasienService {
             subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
           },
         });
-        await this.queryFindFasyankes(data.idFasyankes);
+        this.queueGateway;
         return { registrasi, nomorAntrian };
       } else {
         const count = await tx.pendaftaran.count({
@@ -272,7 +272,6 @@ export class PasienService {
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
             },
           });
-          await this.queryFindFasyankes(data.idFasyankes);
           return { registrasi, nomorAntrian };
         } else {
           const episodeBaru = await tx.episodePendaftaran.create({
@@ -282,6 +281,7 @@ export class PasienService {
               idFasyankes: data.idFasyankes,
             },
           });
+
           const registrasi = await tx.pendaftaran.create({
             data: {
               episodePendaftaranId: episodeBaru.id,
@@ -327,11 +327,12 @@ export class PasienService {
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
             },
           });
-          await this.queryFindFasyankes(data.idFasyankes);
           return { registrasi, nomorAntrian };
         }
       }
     });
+
+    await this.queryFindFasyankes(data.idFasyankes);
     return transaksi;
   }
 
@@ -459,12 +460,13 @@ export class PasienService {
     include?: Prisma.PendaftaranInclude;
   }): Promise<Pendaftaran[]> {
     const { where, orderBy, include } = params;
-    const data = this.prisma.pendaftaran.findMany({
+
+    const data = await this.prisma.pendaftaran.findMany({
       where,
       orderBy,
       include,
     });
-    this.queueGateway.emitDataAntrianPasien(data);
+    await this.queueGateway.emitDataAntrianPasien(data);
     return data;
   }
 

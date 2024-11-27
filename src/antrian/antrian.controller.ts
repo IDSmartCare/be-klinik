@@ -25,7 +25,7 @@ export class AntrianController {
     return await this.antrianService.storeAntrianAdmisi(dto);
   }
   @UseGuards(AuthGuard)
-  @Get('/pasien/:id/:idFasyankes')
+  @Get('/pasien/:id')
   async panggilAntrianPasien(@Param('id') id: string) {
     return this.antrianService.panggilAntrianPasien(+id);
   }
