@@ -88,6 +88,7 @@ export class PasienService {
         doctor: {
           select: {
             name: true,
+            unit: true,
             availableDays: true,
             availableTimes: true,
           },
@@ -180,6 +181,7 @@ export class PasienService {
           data: {
             nomor: nomorAntrian,
             tanggal: new Date(),
+            doctorId: data.doctorId,
             jumlahPanggil: 0,
             status: 'Belum Dipanggil',
             idFasyankes: data.idFasyankes,
@@ -240,6 +242,7 @@ export class PasienService {
             data: {
               nomor: nomorAntrian,
               tanggal: new Date(),
+              doctorId: data.doctorId,
               jumlahPanggil: 0,
               status: 'Belum Dipanggil',
               idFasyankes: data.idFasyankes,
@@ -297,6 +300,7 @@ export class PasienService {
               nomor: nomorAntrian,
               tanggal: new Date(),
               jumlahPanggil: 0,
+              doctorId: data.doctorId,
               status: 'Belum Dipanggil',
               idFasyankes: data.idFasyankes,
               pendaftaranId: registrasi.id,

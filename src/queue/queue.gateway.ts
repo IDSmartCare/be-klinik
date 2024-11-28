@@ -27,9 +27,13 @@ export class QueueGateway {
     }
   }
   // MANGGIL ANTRIAN PASIEN
-  async emitPanggilAntrianPasien(antrian: string, message: string) {
+  async emitPanggilAntrianPasien(
+    antrian: string,
+    message: string,
+    poli: string,
+  ) {
     try {
-      this.server.emit('panggilAntrianPasien', { antrian, message });
+      this.server.emit('panggilAntrianPasien', { antrian, message, poli });
     } catch (error) {
       console.error('Error emitting event', error);
     }
