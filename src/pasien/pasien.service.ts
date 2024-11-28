@@ -9,10 +9,14 @@ import {
 import { formatISO } from 'date-fns';
 import { PrismaService } from 'src/service/prisma.service';
 import { RegisPasienDto } from './dto/regis-pasien.dto';
+import { QueueGateway } from 'src/queue/queue.gateway';
 
 @Injectable()
 export class PasienService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private queueGateway: QueueGateway,
+  ) {}
 
   private convertDay(num) {
     let dayName;
@@ -64,11 +68,54 @@ export class PasienService {
     return `P-${paddedNumber}`;
   }
 
+  async queryFindFasyankes(idFasyankes: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return await this.findAllRegistrasi({
+      where: {
+        isClose: false,
+        AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
+        idFasyankes: idFasyankes,
+      },
+      orderBy: {
+        id: 'desc',
+      },
+      include: {
+        antrian: true,
+        doctor: {
+          select: {
+            name: true,
+            unit: true,
+            availableDays: true,
+            availableTimes: true,
+          },
+        },
+        episodePendaftaran: {
+          include: {
+            pasien: {
+              select: {
+                noRm: true,
+                namaPasien: true,
+                jenisKelamin: true,
+                kelurahan: true,
+                id: true,
+                paspor: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   async createRegis(
     data: RegisPasienDto,
     userRole?: string,
     userPackage?: string,
-  ): Promise<Pendaftaran> {
+  ): Promise<{ registrasi: Pendaftaran; nomorAntrian: string }> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
@@ -88,9 +135,9 @@ export class PasienService {
         );
       }
     }
+    const nomorAntrian = await this.generateQueueNumber(data.idFasyankes);
 
     const transaksi = await this.prisma.$transaction(async (tx) => {
-      const nomorAntrian = await this.generateQueueNumber(data.idFasyankes);
       const tarifAdm = await tx.masterTarif.findFirst({
         where: {
           idFasyankes: data.idFasyankes,
@@ -134,6 +181,7 @@ export class PasienService {
           data: {
             nomor: nomorAntrian,
             tanggal: new Date(),
+            doctorId: data.doctorId,
             jumlahPanggil: 0,
             status: 'Belum Dipanggil',
             idFasyankes: data.idFasyankes,
@@ -166,8 +214,8 @@ export class PasienService {
             subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
           },
         });
-
-        return registrasi;
+        this.queueGateway;
+        return { registrasi, nomorAntrian };
       } else {
         const count = await tx.pendaftaran.count({
           where: {
@@ -194,6 +242,7 @@ export class PasienService {
             data: {
               nomor: nomorAntrian,
               tanggal: new Date(),
+              doctorId: data.doctorId,
               jumlahPanggil: 0,
               status: 'Belum Dipanggil',
               idFasyankes: data.idFasyankes,
@@ -226,7 +275,7 @@ export class PasienService {
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
             },
           });
-          return registrasi;
+          return { registrasi, nomorAntrian };
         } else {
           const episodeBaru = await tx.episodePendaftaran.create({
             data: {
@@ -235,6 +284,7 @@ export class PasienService {
               idFasyankes: data.idFasyankes,
             },
           });
+
           const registrasi = await tx.pendaftaran.create({
             data: {
               episodePendaftaranId: episodeBaru.id,
@@ -250,6 +300,7 @@ export class PasienService {
               nomor: nomorAntrian,
               tanggal: new Date(),
               jumlahPanggil: 0,
+              doctorId: data.doctorId,
               status: 'Belum Dipanggil',
               idFasyankes: data.idFasyankes,
               pendaftaranId: registrasi.id,
@@ -280,10 +331,12 @@ export class PasienService {
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
             },
           });
-          return registrasi;
+          return { registrasi, nomorAntrian };
         }
       }
     });
+
+    await this.queryFindFasyankes(data.idFasyankes);
     return transaksi;
   }
 
@@ -411,11 +464,14 @@ export class PasienService {
     include?: Prisma.PendaftaranInclude;
   }): Promise<Pendaftaran[]> {
     const { where, orderBy, include } = params;
-    return this.prisma.pendaftaran.findMany({
+
+    const data = await this.prisma.pendaftaran.findMany({
       where,
       orderBy,
       include,
     });
+    await this.queueGateway.emitDataAntrianPasien(data);
+    return data;
   }
 
   async findOne(params: { where?: Prisma.PasienWhereInput }): Promise<Pasien> {

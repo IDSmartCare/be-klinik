@@ -8,19 +8,15 @@ export class AntrianController {
   constructor(private readonly antrianService: AntrianService) {}
 
   @UseGuards(AuthGuard)
-  @Get()
-  async findAll() {
-    return this.antrianService.findAll();
+  @Get('/admisi/:id')
+  async findOne(@Param('id') id: string) {
+    return this.antrianService.panggilAntrianAdmisi(+id);
   }
 
   @UseGuards(AuthGuard)
-  @Get('/admisi/:id/:idFasyankes')
-  async findOne(
-    @Param('id') id: string,
-    @Param('idFasyankes') idFasyankes: string,
-  ) {
-    const idAsNumber = parseInt(id, 10);
-    return this.antrianService.panggilAntrianAdmisi(idAsNumber, idFasyankes);
+  @Get('/all/admisi/:idFasyankes')
+  async getAllAntrianAdmisiToday(@Param('idFasyankes') idFasyankes: string) {
+    return this.antrianService.getAllAntrianAdmisiToday(idFasyankes);
   }
 
   @UseGuards(AuthGuard)
@@ -29,11 +25,8 @@ export class AntrianController {
     return await this.antrianService.storeAntrianAdmisi(dto);
   }
   @UseGuards(AuthGuard)
-  @Get('/pasien/:id/:idFasyankes')
-  async panggilAntrianPasien(
-    @Param('id') id: number,
-    @Param('idFasyankes') idFasyankes: string,
-  ) {
-    return this.antrianService.panggilAntrianPasien(id, idFasyankes);
+  @Get('/pasien/:id')
+  async panggilAntrianPasien(@Param('id') id: string) {
+    return this.antrianService.panggilAntrianPasien(+id);
   }
 }

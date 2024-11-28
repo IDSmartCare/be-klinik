@@ -147,7 +147,7 @@ export class PasienController {
       userRole: string;
       userPackage: string;
     },
-  ): Promise<Pendaftaran> {
+  ): Promise<{ registrasi: Pendaftaran; nomorAntrian: string }> {
     try {
       return await this.pasienService.createRegis(
         data.pasienData,

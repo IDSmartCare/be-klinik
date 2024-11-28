@@ -29,6 +29,7 @@ import { AssessmentAnswerModule } from './assessment-answer/assessment-answer.mo
 import { PlanAnswerModule } from './plan-answer/plan-answer.module';
 import { InstructionAnswerModule } from './instruction-answer/instruction-answer.module';
 import { AntrianModule } from './antrian/antrian.module';
+import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { AntrianModule } from './antrian/antrian.module';
     PlanAnswerModule,
     InstructionAnswerModule,
     AntrianModule,
+    QueueModule,
   ],
   controllers: [AppController],
   providers: [AppService],
