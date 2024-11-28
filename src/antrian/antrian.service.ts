@@ -92,8 +92,16 @@ export class AntrianService {
         where: { id },
         include: {
           doctor: {
-            select: {
-              unit: true,
+            include: {
+              poliKlinik: {
+                include: {
+                  masterVoicePoli: {
+                    select: {
+                      url: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -129,7 +137,7 @@ export class AntrianService {
       await this.queueGateway.emitPanggilAntrianPasien(
         updatedAntrian.nomor,
         message,
-        antrian.doctor.unit.replace(/\s+/g, '').toLowerCase(),
+        antrian.doctor.poliKlinik.masterVoicePoli.url,
       );
 
       return {
@@ -183,7 +191,7 @@ export class AntrianService {
         const lastNomor = lastAntrian.nomor;
         const lastNumber = parseInt(lastNomor.split('-')[1]);
         const newNumber = lastNumber + 1;
-        nomorBaru =`A-${newNumber.toString().padStart(4, '0')}`;
+        nomorBaru = `A-${newNumber.toString().padStart(4, '0')}`;
       }
 
       const newAntrian = {
