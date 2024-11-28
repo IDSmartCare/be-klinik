@@ -41,25 +41,43 @@ export class AntrianService {
         where: { id },
       });
 
-      if (antrian) {
-        const newNomor = antrian.nomor.replace(/-0*/g, '');
-        const message = newNomor;
-        await this.queueGateway.emitPanggilAntrianAdmisi(
-          antrian.nomor,
-          message,
-        );
-
-        return {
-          success: true,
-          message: 'Antrian ditemukan',
-          data: antrian,
-        };
-      } else {
+      if (!antrian) {
         return {
           success: false,
           message: 'Antrian tidak ditemukan',
         };
       }
+
+      if (antrian.jumlahPanggil >= 3) {
+        return {
+          success: false,
+          message: 'Pasien sudah dipanggil maksimal sebanyak 3 kali',
+        };
+      }
+
+      const updatedAntrian = await this.prisma.antrianAdmisi.update({
+        where: { id },
+        data: {
+          jumlahPanggil: {
+            increment: 1,
+          },
+          status: true,
+        },
+      });
+
+      const newNomor = updatedAntrian.nomor.replace(/-0*/g, '');
+      const message = newNomor;
+
+      await this.queueGateway.emitPanggilAntrianAdmisi(
+        updatedAntrian.nomor,
+        message,
+      );
+
+      return {
+        success: true,
+        message: 'Antrian ditemukan dan dipanggil',
+        data: updatedAntrian,
+      };
     } catch (error) {
       return {
         success: false,
@@ -81,26 +99,44 @@ export class AntrianService {
         },
       });
 
-      if (antrian) {
-        const newNomor = antrian.nomor.replace(/-0*/g, '');
-        const message = newNomor;
-        await this.queueGateway.emitPanggilAntrianPasien(
-          antrian.nomor,
-          message,
-          antrian.doctor.unit.replace(/\s+/g, '').toLowerCase(),
-        );
-
-        return {
-          success: true,
-          message: 'Antrian ditemukan',
-          data: antrian,
-        };
-      } else {
+      if (!antrian) {
         return {
           success: false,
           message: 'Antrian tidak ditemukan',
         };
       }
+
+      if (antrian.jumlahPanggil >= 3) {
+        return {
+          success: false,
+          message: 'Pasien sudah dipanggil maksimal sebanyak 3 kali',
+        };
+      }
+
+      const updatedAntrian = await this.prisma.antrianPasien.update({
+        where: { id },
+        data: {
+          jumlahPanggil: {
+            increment: 1,
+          },
+          status: true,
+        },
+      });
+
+      const newNomor = updatedAntrian.nomor.replace(/-0*/g, '');
+      const message = newNomor;
+
+      await this.queueGateway.emitPanggilAntrianPasien(
+        updatedAntrian.nomor,
+        message,
+        antrian.doctor.unit.replace(/\s+/g, '').toLowerCase(),
+      );
+
+      return {
+        success: true,
+        message: 'Antrian ditemukan dan dipanggil',
+        data: updatedAntrian,
+      };
     } catch (error) {
       return {
         success: false,
@@ -153,7 +189,6 @@ export class AntrianService {
       const newAntrian = {
         nomor: nomorBaru,
         tanggal: new Date(),
-        status: 'Belum Dipanggil',
         jumlahPanggil: updatedJumlahPanggil,
         idFasyankes,
       };
