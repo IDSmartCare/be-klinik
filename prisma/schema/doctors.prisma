@@ -22,4 +22,5 @@ model Doctors {
   jadwalDokter       JadwalDokter[]
   pendaftaran        Pendaftaran[]
   riwayatPendaftaran RiwayatPendaftaran[]
+  AntrianPasien      AntrianPasien[]
 }

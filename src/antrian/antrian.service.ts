@@ -72,6 +72,13 @@ export class AntrianService {
     try {
       const antrian = await this.prisma.antrianPasien.findUnique({
         where: { id },
+        include: {
+          doctor: {
+            select: {
+              unit: true,
+            },
+          },
+        },
       });
 
       if (antrian) {
@@ -80,6 +87,7 @@ export class AntrianService {
         await this.queueGateway.emitPanggilAntrianPasien(
           antrian.nomor,
           message,
+          antrian.doctor.unit.replace(/\s+/g, '').toLowerCase(),
         );
 
         return {
