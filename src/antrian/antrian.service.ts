@@ -183,7 +183,7 @@ export class AntrianService {
         const lastNomor = lastAntrian.nomor;
         const lastNumber = parseInt(lastNomor.split('-')[1]);
         const newNumber = lastNumber + 1;
-        nomorBaru = `A-${newNumber.toString().padStart(4, '0')}`;
+        nomorBaru =`A-${newNumber.toString().padStart(4, '0')}`;
       }
 
       const newAntrian = {
