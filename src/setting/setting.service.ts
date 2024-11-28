@@ -109,11 +109,18 @@ export class SettingService {
     });
   }
   async findAllVoicePoli(idFasyankes: string) {
-    return this.prisma.poliKlinik.findMany({
+    const voicePolis = await this.prisma.masterVoicePoli.findMany({
       where: {
         OR: [{ idFasyankes }, { idFasyankes: null }],
       },
     });
+
+    return voicePolis.map((voicePoli) => ({
+      namafile: `${voicePoli.namaPoli.toLowerCase().replace(/\s+/g, '')}.mp3`,
+      url: voicePoli.url,
+      namapoli: voicePoli.namaPoli,
+      idFasyankes: voicePoli.idFasyankes,
+    }));
   }
 
   async findPoli(params: {
