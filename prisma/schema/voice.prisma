@@ -1,6 +1,6 @@
 model MasterVoicePoli {
   id            Int          @id @default(autoincrement())
-  idFasyankes   String
+  idFasyankes   String?
   url           String
   namaPoli      String
   createdAt     DateTime     @default(now())

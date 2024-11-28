@@ -3,6 +3,7 @@ export class CreatePoliDto {
   namaPoli: string;
   kodePoli?: string;
   idFasyankes: string;
+  voiceId: number;
 }
 
 export class CreateJadwalDto {
@@ -12,5 +13,3 @@ export class CreateJadwalDto {
   jamPraktek: string;
   idFasyankes: string;
 }
-
-

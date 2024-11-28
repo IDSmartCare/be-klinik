@@ -108,6 +108,13 @@ export class SettingService {
       data: createPoli,
     });
   }
+  async findAllVoicePoli(idFasyankes: string) {
+    return this.prisma.poliKlinik.findMany({
+      where: {
+        OR: [{ idFasyankes }, { idFasyankes: null }],
+      },
+    });
+  }
 
   async findPoli(params: {
     where: Prisma.PoliKlinikWhereInput;

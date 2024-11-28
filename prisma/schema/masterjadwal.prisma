@@ -6,8 +6,8 @@ model PoliKlinik {
   createdAt        DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt        DateTime  @updatedAt @db.Timestamptz(6)
   idFasyankes      String?   @db.VarChar(30)
-  voiceId          Int
-  MasterVoicePoli  MasterVoicePoli? @relation(fields: [voiceId], references: [id])
+  voiceId          Int?
+  masterVoicePoli  MasterVoicePoli? @relation(fields: [voiceId], references: [id])
   dokter           Doctors[]
   Profile          Profile[]
 }
