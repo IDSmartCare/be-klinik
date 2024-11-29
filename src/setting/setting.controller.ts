@@ -46,6 +46,14 @@ export class SettingController {
     createVoicePoliDto.file = file;
     return this.settingService.createVoicePoli(createVoicePoliDto);
   }
+  @UseGuards(AuthGuard)
+  @Delete('/hapusvoicepoli/:id/:idFasyankes')
+  async deleteVoicePoli(
+    @Param('id') id: string,
+    @Param('idFasyankes') idFasyankes: string,
+  ) {
+    return this.settingService.deleteVoicePoli(+id, idFasyankes);
+  }
 
   @UseGuards(AuthGuard)
   @Get('/listpoli/:idfasyankes')

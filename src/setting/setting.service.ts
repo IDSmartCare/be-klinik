@@ -1,5 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePoliDto } from './dto/create-setting.dto';
 import { UpdateSettingDto } from './dto/update-setting.dto';
 import {
@@ -12,7 +18,11 @@ import {
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateVoicePoliDto } from './dto/create-voice-polis.dto';
 import { s3Client } from 'src/s3.config';
-import { ObjectCannedACL, PutObjectCommand } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  ObjectCannedACL,
+  PutObjectCommand,
+} from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -80,6 +90,45 @@ export class SettingService {
         idFasyankes: createVoicePoliDto.idFasyankes,
       },
     });
+  }
+  async deleteFile(fileKey: string): Promise<void> {
+    const params = {
+      Bucket: this.bucketName,
+      Key: fileKey,
+    };
+
+    try {
+      await s3Client.send(new DeleteObjectCommand(params));
+      console.log(`File deleted successfully: ${fileKey}`);
+    } catch (error) {
+      throw new Error(`Error deleting file from S3: ${error.message}`);
+    }
+  }
+  async deleteVoicePoli(
+    id: number,
+    idFasyankes: string,
+  ): Promise<{ success: boolean; message: string }> {
+    const voicePoli = await this.prisma.masterVoicePoli.findFirst({
+      where: { id, idFasyankes },
+    });
+
+    if (!voicePoli) {
+      throw new NotFoundException('Voice tidak ditemukan.');
+    }
+    const fileKey = voicePoli.url.replace(`${process.env.AWS_URL}/`, '');
+    try {
+      await this.deleteFile(fileKey);
+      await this.prisma.masterVoicePoli.delete({
+        where: { id },
+      });
+      return { success: true, message: 'Berhasil Menghapus Voice' };
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Gagal menghapus Voice, terjadi kesalahan.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async findPoli(params: {
