@@ -135,7 +135,7 @@ export class AntrianService {
       const message = newNomor;
 
       await this.queueGateway.emitPanggilAntrianPasien(
-        updatedAntrian.nomor,
+        antrian.nomor,
         message,
         antrian.doctor.poliKlinik.masterVoicePoli.url,
       );
