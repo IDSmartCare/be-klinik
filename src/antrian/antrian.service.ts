@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateAntrianAdmisiDto } from './dto/create-admisi.dto';
 import { QueueGateway } from 'src/queue/queue.gateway';
+import { PasienService } from 'src/pasien/pasien.service';
 
 @Injectable()
 export class AntrianService {
   constructor(
     private prisma: PrismaService,
     private queueGateway: QueueGateway,
+    private pasienService : PasienService
   ) {}
 
   // Di tampilan admin yang Pendaftaran/Antrian Admisi
@@ -73,6 +75,8 @@ export class AntrianService {
         message,
       );
 
+      await this.getAllAntrianAdmisiToday(updatedAntrian.idFasyankes);
+
       return {
         success: true,
         message: 'Antrian ditemukan dan dipanggil',
@@ -128,7 +132,7 @@ export class AntrianService {
             increment: 1,
           },
           status: true,
-        },  
+        },
       });
 
       const newNomor = updatedAntrian.nomor.replace(/-0*/g, '');
@@ -139,6 +143,8 @@ export class AntrianService {
         message,
         antrian.doctor.poliKlinik.masterVoicePoli.url,
       );
+
+      await this.pasienService.queryFindFasyankes(antrian.idFasyankes)
 
       return {
         success: true,
