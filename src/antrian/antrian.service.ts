@@ -128,7 +128,7 @@ export class AntrianService {
             increment: 1,
           },
           status: true,
-        },
+        },  
       });
 
       const newNomor = updatedAntrian.nomor.replace(/-0*/g, '');
@@ -163,17 +163,6 @@ export class AntrianService {
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
 
-      const countToday = await this.prisma.antrianAdmisi.count({
-        where: {
-          tanggal: {
-            gte: today,
-            lt: tomorrow,
-          },
-        },
-      });
-
-      const updatedJumlahPanggil = countToday + 1;
-
       const lastAntrian = await this.prisma.antrianAdmisi.findFirst({
         orderBy: {
           nomor: 'desc',
@@ -197,7 +186,7 @@ export class AntrianService {
       const newAntrian = {
         nomor: nomorBaru,
         tanggal: new Date(),
-        jumlahPanggil: updatedJumlahPanggil,
+        jumlahPanggil: 0,
         idFasyankes,
       };
 
