@@ -55,4 +55,4 @@ RUN ls -l dist
 EXPOSE 80
 
 # Jalankan aplikasi menggunakan dumb-init untuk menangani sinyal proses dengan benar
-CMD ["dumb-init", "node", "dist"]
+CMD ["dumb-init", "node", "dist/main.js"]
