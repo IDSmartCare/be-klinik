@@ -50,7 +50,9 @@ COPY --chown=node:node --from=builder /app/node_modules/.prisma/client  ./node_m
 # Set environment variable untuk menentukan mode produksi
 ENV NODE_ENV production
 
-# Expose port 3000 yang akan digunakan oleh aplikasi
+RUN ls -l dist && ls -l dist/src 
+
+# Expose port 80 yang akan digunakan oleh aplikasi
 EXPOSE 80
 
 # Jalankan aplikasi menggunakan dumb-init untuk menangani sinyal proses dengan benar
