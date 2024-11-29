@@ -18,8 +18,7 @@ COPY . ./
 #RUN cp .env.docker .env
 
 # Generate Prisma client dan build aplikasi
-RUN npx prisma generate \
-    && npm run build
+RUN npx prisma generate && npm run build
 
 # Tahap 2: Production Stage
 # Menggunakan image Node.js 20.17.0 dengan Alpine sebagai base image untuk lingkungan produksi
