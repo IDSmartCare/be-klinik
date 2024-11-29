@@ -33,9 +33,10 @@ export class SettingController {
 
   @UseGuards(AuthGuard)
   @Get('/voicepoli/:idFasyankes')
-  async findAllVoicePoli(@Param('idfasyankes') idFasyankes?: string) {
+  async findAllVoicePoli(@Param('idFasyankes') idFasyankes: string) {
     return this.settingService.findAllVoicePoli(idFasyankes);
   }
+
   @UseGuards(AuthGuard)
   @Post('/createvoicepoli')
   @UseInterceptors(FileInterceptor('file'))

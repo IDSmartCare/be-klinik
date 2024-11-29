@@ -3,4 +3,4 @@ export class CreateVoicePoliDto {
   file?: Express.Multer.File;
   namaPoli: string;
   namaFasyankes: string;
-}
+} 

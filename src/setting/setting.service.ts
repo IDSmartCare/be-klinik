@@ -24,17 +24,19 @@ export class SettingService {
       data: createPoli,
     });
   }
+
   async findAllVoicePoli(idFasyankes: string) {
     const voicePolis = await this.prisma.masterVoicePoli.findMany({
       where: {
-        OR: [{ idFasyankes }, { idFasyankes: null }],
+        OR: [{ idFasyankes: idFasyankes }, { idFasyankes: null }],
       },
     });
 
     return voicePolis.map((voicePoli) => ({
-      namafile: `${voicePoli.namaPoli.toLowerCase().replace(/\s+/g, '')}.mp3`,
+      id: voicePoli.id,
+      namaFile: `${voicePoli.namaPoli.toLowerCase().replace(/\s+/g, '')}.mp3`,
       url: voicePoli.url,
-      namapoli: voicePoli.namaPoli,
+      namaPoli: voicePoli.namaPoli,
       idFasyankes: voicePoli.idFasyankes,
     }));
   }
