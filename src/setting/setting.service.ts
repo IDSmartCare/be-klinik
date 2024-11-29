@@ -24,6 +24,7 @@ import {
   PutObjectCommand,
 } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
+import { UpdateVoicePolisDto } from './dto/update-voice-polis.dto';
 
 @Injectable()
 export class SettingService {
@@ -90,6 +91,31 @@ export class SettingService {
         namaPoli: createVoicePoliDto.namaPoli,
         url: urlFile,
         idFasyankes: createVoicePoliDto.idFasyankes,
+      },
+    });
+  }
+
+  async updateVoicePoli(id: number, updateVoicePolisDto: UpdateVoicePolisDto) {
+    const idFasyankes = updateVoicePolisDto.idFasyankes;
+    const voicePoli = await this.prisma.masterVoicePoli.findFirst({
+      where: { id, idFasyankes },
+    });
+    if (!voicePoli) {
+      throw new NotFoundException('Voice Poli Tidak Ditemukan.');
+    }
+    const namaFasyankes = updateVoicePolisDto.namaFasyankes
+      .replace(/\s+/g, '')
+      .toLowerCase();
+    const namaPoli = updateVoicePolisDto.namaPoli
+      .replace(/\s+/g, '')
+      .toLowerCase();
+    const fileName = `${namaFasyankes}_${namaPoli}_${randomUUID()}.mp3`;
+    const urlFile = await this.uploadFile(updateVoicePolisDto.file, fileName);
+    return this.prisma.masterVoicePoli.update({
+      where: { id, idFasyankes },
+      data: {
+        namaPoli: updateVoicePolisDto.namaPoli,
+        url: urlFile,
       },
     });
   }

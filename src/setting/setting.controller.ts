@@ -20,6 +20,7 @@ import { MasterVoicePoli, PoliKlinik } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateVoicePoliDto } from './dto/create-voice-polis.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateVoicePolisDto } from './dto/update-voice-polis.dto';
 
 @Controller('setting')
 export class SettingController {
@@ -46,6 +47,17 @@ export class SettingController {
   ): Promise<MasterVoicePoli> {
     createVoicePoliDto.file = file;
     return this.settingService.createVoicePoli(createVoicePoliDto);
+  }
+  @UseGuards(AuthGuard)
+  @Patch('/updatevoicepoli/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  async updateVoicePoli(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id') id: string,
+    @Body() updateVoicePolisDto: UpdateVoicePolisDto,
+  ) {
+    updateVoicePolisDto.file = file;
+    return this.settingService.updateVoicePoli(+id, updateVoicePolisDto);
   }
   @UseGuards(AuthGuard)
   @Delete('/hapusvoicepoli/:id/:idFasyankes')
