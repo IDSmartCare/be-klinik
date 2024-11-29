@@ -59,6 +59,15 @@ export class SettingController {
     return this.settingService.updateVoicePoli(+id, updateVoicePolisDto);
   }
   @UseGuards(AuthGuard)
+  @Get('/detailvoice/:id/:idFasyankes')
+  async detailVoicePoli(
+    @Param('id') id: string,
+    @Param('idFasyankes') idFasyankes: string,
+  ) {
+    return this.settingService.detailVoicePoli(+id, idFasyankes);
+  }
+
+  @UseGuards(AuthGuard)
   @Delete('/hapusvoicepoli/:id/:idFasyankes')
   async deleteVoicePoli(
     @Param('id') id: string,

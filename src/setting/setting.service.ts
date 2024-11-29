@@ -157,6 +157,16 @@ export class SettingService {
     }
   }
 
+  async detailVoicePoli(id: number, idFasyankes: string) {
+    const voicePoli = await this.prisma.masterVoicePoli.findFirst({
+      where: { id, idFasyankes },
+    });
+    if (!voicePoli) {
+      throw new NotFoundException('Voice Poli Tidak Ditemukan.');
+    }
+    return { success: true, data: voicePoli };
+  }
+
   async findPoli(params: {
     where: Prisma.PoliKlinikWhereInput;
   }): Promise<PoliKlinik[]> {
