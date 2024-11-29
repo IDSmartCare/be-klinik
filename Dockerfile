@@ -9,8 +9,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install semua dependensi, termasuk Prisma
-RUN npm install \
-    && npm cache clean --force
+RUN npm install && npm cache clean --force
 
 # Copy seluruh kode sumber ke dalam image
 COPY . ./
