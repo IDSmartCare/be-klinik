@@ -87,11 +87,12 @@ release:
 deploy:
   stage: deploy
   script:
-    - echo "Deploying $CI_REG_PROJECT_NAME to production..."
-    - apk add curl
+    - echo "Deploying $APP_NAME application to VM..."
+    - apk update && apk add --no-cache ca-certificates curl bash
+    - cp /etc/gitlab-runner/certs/ca.crt /usr/local/share/ca-certificates/custom-ca.crt && update-ca-certificates
     - echo "Validating required environment variables..."
     - echo "Using DEPLOYMENT_API ":"" "$DEPLOYMENT_API"
-    - echo "Using RNC_TOKEN ":"" "(hidden)"
+    - echo "Using TOKEN_API ":"" "(hidden)"
     - echo "Using IMAGE_TAG ":"" "$IMAGE_TAG"
     - >
       if [ -z "$DEPLOYMENT_API" ] || [ -z "$TOKEN_API" ] || [ -z "$IMAGE_TAG" ]; then
@@ -100,7 +101,7 @@ deploy:
       fi
     - echo "Downloading deployment script..."
     - >
-      curl --fail -o /tmp/curl-deploy.sh https://gitlab.com/go-public1/ci-library/-/raw/main/script-deployment-k8s.sh ||
+      curl --fail -o /tmp/curl-deploy.sh https://dns-gits.dnstech.co.id/go-public/ci-library/-/raw/main/script-deployment-k8s.sh ||
       { echo "Error: Failed to download deployment script." >&2; exit 1; }
     - echo "Customizing deployment script..."
     - sed -i "s|DEPLOYMENT_API|$DEPLOYMENT_API|g" /tmp/curl-deploy.sh
@@ -109,7 +110,6 @@ deploy:
     - chmod +x /tmp/curl-deploy.sh
     - cat /tmp/curl-deploy.sh
     - echo "Executing deployment script..."
-    - sh /tmp/curl-deploy.sh
-#  when: manual # Deployment dilakukan manual
+    - bash -x /tmp/curl-deploy.sh
 
 
