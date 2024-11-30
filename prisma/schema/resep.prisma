@@ -1,0 +1,18 @@
+model ResepDokter {
+  id          Int      @id @default(autoincrement())
+  namaObat    String?
+  obatId      String?
+  jumlah      Int?
+  satuan      String?  @db.VarChar(50)
+  signa1      String?  @db.VarChar(3)
+  signa2      String?  @db.VarChar(3)
+  aturanPakai String?  @db.VarChar(100)
+  waktu       String?  @db.VarChar(50)
+  hargaJual   String?  @db.VarChar(40)
+  stok        Int?
+  catatan     String?
+  SOAP        SOAP?    @relation(fields: [sOAPId], references: [id])
+  sOAPId      Int?
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+}

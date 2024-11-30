@@ -1,0 +1,32 @@
+model PoliKlinik {
+  id          Int       @id @default(autoincrement())
+  namaPoli    String    @db.VarChar(100)
+  kodePoli    String?   @db.VarChar(10)
+  isAktif     Boolean?  @default(true)
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @db.Timestamptz
+  dokter      Doctors[]
+  idFasyankes String?   @db.VarChar(30)
+
+  Profile Profile[]
+}
+
+model JadwalDokter {
+  id                Int                   @id @default(autoincrement())
+  doctorId          Int
+  //new
+  doctor            Doctors               @relation(fields: [doctorId], references: [id])
+  // availableDayId    Int
+  // availableDay      DoctorAvailableDays   @relation(fields: [availableDayId], references: [id])
+
+  hari              String?
+  // availableTimeId   Int
+  // availableTime     DoctorAvailableTimes  @relation(fields: [availableTimeId], references: [id])
+  // registrasi        Pendaftaran[]
+  // dokterId          Int
+  // dokter            Profile               @relation(fields: [dokterId], references: [id])
+  isAktif           Boolean               @default(true)
+  createdAt         DateTime              @default(now()) @db.Timestamptz
+  updatedAt         DateTime              @updatedAt @db.Timestamptz
+  idFasyankes       String?               @db.VarChar(30)
+}

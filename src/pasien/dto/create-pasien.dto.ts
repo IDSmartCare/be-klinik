@@ -1,0 +1,47 @@
+/* eslint-disable prettier/prettier */
+export class CreatePasienDto {
+  id?: number;
+  noRm?: string;
+  namaPasien: string;
+  wargaNegara?: any;
+  nik?: string;
+  bpjs?: string;
+  noAsuransi?: string;
+  paspor?: string;
+  bahasa?: string;
+  noHp: string;
+  tempatLahir: string;
+  tanggalLahir: string;
+  jenisKelamin: string;
+  statusMenikah: any;
+  agama: any;
+  alamat: string;
+  ibuKandung: string;
+  provinsi: any;
+  idProv: string;
+  kota: any;
+  idKota: string;
+  kecamatan: any;
+  idKecamatan: string;
+  kelurahan: any;
+  idKelurahan: string;
+  pendidikan: any;
+  pekerjaan: any;
+  rt: number;
+  rw: number;
+  kodePos?: string;
+  alamatDomisili: string;
+  provinsiDomisili: any;
+  kotaDomisili: any;
+  kecamatanDomisili: any;
+  kelurahanDomisili: any;
+  idProvDomisili: string;
+  idKotaDomisili: string;
+  idKecamatanDomisili: string;
+  idKelurahanDomisili: string;
+  rtDomisili: number;
+  rwDomisili: number;
+  kodePosDomisili?: string;
+  isAktif?: boolean;
+  idFasyankes?: string;
+}
