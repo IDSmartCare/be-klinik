@@ -175,6 +175,9 @@ export class PasienService {
             nomorAsuransi: data.nomorAsuransi,
             idFasyankes: data.idFasyankes,
           },
+          include: {
+            doctor: true,
+          },
         });
 
         await tx.antrianPasien.create({
@@ -236,6 +239,9 @@ export class PasienService {
               nomorAsuransi: data.nomorAsuransi,
               idFasyankes: data.idFasyankes,
             },
+            include: {
+              doctor: true,
+            },
           });
           await tx.antrianPasien.create({
             data: {
@@ -291,6 +297,9 @@ export class PasienService {
               namaAsuransi: data.namaAsuransi,
               nomorAsuransi: data.nomorAsuransi,
               idFasyankes: data.idFasyankes,
+            },
+            include: {
+              doctor: true,
             },
           });
           await tx.antrianPasien.create({
