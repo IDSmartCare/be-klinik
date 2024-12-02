@@ -175,6 +175,9 @@ export class PasienService {
             nomorAsuransi: data.nomorAsuransi,
             idFasyankes: data.idFasyankes,
           },
+          include: {
+            doctor: true,
+          },
         });
 
         await tx.antrianPasien.create({
@@ -183,7 +186,6 @@ export class PasienService {
             tanggal: new Date(),
             doctorId: data.doctorId,
             jumlahPanggil: 0,
-            status: 'Belum Dipanggil',
             idFasyankes: data.idFasyankes,
             pendaftaranId: registrasi.id,
           },
@@ -237,6 +239,9 @@ export class PasienService {
               nomorAsuransi: data.nomorAsuransi,
               idFasyankes: data.idFasyankes,
             },
+            include: {
+              doctor: true,
+            },
           });
           await tx.antrianPasien.create({
             data: {
@@ -244,7 +249,6 @@ export class PasienService {
               tanggal: new Date(),
               doctorId: data.doctorId,
               jumlahPanggil: 0,
-              status: 'Belum Dipanggil',
               idFasyankes: data.idFasyankes,
               pendaftaranId: registrasi.id,
             },
@@ -294,6 +298,9 @@ export class PasienService {
               nomorAsuransi: data.nomorAsuransi,
               idFasyankes: data.idFasyankes,
             },
+            include: {
+              doctor: true,
+            },
           });
           await tx.antrianPasien.create({
             data: {
@@ -301,7 +308,6 @@ export class PasienService {
               tanggal: new Date(),
               jumlahPanggil: 0,
               doctorId: data.doctorId,
-              status: 'Belum Dipanggil',
               idFasyankes: data.idFasyankes,
               pendaftaranId: registrasi.id,
             },

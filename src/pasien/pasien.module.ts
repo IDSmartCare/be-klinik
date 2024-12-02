@@ -9,5 +9,6 @@ import { QueueModule } from 'src/queue/queue.module';
   controllers: [PasienController],
   providers: [PasienService],
   imports: [PrismaModule, QueueModule],
+  exports: [PasienService],
 })
 export class PasienModule {}

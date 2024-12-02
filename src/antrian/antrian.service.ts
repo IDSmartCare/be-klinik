@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/service/prisma.service';
 import { CreateAntrianAdmisiDto } from './dto/create-admisi.dto';
 import { QueueGateway } from 'src/queue/queue.gateway';
+import { PasienService } from 'src/pasien/pasien.service';
 
 @Injectable()
 export class AntrianService {
   constructor(
     private prisma: PrismaService,
     private queueGateway: QueueGateway,
+    private pasienService : PasienService
   ) {}
 
   // Di tampilan admin yang Pendaftaran/Antrian Admisi
@@ -41,25 +43,45 @@ export class AntrianService {
         where: { id },
       });
 
-      if (antrian) {
-        const newNomor = antrian.nomor.replace(/-0*/g, '');
-        const message = newNomor;
-        await this.queueGateway.emitPanggilAntrianAdmisi(
-          antrian.nomor,
-          message,
-        );
-
-        return {
-          success: true,
-          message: 'Antrian ditemukan',
-          data: antrian,
-        };
-      } else {
+      if (!antrian) {
         return {
           success: false,
           message: 'Antrian tidak ditemukan',
         };
       }
+
+      if (antrian.jumlahPanggil >= 3) {
+        return {
+          success: false,
+          message: 'Pasien sudah dipanggil maksimal sebanyak 3 kali',
+        };
+      }
+
+      const updatedAntrian = await this.prisma.antrianAdmisi.update({
+        where: { id },
+        data: {
+          jumlahPanggil: {
+            increment: 1,
+          },
+          status: true,
+        },
+      });
+
+      const newNomor = updatedAntrian.nomor.replace(/-0*/g, '');
+      const message = newNomor;
+
+      await this.queueGateway.emitPanggilAntrianAdmisi(
+        updatedAntrian.nomor,
+        message,
+      );
+
+      await this.getAllAntrianAdmisiToday(updatedAntrian.idFasyankes);
+
+      return {
+        success: true,
+        message: 'Antrian ditemukan dan dipanggil',
+        data: updatedAntrian,
+      };
     } catch (error) {
       return {
         success: false,
@@ -74,33 +96,61 @@ export class AntrianService {
         where: { id },
         include: {
           doctor: {
-            select: {
-              unit: true,
+            include: {
+              poliKlinik: {
+                include: {
+                  masterVoicePoli: {
+                    select: {
+                      url: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
       });
 
-      if (antrian) {
-        const newNomor = antrian.nomor.replace(/-0*/g, '');
-        const message = newNomor;
-        await this.queueGateway.emitPanggilAntrianPasien(
-          antrian.nomor,
-          message,
-          antrian.doctor.unit.replace(/\s+/g, '').toLowerCase(),
-        );
-
-        return {
-          success: true,
-          message: 'Antrian ditemukan',
-          data: antrian,
-        };
-      } else {
+      if (!antrian) {
         return {
           success: false,
           message: 'Antrian tidak ditemukan',
         };
       }
+
+      if (antrian.jumlahPanggil >= 3) {
+        return {
+          success: false,
+          message: 'Pasien sudah dipanggil maksimal sebanyak 3 kali',
+        };
+      }
+
+      const updatedAntrian = await this.prisma.antrianPasien.update({
+        where: { id },
+        data: {
+          jumlahPanggil: {
+            increment: 1,
+          },
+          status: true,
+        },
+      });
+
+      const newNomor = updatedAntrian.nomor.replace(/-0*/g, '');
+      const message = newNomor;
+
+      await this.queueGateway.emitPanggilAntrianPasien(
+        antrian.nomor,
+        message,
+        antrian.doctor.poliKlinik.masterVoicePoli.url,
+      );
+
+      await this.pasienService.queryFindFasyankes(antrian.idFasyankes)
+
+      return {
+        success: true,
+        message: 'Antrian ditemukan dan dipanggil',
+        data: updatedAntrian,
+      };
     } catch (error) {
       return {
         success: false,
@@ -118,17 +168,6 @@ export class AntrianService {
       today.setHours(0, 0, 0, 0);
       const tomorrow = new Date(today);
       tomorrow.setDate(today.getDate() + 1);
-
-      const countToday = await this.prisma.antrianAdmisi.count({
-        where: {
-          tanggal: {
-            gte: today,
-            lt: tomorrow,
-          },
-        },
-      });
-
-      const updatedJumlahPanggil = countToday + 1;
 
       const lastAntrian = await this.prisma.antrianAdmisi.findFirst({
         orderBy: {
@@ -153,8 +192,7 @@ export class AntrianService {
       const newAntrian = {
         nomor: nomorBaru,
         tanggal: new Date(),
-        status: 'Belum Dipanggil',
-        jumlahPanggil: updatedJumlahPanggil,
+        jumlahPanggil: 0,
         idFasyankes,
       };
 

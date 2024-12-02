@@ -1,112 +1,172 @@
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateJadwalDto, CreatePoliDto } from './dto/create-setting.dto';
-import { UpdateJadwalDto, UpdateSettingDto } from './dto/update-setting.dto';
-import { JadwalDokter, PoliKlinik, Prisma, Profile } from '@prisma/client';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreatePoliDto } from './dto/create-setting.dto';
+import { UpdateSettingDto } from './dto/update-setting.dto';
+import {
+  JadwalDokter,
+  MasterVoicePoli,
+  PoliKlinik,
+  Prisma,
+  Profile,
+} from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
-import { format, isWithinInterval } from 'date-fns';
+import { CreateVoicePoliDto } from './dto/create-voice-polis.dto';
+import { s3Client } from 'src/s3.config';
+import {
+  DeleteObjectCommand,
+  ObjectCannedACL,
+  PutObjectCommand,
+} from '@aws-sdk/client-s3';
+import { randomUUID } from 'crypto';
+import { UpdateVoicePolisDto } from './dto/update-voice-polis.dto';
 
 @Injectable()
 export class SettingService {
   constructor(private prisma: PrismaService) {}
-
-  // async createJadwal(createjadwal: CreateJadwalDto): Promise<any> {
-  //   const getDate = await this.prisma.jadwalDokter.findFirst({
-  //     where: {
-  //       dokterId: createjadwal.dokterId,
-  //       hari: createjadwal.hari,
-  //       idFasyankes: createjadwal.idFasyankes,
-  //     },
-  //     orderBy: { id: 'desc' },
-  //   });
-  //   if (getDate) {
-  //     const splitJam = getDate.jamPraktek.split('-');
-  //     const startJam = splitJam[0];
-  //     const endJam = splitJam[1];
-
-  //     const inputJam = createjadwal.jamPraktek.split('-');
-  //     const startInputjam = inputJam[0];
-
-  //     const dateNow = format(new Date(), 'yyyy-MM-dd');
-
-  //     const start = new Date(`${dateNow} ${startJam}`);
-  //     const end = new Date(`${dateNow} ${endJam}`);
-  //     const input = new Date(`${dateNow} ${startInputjam}`);
-
-  //     const resInterval = isWithinInterval(input, { start, end });
-  //     if (resInterval) {
-  //       throw new HttpException(
-  //         'Jadwal dokter sudah ada!',
-  //         HttpStatus.BAD_REQUEST,
-  //       );
-  //     } else {
-  //       return this.prisma.jadwalDokter.create({
-  //         data: createjadwal,
-  //       });
-  //     }
-  //   } else {
-  //     return this.prisma.jadwalDokter.create({
-  //       data: createjadwal,
-  //     });
-  //   }
-  // }
-
-  // async updateJadwal(
-  //   id: number,
-  //   updateJadwalDto: UpdateJadwalDto,
-  // ): Promise<any> {
-  //   const existingJadwal = await this.prisma.jadwalDokter.findUnique({
-  //     where: {
-  //       id: Number(id),
-  //     },
-  //   });
-
-  //   if (!existingJadwal) {
-  //     throw new HttpException(
-  //       { message: 'Jadwal tidak ditemukan!', status: 'error' },
-  //       HttpStatus.NOT_FOUND,
-  //     );
-  //   }
-
-  //   const conflictingJadwal = await this.prisma.jadwalDokter.findFirst({
-  //     where: {
-  //       dokterId: existingJadwal.dokterId,
-  //       hari: updateJadwalDto.hari,
-  //       jamPraktek: updateJadwalDto.jamPraktek,
-  //       idFasyankes: updateJadwalDto.idFasyankes,
-  //       id: { not: Number(id) },
-  //     },
-  //   });
-
-  //   if (conflictingJadwal) {
-  //     throw new HttpException(
-  //       {
-  //         message: 'Jadwal dokter sudah ada pada waktu tersebut!',
-  //         status: 'error',
-  //       },
-  //       HttpStatus.BAD_REQUEST,
-  //     );
-  //   }
-
-  //   const updatedJadwal = await this.prisma.jadwalDokter.update({
-  //     where: { id: Number(id) },
-  //     data: {
-  //       hari: updateJadwalDto.hari,
-  //       jamPraktek: updateJadwalDto.jamPraktek,
-  //     },
-  //   });
-
-  //   return {
-  //     status: 'success',
-  //     message: 'Jadwal updated successfully',
-  //     data: updatedJadwal,
-  //   };
-  // }
-
+  private readonly bucketName = `${process.env.AWS_BUCKET}`;
   async createPoli(createPoli: CreatePoliDto): Promise<PoliKlinik> {
     return this.prisma.poliKlinik.create({
       data: createPoli,
     });
+  }
+
+  async findAllVoicePoli(idFasyankes: string) {
+    const voicePolis = await this.prisma.masterVoicePoli.findMany({
+      where: {
+        OR: [{ idFasyankes: idFasyankes }, { idFasyankes: null }],
+      },
+    });
+
+    return voicePolis.map((voicePoli) => ({
+      id: voicePoli.id,
+      namaFile: `${voicePoli.namaPoli.toLowerCase().replace(/\s+/g, '')}.mp3`,
+      url: voicePoli.url,
+      namaPoli: voicePoli.namaPoli,
+      idFasyankes: voicePoli.idFasyankes,
+    }));
+  }
+
+  async uploadFile(
+    file?: Express.Multer.File,
+    fileName?: string,
+  ): Promise<string> {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    const fileKey = `voice-poli-idsc/${fileName}`;
+    const params = {
+      Bucket: this.bucketName,
+      Key: fileKey,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      ACL: 'public-read' as ObjectCannedACL,
+    };
+
+    try {
+      await s3Client.send(new PutObjectCommand(params));
+      return `${process.env.AWS_URL + '/' + fileKey}`;
+    } catch (error) {
+      throw new Error(`Error uploading file: ${error}`);
+    }
+  }
+  async createVoicePoli(
+    createVoicePoliDto: CreateVoicePoliDto,
+  ): Promise<MasterVoicePoli> {
+    const namaFasyankes = createVoicePoliDto.namaFasyankes
+      .replace(/\s+/g, '')
+      .toLowerCase();
+    const namaPoli = createVoicePoliDto.namaPoli
+      .replace(/\s+/g, '')
+      .toLowerCase();
+    const fileName = `${namaFasyankes}_${namaPoli}_${randomUUID()}.mp3`;
+    const urlFile = await this.uploadFile(createVoicePoliDto.file, fileName);
+    return this.prisma.masterVoicePoli.create({
+      data: {
+        namaPoli: createVoicePoliDto.namaPoli,
+        url: urlFile,
+        idFasyankes: createVoicePoliDto.idFasyankes,
+      },
+    });
+  }
+
+  async updateVoicePoli(id: number, updateVoicePolisDto: UpdateVoicePolisDto) {
+    const idFasyankes = updateVoicePolisDto.idFasyankes;
+    const voicePoli = await this.prisma.masterVoicePoli.findFirst({
+      where: { id, idFasyankes },
+    });
+    if (!voicePoli) {
+      throw new NotFoundException('Voice Poli Tidak Ditemukan.');
+    }
+    const namaFasyankes = updateVoicePolisDto.namaFasyankes
+      .replace(/\s+/g, '')
+      .toLowerCase();
+    const namaPoli = updateVoicePolisDto.namaPoli
+      .replace(/\s+/g, '')
+      .toLowerCase();
+    const fileName = `${namaFasyankes}_${namaPoli}_${randomUUID()}.mp3`;
+    const urlFile = await this.uploadFile(updateVoicePolisDto.file, fileName);
+    return this.prisma.masterVoicePoli.update({
+      where: { id, idFasyankes },
+      data: {
+        namaPoli: updateVoicePolisDto.namaPoli,
+        url: urlFile,
+      },
+    });
+  }
+  async deleteFile(fileKey: string): Promise<void> {
+    const params = {
+      Bucket: this.bucketName,
+      Key: fileKey,
+    };
+
+    try {
+      await s3Client.send(new DeleteObjectCommand(params));
+      console.log(`File deleted successfully: ${fileKey}`);
+    } catch (error) {
+      throw new Error(`Error deleting file from S3: ${error.message}`);
+    }
+  }
+  async deleteVoicePoli(
+    id: number,
+    idFasyankes: string,
+  ): Promise<{ success: boolean; message: string }> {
+    const voicePoli = await this.prisma.masterVoicePoli.findFirst({
+      where: { id, idFasyankes },
+    });
+
+    if (!voicePoli) {
+      throw new NotFoundException('Voice tidak ditemukan.');
+    }
+    const fileKey = voicePoli.url.replace(`${process.env.AWS_URL}/`, '');
+    try {
+      await this.deleteFile(fileKey);
+      await this.prisma.masterVoicePoli.delete({
+        where: { id },
+      });
+      return { success: true, message: 'Berhasil Menghapus Voice' };
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Gagal menghapus Voice, terjadi kesalahan.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async detailVoicePoli(id: number, idFasyankes: string) {
+    const voicePoli = await this.prisma.masterVoicePoli.findFirst({
+      where: { id, idFasyankes },
+    });
+    if (!voicePoli) {
+      throw new NotFoundException('Voice Poli Tidak Ditemukan.');
+    }
+    return { success: true, data: voicePoli };
   }
 
   async findPoli(params: {
