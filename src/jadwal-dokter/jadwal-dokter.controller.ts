@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { JadwalDokterService } from './jadwal-dokter.service';
@@ -14,6 +15,7 @@ import { CreateJadwalDokterDto } from './dto/create-jadwal-dokter.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UpdateJadwalDto } from 'src/setting/dto/update-setting.dto';
 import { JadwalDokter } from '@prisma/client';
+import { UpdateJadwalDokterDto } from './dto/update-jadwal-dokter.dto';
 
 @Controller('dokter')
 export class JadwalDokterController {
@@ -50,5 +52,9 @@ export class JadwalDokterController {
     return result;
   }
 
-  
+  @UseGuards(AuthGuard)
+  @Put('/updatejadwal')
+  async updateSchedule(@Body() updateJadwalDokterDto: UpdateJadwalDokterDto) {
+    return await this.jadwalDocterService.updateSchedule(updateJadwalDokterDto);
+  }
 }
