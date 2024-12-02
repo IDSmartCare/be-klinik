@@ -21,6 +21,7 @@ export class MasterPlanController {
   constructor(private readonly MasterPlanService: MasterPlanService) {}
 
   @UseGuards(AuthGuard)
+  @Get('/:idFasyankes')
   async getPlan(@Param('idFasyankes') idFasyankes: string) {
     return this.MasterPlanService.getPlan(idFasyankes);
   }

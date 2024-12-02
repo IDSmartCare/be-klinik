@@ -77,7 +77,6 @@ export class CpptService {
           isDokter: createCpptDto.isDokter,
           isVerifDokter: createCpptDto.isVerifDokter,
           jamVerifDokter: createCpptDto.jamVerifDokter,
-          resep: createCpptDto.resep,
           kodeDiagnosa: createCpptDto.kodeDiagnosa,
           namaDiagnosa: createCpptDto.namaDiagnosa,
           idFasyankes: createCpptDto.idFasyankes,
