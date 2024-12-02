@@ -88,4 +88,10 @@ export class CpptController {
       },
     });
   }
+
+  @UseGuards(AuthGuard)
+  @Get('/detailsoap/:id')
+  async detailSOAP(@Param('id') id: string) {
+    return this.cpptService.findOne(+id);
+  }
 }
