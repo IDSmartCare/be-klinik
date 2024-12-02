@@ -23,6 +23,7 @@ export class CpptController {
   ): Promise<SOAP[]> {
     return this.cpptService.findAll(idfasyankes, idpasien);
   }
+
   @UseGuards(AuthGuard)
   @Get('/soap/:kategori/:idfasyankes')
   async getMasterSoap(

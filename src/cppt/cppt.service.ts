@@ -89,6 +89,7 @@ export class CpptService {
           objective: soap.objective,
           assessment: soap.assessment,
           plan: soap.plan,
+          instruction: soap.instruction,
           soapId: simpanSoap.id,
         },
       });
@@ -198,6 +199,7 @@ export class CpptService {
             },
           },
           resep: true,
+          detailSOAP: true
         },
         where: {
           idFasyankes,
