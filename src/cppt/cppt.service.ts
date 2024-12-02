@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateCpptDto } from './dto/create-cppt.dto';
 import { PrismaService } from 'src/service/prisma.service';
 import { Prisma, SOAP } from '@prisma/client';
+import { CreateAntrianAdmisiDto } from 'src/antrian/dto/create-admisi.dto';
 
 @Injectable()
 export class CpptService {
@@ -66,30 +67,30 @@ export class CpptService {
   }
   async create(createCpptDto: CreateCpptDto): Promise<any> {
     const listResep = createCpptDto.resep;
-    const soap = createCpptDto.soap;
 
     const transaksi = await this.prisma.$transaction(async (tx) => {
       const simpanSoap = await tx.sOAP.create({
         data: {
+          pendaftaranId: createCpptDto.pendaftaranId,
           profesi: createCpptDto.profesi,
           profileId: createCpptDto.profileId,
-          idFasyankes: createCpptDto.idFasyankes,
-          pendaftaranId: createCpptDto.pendaftaranId,
           isDokter: createCpptDto.isDokter,
           isVerifDokter: createCpptDto.isVerifDokter,
           jamVerifDokter: createCpptDto.jamVerifDokter,
+          resep: createCpptDto.resep,
           kodeDiagnosa: createCpptDto.kodeDiagnosa,
           namaDiagnosa: createCpptDto.namaDiagnosa,
+          idFasyankes: createCpptDto.idFasyankes,
         },
       });
 
       const simpanDetailSoap = await tx.detailSOAP.create({
         data: {
-          subjective: soap.subjective,
-          objective: soap.objective,
-          assessment: soap.assessment,
-          plan: soap.plan,
-          instruction: soap.instruction,
+          subjective: createCpptDto.subjective,
+          objective: createCpptDto.objective,
+          assessment: createCpptDto.assessment,
+          plan: createCpptDto.plan,
+          instruction: createCpptDto.instruction,
           soapId: simpanSoap.id,
         },
       });
@@ -199,7 +200,7 @@ export class CpptService {
             },
           },
           resep: true,
-          detailSOAP: true
+          detailSOAP: true,
         },
         where: {
           idFasyankes,
