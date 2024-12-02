@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCpptDto } from './dto/create-cppt.dto';
 import { PrismaService } from 'src/service/prisma.service';
 import { Prisma, SOAP } from '@prisma/client';
@@ -233,5 +233,33 @@ export class CpptService {
     return this.prisma.sOAP.findFirst({
       where,
     });
+  }
+
+  async findOne(id: number) {
+    try {
+      const detailSoap = await this.prisma.detailSOAP.findUnique({
+        where: { id },
+      });
+
+      if (!detailSoap) {
+        return {
+          success: false,
+          message: `DetailSOAP dengan id ${id} tidak ditemukan`,
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Data berhasil ditemukan',
+        data: detailSoap,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Terjadi kesalahan saat mengambil data',
+        error: error.message,
+      };
+    }
   }
 }
