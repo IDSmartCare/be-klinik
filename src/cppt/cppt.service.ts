@@ -135,7 +135,8 @@ export class CpptService {
         const konsulDokter = await tx.masterTarif.findFirst({
           where: {
             idFasyankes: createCpptDto.idFasyankes,
-            penjamin: getPenjamin?.penjamin,
+            // penjamin: getPenjamin?.penjamin,
+            doctorId: getPenjamin?.doctorId,
             kategoriTarif: 'Dokter',
             isAktif: true,
           },
