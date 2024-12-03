@@ -1,5 +1,7 @@
 model MasterTarif {
   id            Int      @id @default(autoincrement())
+  doctorId      Int?
+  doctor        Doctors?    @relation(fields: [doctorId], references: [id])
   namaTarif     String   @db.VarChar(100)
   kategoriTarif String   @db.VarChar(100)
   hargaTarif    String?

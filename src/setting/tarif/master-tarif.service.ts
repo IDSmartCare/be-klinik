@@ -32,11 +32,18 @@ export class MasterTarifService {
     hargaTarif?: string;
     penjamin: string;
     isAktif?: boolean;
+    doctorId?: number;
   }) {
     try {
       const newTarif = await this.prisma.masterTarif.create({
         data,
       });
+      const cost = await this.prisma.doctorCosts.create({
+        data: {
+          doctorId: data.doctorId,
+          baseFee: data.hargaTarif,
+        },
+      })
       return newTarif;
     } catch (error) {
       console.error(error);

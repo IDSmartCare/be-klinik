@@ -5,6 +5,6 @@ model DoctorCosts {
   deletedAt    DateTime? @map("deleted_at")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
-  consultation String?
-  emergency    String?
+  consultation String?   @default("0")
+  emergency    String?   @default("0")
 }

@@ -135,7 +135,7 @@ export class PasienController {
     },
   ): Promise<Pasien> {
     try {
-      return await this.pasienService.create(
+      return await this.pasienService.create(   
         data.pasienData,
         data.userRole,
         data.userPackage,
