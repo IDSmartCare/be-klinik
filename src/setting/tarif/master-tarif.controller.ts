@@ -36,7 +36,7 @@ export class MasterTarifController {
   }
 
   @UseGuards(AuthGuard)
-  @Patch('/udpate')
+  @Patch('/update')
   async updateTarif(
     @Body()
     data: {

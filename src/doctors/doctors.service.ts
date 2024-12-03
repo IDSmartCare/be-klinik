@@ -16,7 +16,7 @@ export class DoctorsService {
 
   async findOneByProfile(idProfile: number): Promise<{ id: number } | null> {
     return this.prisma.doctors.findFirst({
-      where: { idProfile },
+      where: { idProfile: idProfile },
       select: { id: true },
     });
   }

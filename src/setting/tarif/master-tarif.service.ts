@@ -54,7 +54,6 @@ export class MasterTarifService {
     }
   }
 
-
   async findOne(id: number) {
     try {
       const masterTarif = await this.prisma.masterTarif.findUnique({
@@ -73,7 +72,7 @@ export class MasterTarifService {
         success: true,
         message: 'Data berhasil ditemukan',
         data: masterTarif,
-      }
+      };
     } catch (error) {
       return {
         success: false,
@@ -83,7 +82,7 @@ export class MasterTarifService {
     }
   }
 
- async updateTarif(data: {
+  async updateTarif(data: {
     id: number;
     namaTarif?: string;
     kategoriTarif?: string;
@@ -91,25 +90,43 @@ export class MasterTarifService {
     doctorId?: number;
   }) {
     try {
+      // Update master tarif
       const updateTarif = await this.prisma.masterTarif.update({
         where: { id: data.id },
-        data:
-        data,
+        data: {
+          namaTarif: data.namaTarif,
+          kategoriTarif: data.kategoriTarif,
+          hargaTarif: data.hargaTarif,
+          doctorId: data.doctorId,
+        },
       });
 
       if (data.doctorId) {
+        const dataCost = await this.prisma.doctorCosts.findFirst({
+          where: { doctorId: data.doctorId },
+        });
+
+        if (!dataCost) {
+          throw new NotFoundException(
+            `Doctor costs not found for doctorId: ${data.doctorId}`,
+          );
+        }
+
         await this.prisma.doctorCosts.update({
-          where: { id: data.doctorId },
+          where: { id: dataCost.id },
           data: {
             baseFee: data.hargaTarif,
           },
-          
-
         });
       }
+      console.log(data.doctorId);
+
+      return updateTarif;
     } catch (error) {
       console.error(error);
-      throw new NotFoundException('Failed to create Tarif');
+      throw new NotFoundException(
+        `Failed to update Tarif. Error: ${error.message}`,
+      );
     }
   }
 }
