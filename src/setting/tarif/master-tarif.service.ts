@@ -43,7 +43,7 @@ export class MasterTarifService {
           doctorId: data.doctorId,
           baseFee: data.hargaTarif,
         },
-      })
+      });
       return newTarif;
     } catch (error) {
       console.error(error);

@@ -18,7 +18,7 @@ export class MasterTarifController {
     @Body()
     data: {
       idFasyankes: string;
-      doctorId: number;
+      doctorId?: number;
       namaTarif: string;
       kategoriTarif: string;
       hargaTarif?: string;
