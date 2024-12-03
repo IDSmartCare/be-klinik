@@ -196,6 +196,12 @@ export class CpptService {
             select: {
               id: true,
               namaLengkap: true,
+              kodeDokter: true,
+              doctors: {
+                select: {
+                  unit: true,
+                },
+              },
             },
           },
           resep: true,
