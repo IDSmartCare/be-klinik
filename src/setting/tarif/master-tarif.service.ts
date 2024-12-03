@@ -50,4 +50,33 @@ export class MasterTarifService {
       throw new NotFoundException('Failed to create Tarif');
     }
   }
+
+
+  async findOne(id: number) {
+    try {
+      const masterTarif = await this.prisma.masterTarif.findUnique({
+        where: { id },
+      });
+
+      if (!masterTarif) {
+        return {
+          success: false,
+          message: `Tarif dengan id ${id} tidak ditemukan`,
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Data berhasil ditemukan',
+        data: masterTarif,
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Terjadi kesalahan saat mengambil data',
+        error: error.message,
+      };
+    }
+  }
 }

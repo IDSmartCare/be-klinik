@@ -28,4 +28,10 @@ export class MasterTarifController {
   ) {
     return this.masterTarifService.createTarif(data);
   }
+
+  @UseGuards(AuthGuard)
+  @Get('detailmastertarif/:id')
+  async detailMasterTarif(@Param('id') id: string) {
+    return this.masterTarifService.findOne(+id);
+  }
 }
