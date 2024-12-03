@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Param, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, UseGuards, Patch } from '@nestjs/common';
 import { MasterTarifService } from './master-tarif.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 
@@ -30,8 +30,22 @@ export class MasterTarifController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('detailmastertarif/:id')
+  @Get('/detailmastertarif/:id')
   async detailMasterTarif(@Param('id') id: string) {
     return this.masterTarifService.findOne(+id);
   }
+
+  @UseGuards(AuthGuard)
+  @Patch('/udpate')
+  async updateTarif(
+    @Body()
+    data: {
+      id: number;
+      namaTarif?: string;
+      kategoriTarif?: string;
+      hargaTarif?: string;
+      doctorId?: number;
+    }) {
+      return this.masterTarifService.updateTarif(data);
+    }
 }

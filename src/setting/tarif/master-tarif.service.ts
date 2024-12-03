@@ -82,4 +82,34 @@ export class MasterTarifService {
       };
     }
   }
+
+ async updateTarif(data: {
+    id: number;
+    namaTarif?: string;
+    kategoriTarif?: string;
+    hargaTarif?: string;
+    doctorId?: number;
+  }) {
+    try {
+      const updateTarif = await this.prisma.masterTarif.update({
+        where: { id: data.id },
+        data:
+        data,
+      });
+
+      if (data.doctorId) {
+        await this.prisma.doctorCosts.update({
+          where: { id: data.doctorId },
+          data: {
+            baseFee: data.hargaTarif,
+          },
+          
+
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      throw new NotFoundException('Failed to create Tarif');
+    }
+  }
 }
