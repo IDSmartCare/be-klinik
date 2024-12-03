@@ -22,7 +22,7 @@ export class MasterTarifController {
       namaTarif: string;
       kategoriTarif: string;
       hargaTarif?: string;
-      penjamin: string;
+      penjamin?: string;
       isAktif?: boolean;
     },
   ) {
