@@ -47,7 +47,7 @@ RUN npm install --omit=dev
 COPY --chown=node:node --from=builder /app/node_modules/.prisma/client  ./node_modules/.prisma/client
 
 # Salin Prisma dari tahap build ke container produksi
-COPY --chown=node:node --from=builder /app/prisma  .
+COPY --chown=node:node --from=builder /app/prisma  ./prisma
 
 
 # Set environment variable untuk menentukan mode produksi
