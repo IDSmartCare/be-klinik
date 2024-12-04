@@ -1,9 +1,11 @@
 /* eslint-disable prettier/prettier */
+
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { MasterTarif, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 
 @Injectable()
@@ -159,6 +161,25 @@ export class MasterTarifService {
       throw new NotFoundException(
         `Failed to update Tarif. Error: ${error.message}`,
       );
+    }
+  }
+
+  async deleteMasterTarif(
+    where: Prisma.MasterTarifWhereUniqueInput,
+  ): Promise<{ message: string; data?: MasterTarif }> {
+    try {
+      const deletedTarif = await this.prisma.masterTarif.delete({
+        where,
+      });
+
+      return {
+        message: 'Data master tarif berhasil dihapus.',
+        data: deletedTarif,
+      };
+    } catch (error) {
+      return {
+        message: `Gagal menghapus data master tarif. Error: ${error.message}`,
+      };
     }
   }
 }
