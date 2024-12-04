@@ -99,7 +99,6 @@ export class MasterAsuransiService {
         };
       }
 
-      // Periksa ID Fasyankes jika disertakan
       if (data.idFasyankes && data.idFasyankes !== masterAsuransi.idFasyankes) {
         return {
           success: false,
@@ -107,7 +106,6 @@ export class MasterAsuransiService {
         };
       }
 
-      // Update data asuransi
       const updatedAsuransi = await this.prisma.masterAsuransi.update({
         where: { id: id },
         data: {
@@ -121,11 +119,10 @@ export class MasterAsuransiService {
 
       return {
         success: true,
-        message: `Data asuransi dengan ID ${id} berhasil diperbarui.`,
+        message: `Asuransi ${updatedAsuransi.namaAsuransi} berhasil diperbarui.`,
         data: updatedAsuransi,
       };
     } catch (error) {
-      // Tangani error jika terjadi kesalahan
       return {
         success: false,
         message: `Gagal memperbarui data asuransi: ${error.message}`,
@@ -149,17 +146,15 @@ export class MasterAsuransiService {
         );
       }
 
-      // Menghapus data
-      await this.prisma.masterAsuransi.delete({
+      const deleteAsuransi = await this.prisma.masterAsuransi.delete({
         where: { id: Number(id) },
       });
 
       return {
-        message: `Data asuransi dengan ID ${id} berhasil dihapus.`,
+        message: `Asuransi ${deleteAsuransi.namaAsuransi} berhasil dihapus.`,
         success: true,
       };
     } catch (error) {
-      // Menangani error dan memberikan respon gagal
       return {
         message: `Gagal menghapus data asuransi: ${error.message}`,
         success: false,
@@ -170,19 +165,19 @@ export class MasterAsuransiService {
   async findByIdWithResponse(id: number, idFasyankes: string) {
     try {
       const result = await this.prisma.masterAsuransi.findUnique({
-        where: { 
-          id: Number(id),        
-          idFasyankes: idFasyankes,  
+        where: {
+          id: Number(id),
+          idFasyankes: idFasyankes,
         },
       });
-  
+
       if (!result) {
         throw new NotFoundException({
           success: false,
           message: `Data dengan id ${id} dan idFasyankes ${idFasyankes} tidak ditemukan.`,
         });
       }
-  
+
       return {
         success: true,
         message: 'Data berhasil ditemukan.',
@@ -196,6 +191,4 @@ export class MasterAsuransiService {
       throw new Error('Terjadi kesalahan pada server.');
     }
   }
-  
-
 }

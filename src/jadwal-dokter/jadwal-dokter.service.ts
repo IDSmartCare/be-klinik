@@ -173,6 +173,16 @@ export class JadwalDokterService {
   async createSchedule(createJadwalDokterDto: CreateJadwalDokterDto) {
     const { dokter_id, slot, days, times } = createJadwalDokterDto;
     return this.prisma.$transaction(async (prisma) => {
+      const existingSchedule = await prisma.doctorAvailableDays.findFirst({
+        where: { doctorId: dokter_id },
+        include: { doctor: true },
+      });
+      if (existingSchedule) {
+        throw new BadRequestException(
+          `Jadwal ${existingSchedule.doctor.name} sudah ada`,
+        );
+      }
+
       const availableDays = await prisma.doctorAvailableDays.create({
         data: {
           doctorId: dokter_id,
@@ -193,6 +203,12 @@ export class JadwalDokterService {
         const newFrom = new Date(`1970-01-01T${from}:00`);
         const newTo = new Date(`1970-01-01T${to}:00`);
 
+        if (newTo <= newFrom) {
+          throw new BadRequestException(
+            `Jadwal waktu ${from} - ${to} tidak valid.`,
+          );
+        }
+
         const existingSlots = await prisma.doctorAvailableTimes.findMany({
           where: {
             doctorId: dokter_id,
@@ -208,8 +224,8 @@ export class JadwalDokterService {
             (newTo > existingFrom && newTo <= existingTo) ||
             (newFrom <= existingFrom && newTo >= existingTo)
           ) {
-            throw new Error(
-              `Jadwal waktu ${from} - ${to} tumpang tindih dengan jadwal ${slot.from} - ${slot.to}.`,
+            throw new BadRequestException(
+              `Jadwal waktu ${from} - ${to} tidak boleh diantara jadwal ${slot.from} - ${slot.to}.`,
             );
           }
         }
