@@ -36,6 +36,15 @@ export class MasterAsuransiService {
   }
 
   async create(createMasterAsuransiDto: CreateMasterAsuransiDto) {
+    const { from, to } = createMasterAsuransiDto;
+
+    // Validasi tanggal
+    if (new Date(to) < new Date(from)) {
+      throw new Error(
+        'Tanggal berakhirnya kerjasama tidak boleh sebelum tanggal mulainya kerjasama.',
+      );
+    }
+
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -88,6 +97,7 @@ export class MasterAsuransiService {
     data: Partial<MasterAsuransi>,
   ): Promise<{ success: boolean; message: string; data?: MasterAsuransi }> {
     try {
+      // Ambil data asuransi berdasarkan ID
       const masterAsuransi = await this.prisma.masterAsuransi.findUnique({
         where: { id: id },
       });
@@ -99,6 +109,18 @@ export class MasterAsuransiService {
         };
       }
 
+      // Validasi tanggal
+      const fromDate = new Date(data.from ?? masterAsuransi.from);
+      const toDate = new Date(data.to ?? masterAsuransi.to);
+
+      if (toDate < fromDate) {
+        return {
+          success: false,
+          message: `Tanggal berakhirnya kerjasama tidak boleh sebelum tanggal mulainya kerjasama.`,
+        };
+      }
+
+      // Periksa ID Fasyankes jika disertakan
       if (data.idFasyankes && data.idFasyankes !== masterAsuransi.idFasyankes) {
         return {
           success: false,
@@ -106,6 +128,7 @@ export class MasterAsuransiService {
         };
       }
 
+      // Update data asuransi
       const updatedAsuransi = await this.prisma.masterAsuransi.update({
         where: { id: id },
         data: {
