@@ -215,4 +215,38 @@ export class MasterAsuransiService {
       throw new Error('Terjadi kesalahan pada server.');
     }
   }
+
+  async ambilByFromTo(from: string, to: string) {
+    try {
+      const data = await this.prisma.masterAsuransi.findMany({
+        where: {
+          from: { gte: from},
+          to: { lte: to}
+        },
+      });
+
+      if (!data.length) {
+        return {
+          success: false,
+          message: 'Tidak ada data master asuransi dalam rentang tersebut.',
+          data: [],
+        };
+    }
+
+    return {
+      success: true,
+      message: 'Data master asuransi berhasil diambil.',
+      data,
+    };
+  }  catch (error) {
+    throw new HttpException(
+      {
+        success: false,
+        message: 'Terjadi kesalahan saat mengambil data.',
+        error: error.message,
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+}
+}
 }
