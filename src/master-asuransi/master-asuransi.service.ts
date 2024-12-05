@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -40,7 +41,7 @@ export class MasterAsuransiService {
 
     // Validasi tanggal
     if (new Date(to) < new Date(from)) {
-      throw new Error(
+      throw new BadRequestException(
         'Tanggal berakhirnya kerjasama tidak boleh sebelum tanggal mulainya kerjasama.',
       );
     }

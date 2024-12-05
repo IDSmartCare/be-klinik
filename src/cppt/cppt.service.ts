@@ -156,7 +156,7 @@ export class CpptService {
             harga: konsulDokter?.hargaTarif,
             jenisBill: 'Dokter',
             // deskripsi: konsulDokter?.namaTarif ?? '',
-            deskripsi: 'Tarif Dokter',
+            deskripsi: 'Konsultasi Dokter',
             billPasienId: bill?.id,
             jumlah: 1,
             subTotal: (Number(konsulDokter?.hargaTarif) * 1).toString(),
