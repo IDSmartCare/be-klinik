@@ -20,13 +20,14 @@ model SOAP {
 }
 
 model DetailSOAP {
-  id         Int      @id @default(autoincrement())
-  subjective Json
-  objective  Json
-  assessment Json
-  plan       Json
-  soapId     Int      @unique
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  soap       SOAP     @relation(fields: [soapId], references: [id])
+  id          Int      @id @default(autoincrement())
+  subjective  Json
+  objective   Json
+  assessment  Json
+  plan        Json
+  instruction Json
+  soapId      Int      @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  soap        SOAP     @relation(fields: [soapId], references: [id])
 }

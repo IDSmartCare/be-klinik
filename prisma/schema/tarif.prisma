@@ -1,9 +1,11 @@
 model MasterTarif {
   id            Int      @id @default(autoincrement())
+  doctorId      Int?
+  doctor        Doctors?    @relation(fields: [doctorId], references: [id])
   namaTarif     String   @db.VarChar(100)
   kategoriTarif String   @db.VarChar(100)
   hargaTarif    String?
-  penjamin      String   @db.VarChar(100)
+  penjamin      String?   @db.VarChar(100)
   idFasyankes   String?  @db.VarChar(50)
   isAktif       Boolean? @default(true)
   createdAt     DateTime @default(now()) @db.Timestamptz(6)

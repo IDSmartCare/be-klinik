@@ -15,10 +15,14 @@ import { UpdatePasienDto } from './dto/update-pasien.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { RegisPasienDto } from './dto/regis-pasien.dto';
 import { CheckPasienDto } from './dto/check-pasien.dto';
+import { DoctorsService } from 'src/doctors/doctors.service';
 
 @Controller('pasien')
 export class PasienController {
-  constructor(private readonly pasienService: PasienService) {}
+  constructor(
+    private readonly pasienService: PasienService,
+    private readonly doctorService: DoctorsService,
+  ) {}
 
   @UseGuards(AuthGuard)
   @Get('/listdokter/:iddokter/:idfasyankes')
@@ -30,14 +34,15 @@ export class PasienController {
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    return this.pasienService.findAllRegistrasi({
+
+    const doctor = await this.doctorService.findOneByProfile(+iddokter);
+
+    const data = await this.pasienService.findAllRegistrasi({
       where: {
         isClose: false,
         idFasyankes: idfasyankes,
         AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
-        riwayat: {
-          doctorId: Number(iddokter),
-        },
+        doctorId: doctor.id,
         isSoapPerawat: true,
       },
       orderBy: {
@@ -48,6 +53,7 @@ export class PasienController {
           select: {
             doctor: {
               select: {
+                name: true,
                 availableDays: true,
                 availableTimes: true,
               },
@@ -69,6 +75,8 @@ export class PasienController {
         },
       },
     });
+
+    return data;
   }
 
   @UseGuards(AuthGuard)
@@ -127,7 +135,7 @@ export class PasienController {
     },
   ): Promise<Pasien> {
     try {
-      return await this.pasienService.create(
+      return await this.pasienService.create(   
         data.pasienData,
         data.userRole,
         data.userPackage,

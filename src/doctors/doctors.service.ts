@@ -14,6 +14,13 @@ import { UpdatePoliKlinikDto } from './dto/update-poliKlinik.dto';
 export class DoctorsService {
   constructor(private prisma: PrismaService) {}
 
+  async findOneByProfile(idProfile: number): Promise<{ id: number } | null> {
+    return this.prisma.doctors.findFirst({
+      where: { idProfile: idProfile },
+      select: { id: true },
+    });
+  }
+
   async findAllDokter(
     idFasyankes: string,
   ): Promise<{ success: boolean; data?: Doctors[]; message: string }> {

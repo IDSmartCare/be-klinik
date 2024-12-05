@@ -9,5 +9,9 @@ export class CreateCpptDto {
   kodeDiagnosa?: string;
   namaDiagnosa?: string;
   idFasyankes: string;
-  soap: any;
+  subjective: any;
+  objective: any;
+  assessment: any;
+  plan: any;
+  instruction: any;
 }

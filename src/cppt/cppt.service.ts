@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCpptDto } from './dto/create-cppt.dto';
 import { PrismaService } from 'src/service/prisma.service';
 import { Prisma, SOAP } from '@prisma/client';
+import { CreateAntrianAdmisiDto } from 'src/antrian/dto/create-admisi.dto';
 
 @Injectable()
 export class CpptService {
@@ -66,29 +67,29 @@ export class CpptService {
   }
   async create(createCpptDto: CreateCpptDto): Promise<any> {
     const listResep = createCpptDto.resep;
-    const soap = createCpptDto.soap;
 
     const transaksi = await this.prisma.$transaction(async (tx) => {
       const simpanSoap = await tx.sOAP.create({
         data: {
+          pendaftaranId: createCpptDto.pendaftaranId,
           profesi: createCpptDto.profesi,
           profileId: createCpptDto.profileId,
-          idFasyankes: createCpptDto.idFasyankes,
-          pendaftaranId: createCpptDto.pendaftaranId,
           isDokter: createCpptDto.isDokter,
           isVerifDokter: createCpptDto.isVerifDokter,
           jamVerifDokter: createCpptDto.jamVerifDokter,
           kodeDiagnosa: createCpptDto.kodeDiagnosa,
           namaDiagnosa: createCpptDto.namaDiagnosa,
+          idFasyankes: createCpptDto.idFasyankes,
         },
       });
 
       const simpanDetailSoap = await tx.detailSOAP.create({
         data: {
-          subjective: soap.subjective,
-          objective: soap.objective,
-          assessment: soap.assessment,
-          plan: soap.plan,
+          subjective: createCpptDto.subjective,
+          objective: createCpptDto.objective,
+          assessment: createCpptDto.assessment,
+          plan: createCpptDto.plan,
+          instruction: createCpptDto.instruction,
           soapId: simpanSoap.id,
         },
       });
@@ -129,12 +130,16 @@ export class CpptService {
           where: {
             id: Number(createCpptDto.pendaftaranId),
           },
+          include: {
+            doctor: true,
+          },
         });
 
         const konsulDokter = await tx.masterTarif.findFirst({
           where: {
             idFasyankes: createCpptDto.idFasyankes,
-            penjamin: getPenjamin?.penjamin,
+            // penjamin: getPenjamin?.penjamin,
+            doctorId: getPenjamin?.doctorId,
             kategoriTarif: 'Dokter',
             isAktif: true,
           },
@@ -150,7 +155,8 @@ export class CpptService {
           data: {
             harga: konsulDokter?.hargaTarif,
             jenisBill: 'Dokter',
-            deskripsi: konsulDokter?.namaTarif ?? '',
+            // deskripsi: konsulDokter?.namaTarif ?? '',
+            deskripsi: 'Tarif Dokter',
             billPasienId: bill?.id,
             jumlah: 1,
             subTotal: (Number(konsulDokter?.hargaTarif) * 1).toString(),
@@ -195,9 +201,16 @@ export class CpptService {
             select: {
               id: true,
               namaLengkap: true,
+              kodeDokter: true,
+              doctors: {
+                select: {
+                  unit: true,
+                },
+              },
             },
           },
           resep: true,
+          detailSOAP: true,
         },
         where: {
           idFasyankes,
@@ -231,5 +244,33 @@ export class CpptService {
     return this.prisma.sOAP.findFirst({
       where,
     });
+  }
+
+  async findOne(id: number) {
+    try {
+      const detailSoap = await this.prisma.detailSOAP.findUnique({
+        where: { id },
+      });
+
+      if (!detailSoap) {
+        return {
+          success: false,
+          message: `DetailSOAP dengan id ${id} tidak ditemukan`,
+          data: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Data berhasil ditemukan',
+        data: detailSoap,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Terjadi kesalahan saat mengambil data',
+        error: error.message,
+      };
+    }
   }
 }

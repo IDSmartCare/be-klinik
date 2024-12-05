@@ -23,4 +23,5 @@ model Doctors {
   pendaftaran        Pendaftaran[]
   riwayatPendaftaran RiwayatPendaftaran[]
   AntrianPasien      AntrianPasien[]
+  masterTarif        MasterTarif[]
 }
