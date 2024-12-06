@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -40,7 +41,7 @@ export class MasterAsuransiService {
 
     // Validasi tanggal
     if (new Date(to) < new Date(from)) {
-      throw new Error(
+      throw new BadRequestException(
         'Tanggal berakhirnya kerjasama tidak boleh sebelum tanggal mulainya kerjasama.',
       );
     }
@@ -212,6 +213,39 @@ export class MasterAsuransiService {
       }
       console.error('Error fetching data:', error);
       throw new Error('Terjadi kesalahan pada server.');
+    }
+  }
+
+  async ambilByFromTo(from: string, to: string) {
+    try {
+      const data = await this.prisma.masterAsuransi.findMany({
+        where: {
+          from: { gte: from },
+          to: { lte: to },
+        },
+      });
+
+      if (!data.length) {
+        return {
+          success: false,
+          message: 'Tidak ada data master asuransi dalam rentang tersebut.',
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Data master asuransi berhasil diambil.',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Terjadi kesalahan saat mengambil data.',
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

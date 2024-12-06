@@ -18,6 +18,7 @@ model Pendaftaran {
   riwayat              RiwayatPendaftaran?
   soap                 SOAP[]
   antrian              AntrianPasien?
+  masterTarifs         MasterTarif[]       @relation("PendaftaranMasterTarif")
 }
 
 model EpisodePendaftaran {

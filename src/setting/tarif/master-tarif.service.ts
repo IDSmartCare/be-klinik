@@ -31,6 +31,43 @@ export class MasterTarifService {
     }
   }
 
+  async getLayanan(idFasyankes: string, idRegis: number) {
+    try {
+      const penjamin = await this.prisma.pendaftaran.findUnique({
+        where: { id: idRegis },
+      });
+
+      if (!penjamin) {
+        throw new NotFoundException(
+          `Pendaftaran dengan ID ${idRegis} tidak ditemukan`,
+        );
+      }
+
+      const tarif = await this.prisma.masterTarif.findMany({
+        where: {
+          idFasyankes: idFasyankes,
+          kategoriTarif: {
+            startsWith: 'Layanan',
+          },
+          penjamin: penjamin.penjamin,
+        },
+      });
+
+      if (tarif.length === 0) {
+        throw new NotFoundException(
+          `Tarif untuk Fasyankes ID ${idFasyankes} tidak ditemukan`,
+        );
+      }
+
+      return tarif;
+    } catch (error) {
+      console.log('id', idRegis);
+      console.log('idFasyankes', idFasyankes);
+      console.error(error);
+      throw error;
+    }
+  }
+
   async createTarif(data: {
     idFasyankes: string;
     namaTarif: string;
@@ -41,22 +78,45 @@ export class MasterTarifService {
     doctorId?: number;
   }) {
     try {
-      const existingTarif = await this.prisma.masterTarif.findFirst({
-        where: {
-          doctorId: data.doctorId,
-          idFasyankes: data.idFasyankes,
-          penjamin: data.penjamin,
-          kategoriTarif: data.kategoriTarif,
-        },
-      });
-      if (existingTarif) {
-        throw new BadRequestException('Tarif sudah ada');
+      if (data.kategoriTarif === 'Admin') {
+        const existingAdminTarif = await this.prisma.masterTarif.findFirst({
+          where: {
+            idFasyankes: data.idFasyankes,
+            kategoriTarif: 'Admin',
+            penjamin: data.penjamin,
+          },
+        });
+        if (existingAdminTarif) {
+          throw new BadRequestException(
+            'Tarif dengan kategori Admin sudah ada',
+          );
+        }
+      } else {
+        const existingTarif = await this.prisma.masterTarif.findFirst({
+          where: {
+            idFasyankes: data.idFasyankes,
+            penjamin: data.penjamin,
+            kategoriTarif: data.kategoriTarif,
+            namaTarif: data.namaTarif,
+          },
+        });
+        if (existingTarif) {
+          throw new BadRequestException('Tarif ini sudah ada');
+        }
       }
 
       if (data.doctorId && data.hargaTarif) {
         const existingDoctorCost = await this.prisma.doctorCosts.findFirst({
           where: {
             doctorId: data.doctorId,
+            insurance: {
+              some: {
+                penjamin: data.penjamin,
+              },
+            },
+          },
+          select: {
+            insurance: true,
           },
         });
 

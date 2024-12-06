@@ -23,6 +23,14 @@ export class MasterTarifController {
     return this.masterTarifService.getTarif(idFasyankes);
   }
 
+  @Get('/layanan/:idFasyankes/:idRegis')
+  async getLayanan(
+    @Param('idFasyankes') idFasyankes: string,
+    @Param('idRegis') idRegis: string,
+  ) {
+    return this.masterTarifService.getLayanan(idFasyankes, +idRegis);
+  }
+
   @Post('/create')
   async createTarif(
     @Body()
@@ -63,9 +71,8 @@ export class MasterTarifController {
   @UseGuards(AuthGuard)
   @Delete('/delete/:id')
   async deleteMasterTarif(
-    @Param('id') id: string
+    @Param('id') id: string,
   ): Promise<{ message: string; data?: MasterTarif }> {
     return this.masterTarifService.deleteMasterTarif({ id: Number(id) });
   }
-  
 }
