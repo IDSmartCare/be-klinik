@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCpptDto } from './dto/create-cppt.dto';
 import { PrismaService } from 'src/service/prisma.service';
 import { Prisma, SOAP } from '@prisma/client';
@@ -135,21 +139,98 @@ export class CpptService {
           },
         });
 
-        const konsulDokter = await tx.masterTarif.findFirst({
-          where: {
-            idFasyankes: createCpptDto.idFasyankes,
-            // penjamin: getPenjamin?.penjamin,
-            doctorId: getPenjamin?.doctorId,
-            kategoriTarif: 'Dokter',
-            isAktif: true,
-          },
-        });
+        let konsulDokter;
+
+        if (
+          getPenjamin?.penjamin === 'BPJS' ||
+          getPenjamin?.penjamin === 'PRIBADI'
+        ) {
+          konsulDokter = await tx.masterTarif.findFirst({
+            where: {
+              idFasyankes: createCpptDto.idFasyankes,
+              penjamin: getPenjamin?.penjamin,
+              doctorId: getPenjamin?.doctorId,
+              kategoriTarif: 'Dokter',
+              isAktif: true,
+            },
+          });
+
+          if (!konsulDokter) {
+            throw new BadRequestException(
+              `Tarif ${getPenjamin?.doctor?.name} pada penjamin ${getPenjamin?.penjamin} tidak ditemukan`,
+            );
+          }
+        } else if (getPenjamin?.penjamin?.startsWith('ASURANSI')) {
+          konsulDokter = await tx.masterTarif.findFirst({
+            where: {
+              idFasyankes: createCpptDto.idFasyankes,
+              penjamin: getPenjamin?.penjamin,
+              doctorId: getPenjamin?.doctorId,
+              kategoriTarif: 'Dokter',
+              isAktif: true,
+            },
+          });
+
+          if (!konsulDokter) {
+            konsulDokter = await tx.masterTarif.findFirst({
+              where: {
+                idFasyankes: createCpptDto.idFasyankes,
+                penjamin: 'PRIBADI',
+                doctorId: getPenjamin?.doctorId,
+                kategoriTarif: 'Dokter',
+                isAktif: true,
+              },
+            });
+          }
+
+          if (!konsulDokter) {
+            throw new BadRequestException(
+              `Tarif ${getPenjamin?.doctor?.name} pada penjamin ${getPenjamin?.penjamin} dan PRIBADI tidak ditemukan`,
+            );
+          }
+        } else {
+          throw new BadRequestException(
+            `Jenis penjamin ${getPenjamin?.penjamin} tidak valid`,
+          );
+        }
 
         const bill = await tx.billPasien.findFirst({
           where: {
             pendaftaranId: createCpptDto.pendaftaranId,
           },
         });
+
+        if (createCpptDto.layanan && createCpptDto.layanan.length > 0) {
+          for (const layananItem of createCpptDto.layanan) {
+            const masterTarif = await tx.masterTarif.findFirst({
+              where: {
+                idFasyankes: createCpptDto.idFasyankes,
+                kategoriTarif: {
+                  startsWith: 'Layanan',
+                },
+                penjamin: getPenjamin?.penjamin,
+                namaTarif: layananItem.label,
+              },
+            });
+
+            if (!masterTarif) {
+              throw new BadRequestException(
+                `Layanan dengan ID ${layananItem.value} tidak ditemukan`,
+              );
+            }
+
+            await tx.billPasienDetail.create({
+              data: {
+                harga: masterTarif.hargaTarif,
+                jenisBill: 'Layanan',
+                deskripsi: masterTarif.namaTarif,
+                billPasienId: bill?.id,
+                jumlah: 1,
+                subTotal: masterTarif.hargaTarif.toString(),
+              },
+            });
+          }
+        }
 
         await tx.billPasienDetail.create({
           data: {

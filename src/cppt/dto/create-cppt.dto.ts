@@ -14,4 +14,5 @@ export class CreateCpptDto {
   assessment: any;
   plan: any;
   instruction: any;
+  layanan?: any;
 }

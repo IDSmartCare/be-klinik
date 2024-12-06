@@ -1,15 +1,15 @@
 model PoliKlinik {
-  id               Int       @id @default(autoincrement())
-  namaPoli         String    @db.VarChar(100)
-  kodePoli         String?   @db.VarChar(10)
-  isAktif          Boolean?  @default(true)
-  createdAt        DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt        DateTime  @updatedAt @db.Timestamptz(6)
-  idFasyankes      String?   @db.VarChar(30)
-  voiceId          Int?
-  masterVoicePoli  MasterVoicePoli? @relation(fields: [voiceId], references: [id],onDelete: Cascade)
-  dokter           Doctors[]
-  Profile          Profile[]
+  id              Int              @id @default(autoincrement())
+  namaPoli        String           @db.VarChar(100)
+  kodePoli        String?          @db.VarChar(10)
+  isAktif         Boolean?         @default(true)
+  createdAt       DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime         @updatedAt @db.Timestamptz(6)
+  idFasyankes     String?          @db.VarChar(30)
+  voiceId         Int?
+  masterVoicePoli MasterVoicePoli? @relation(fields: [voiceId], references: [id], onDelete: Cascade)
+  dokter          Doctors[]
+  Profile         Profile[]
 }
 
 model JadwalDokter {

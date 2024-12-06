@@ -1,6 +1,5 @@
 class TimeRangeDto {
   from: string;
-
   to: string;
 }
 

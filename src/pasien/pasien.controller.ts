@@ -43,7 +43,6 @@ export class PasienController {
         idFasyankes: idfasyankes,
         AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
         doctorId: doctor.id,
-        isSoapPerawat: true,
       },
       orderBy: {
         id: 'desc',
@@ -135,7 +134,7 @@ export class PasienController {
     },
   ): Promise<Pasien> {
     try {
-      return await this.pasienService.create(   
+      return await this.pasienService.create(
         data.pasienData,
         data.userRole,
         data.userPackage,

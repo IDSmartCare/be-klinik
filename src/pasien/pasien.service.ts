@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Body, Injectable } from '@nestjs/common';
+import { BadRequestException, Body, Injectable } from '@nestjs/common';
 import {
   Prisma,
   Pasien,
@@ -138,14 +138,55 @@ export class PasienService {
     const nomorAntrian = await this.generateQueueNumber(data.idFasyankes);
 
     const transaksi = await this.prisma.$transaction(async (tx) => {
-      const tarifAdm = await tx.masterTarif.findFirst({
-        where: {
-          idFasyankes: data.idFasyankes,
-          penjamin: data.penjamin,
-          kategoriTarif: 'Admin',
-          isAktif: true,
-        },
-      });
+      let tarifAdm;
+
+      if (data.penjamin === 'BPJS' || data.penjamin === 'PRIBADI') {
+        tarifAdm = await tx.masterTarif.findFirst({
+          where: {
+            idFasyankes: data.idFasyankes,
+            penjamin: data.penjamin,
+            kategoriTarif: 'Admin',
+            isAktif: true,
+          },
+        });
+
+        if (!tarifAdm) {
+          throw new BadRequestException(
+            `Silahkan membuat tarif Administrasi untuk ${data.penjamin}`,
+          );
+        }
+      } else if (data.penjamin?.startsWith('ASURANSI')) {
+        tarifAdm = await tx.masterTarif.findFirst({
+          where: {
+            idFasyankes: data.idFasyankes,
+            penjamin: data.penjamin,
+            kategoriTarif: 'Admin',
+            isAktif: true,
+          },
+        });
+
+        if (!tarifAdm) {
+          tarifAdm = await tx.masterTarif.findFirst({
+            where: {
+              idFasyankes: data.idFasyankes,
+              penjamin: 'PRIBADI',
+              kategoriTarif: 'Admin',
+              isAktif: true,
+            },
+          });
+        }
+
+        if (!tarifAdm) {
+          throw new BadRequestException(
+            `Silahkan membuat tarif Administrasi untuk ${data.penjamin} atau PRIBADI`,
+          );
+        }
+      } else {
+        throw new BadRequestException(
+          `Jenis penjamin ${data.penjamin} tidak valid`,
+        );
+      }
+
       const lastEpisode = await tx.episodePendaftaran.findMany({
         where: {
           pasienId: data.pasienId,
@@ -210,7 +251,7 @@ export class PasienService {
           data: {
             harga: tarifAdm?.hargaTarif,
             jenisBill: 'Admin',
-            deskripsi: tarifAdm?.namaTarif ?? 'No Tarif Found',
+            deskripsi: tarifAdm?.namaTarif,
             billPasienId: bill.id,
             jumlah: 1,
             subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
@@ -273,7 +314,7 @@ export class PasienService {
             data: {
               harga: tarifAdm?.hargaTarif,
               jenisBill: 'Admin',
-              deskripsi: tarifAdm?.namaTarif ?? 'No Tarif Found',
+              deskripsi: tarifAdm?.namaTarif,
               billPasienId: bill.id,
               jumlah: 1,
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
@@ -331,7 +372,7 @@ export class PasienService {
             data: {
               harga: tarifAdm?.hargaTarif,
               jenisBill: 'Admin',
-              deskripsi: tarifAdm?.namaTarif ?? 'No Tarif Found',
+              deskripsi: tarifAdm?.namaTarif,
               billPasienId: bill.id,
               jumlah: 1,
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
