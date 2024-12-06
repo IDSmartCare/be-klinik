@@ -1,7 +1,17 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Param, Post, Body, UseGuards, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Post,
+  Body,
+  UseGuards,
+  Patch,
+  Delete,
+} from '@nestjs/common';
 import { MasterTarifService } from './master-tarif.service';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { MasterTarif } from '@prisma/client';
 
 @UseGuards(AuthGuard)
 @Controller('master-tarif')
@@ -45,7 +55,17 @@ export class MasterTarifController {
       kategoriTarif?: string;
       hargaTarif?: string;
       doctorId?: number;
-    }) {
-      return this.masterTarifService.updateTarif(data);
-    }
+    },
+  ) {
+    return this.masterTarifService.updateTarif(data);
+  }
+
+  @UseGuards(AuthGuard)
+  @Delete('/delete/:id')
+  async deleteMasterTarif(
+    @Param('id') id: string
+  ): Promise<{ message: string; data?: MasterTarif }> {
+    return this.masterTarifService.deleteMasterTarif({ id: Number(id) });
+  }
+  
 }

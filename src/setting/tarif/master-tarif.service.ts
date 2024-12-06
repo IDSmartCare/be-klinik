@@ -1,5 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { MasterTarif, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/service/prisma.service';
 
 @Injectable()
@@ -35,25 +41,36 @@ export class MasterTarifService {
     doctorId?: number;
   }) {
     try {
-      // Jika ada doctorId dan hargaTarif, cek apakah tarif dokter sudah ada
+      const existingTarif = await this.prisma.masterTarif.findFirst({
+        where: {
+          doctorId: data.doctorId,
+          idFasyankes: data.idFasyankes,
+          penjamin: data.penjamin,
+          kategoriTarif: data.kategoriTarif,
+        },
+      });
+      if (existingTarif) {
+        throw new BadRequestException('Tarif sudah ada');
+      }
+
       if (data.doctorId && data.hargaTarif) {
         const existingDoctorCost = await this.prisma.doctorCosts.findFirst({
           where: {
             doctorId: data.doctorId,
           },
         });
-  
+
         if (existingDoctorCost) {
-          throw new BadRequestException('Tarif untuk dokter ini sudah terdaftar.');
+          throw new BadRequestException(
+            'Tarif untuk dokter ini sudah terdaftar',
+          );
         }
       }
-  
-      // Lanjutkan proses create masterTarif
+
       const newTarif = await this.prisma.masterTarif.create({
         data,
       });
-  
-      // Jika ada doctorId dan hargaTarif, buat tarif dokter baru
+
       if (data.doctorId && data.hargaTarif) {
         await this.prisma.doctorCosts.create({
           data: {
@@ -62,16 +79,15 @@ export class MasterTarifService {
           },
         });
       }
-  
+
       return newTarif;
     } catch (error) {
       console.error(error);
       throw new NotFoundException(
-        error.message || 'Gagal membuat tarif. Silakan coba lagi.'
+        error.message || 'Gagal membuat tarif. Silakan coba lagi.',
       );
     }
   }
-  
 
   async findOne(id: number) {
     try {
@@ -109,7 +125,6 @@ export class MasterTarifService {
     doctorId?: number;
   }) {
     try {
-      // Update master tarif
       const updateTarif = await this.prisma.masterTarif.update({
         where: { id: data.id },
         data: {
@@ -146,6 +161,25 @@ export class MasterTarifService {
       throw new NotFoundException(
         `Failed to update Tarif. Error: ${error.message}`,
       );
+    }
+  }
+
+  async deleteMasterTarif(
+    where: Prisma.MasterTarifWhereUniqueInput,
+  ): Promise<{ message: string; data?: MasterTarif }> {
+    try {
+      const deletedTarif = await this.prisma.masterTarif.delete({
+        where,
+      });
+
+      return {
+        message: 'Data master tarif berhasil dihapus.',
+        data: deletedTarif,
+      };
+    } catch (error) {
+      return {
+        message: `Gagal menghapus data master tarif. Error: ${error.message}`,
+      };
     }
   }
 }

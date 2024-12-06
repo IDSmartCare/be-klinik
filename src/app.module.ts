@@ -30,6 +30,8 @@ import { PlanAnswerModule } from './plan-answer/plan-answer.module';
 import { InstructionAnswerModule } from './instruction-answer/instruction-answer.module';
 import { AntrianModule } from './antrian/antrian.module';
 import { QueueModule } from './queue/queue.module';
+import { PoliController } from './setting/poli/poli.controller';
+import { PoliModule } from './setting/poli/poli.module';
 
 @Module({
   imports: [
@@ -63,6 +65,7 @@ import { QueueModule } from './queue/queue.module';
     InstructionAnswerModule,
     AntrianModule,
     QueueModule,
+    PoliModule,
   ],
   controllers: [AppController],
   providers: [AppService],

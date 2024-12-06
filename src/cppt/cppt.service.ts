@@ -130,6 +130,9 @@ export class CpptService {
           where: {
             id: Number(createCpptDto.pendaftaranId),
           },
+          include: {
+            doctor: true,
+          },
         });
 
         const konsulDokter = await tx.masterTarif.findFirst({
@@ -152,7 +155,8 @@ export class CpptService {
           data: {
             harga: konsulDokter?.hargaTarif,
             jenisBill: 'Dokter',
-            deskripsi: konsulDokter?.namaTarif ?? '',
+            // deskripsi: konsulDokter?.namaTarif ?? '',
+            deskripsi: 'Konsultasi Dokter',
             billPasienId: bill?.id,
             jumlah: 1,
             subTotal: (Number(konsulDokter?.hargaTarif) * 1).toString(),
