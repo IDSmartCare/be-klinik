@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -36,18 +37,35 @@ export class MasterAsuransiService {
   }
 
   async create(createMasterAsuransiDto: CreateMasterAsuransiDto) {
+    const { from, to } = createMasterAsuransiDto;
+
+    // Validasi tanggal
+    if (new Date(to) < new Date(from)) {
+      throw new BadRequestException(
+        'Tanggal berakhirnya kerjasama tidak boleh sebelum tanggal mulainya kerjasama.',
+      );
+    }
+
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
 
-    // Hitung jumlah data untuk membuat increment ID
-    const count = await this.prisma.masterAsuransi.count();
-    const increment = (count + 1).toString().padStart(4, '0');
+    // Ambil data terakhir berdasarkan kodeAsuransi
+    const lastAsuransi = await this.prisma.masterAsuransi.findFirst({
+      orderBy: {
+        kodeAsuransi: 'desc',
+      },
+    });
 
-    // Buat kodeAsuransi
+    let increment = '0001';
+    if (lastAsuransi) {
+      // Ambil 4 digit terakhir dari kodeAsuransi sebelumnya dan tambahkan 1
+      const lastIncrement = parseInt(lastAsuransi.kodeAsuransi.slice(-4));
+      increment = (lastIncrement + 1).toString().padStart(4, '0');
+    }
+
     const kodeAsuransi = `AS-${year}${month}${increment}`;
 
-    // Tambahkan data baru ke database
     const newAsuransi = await this.prisma.masterAsuransi.create({
       data: {
         ...createMasterAsuransiDto,
@@ -55,7 +73,6 @@ export class MasterAsuransiService {
       },
     });
 
-    // Format respons sesuai permintaan
     return {
       success: true,
       data: [
@@ -70,7 +87,6 @@ export class MasterAsuransiService {
           from: newAsuransi.from,
           to: newAsuransi.to,
           isAktif: newAsuransi.isAktif,
-          // tarif: newAsuransi.tarif,
           idFasyankes: newAsuransi.idFasyankes,
         },
       ],
@@ -80,26 +96,37 @@ export class MasterAsuransiService {
   async updateAsuransi(
     id: number,
     data: Partial<MasterAsuransi>,
-  ): Promise<{ success: boolean; message: string; data: MasterAsuransi }> {
+  ): Promise<{ success: boolean; message: string; data?: MasterAsuransi }> {
     try {
-      // Periksa apakah ID asuransi ada
+      // Ambil data asuransi berdasarkan ID
       const masterAsuransi = await this.prisma.masterAsuransi.findUnique({
-        where: { id: id }, // ID harus berupa angka (integer)
+        where: { id: id },
       });
 
       if (!masterAsuransi) {
-        throw new HttpException(
-          `Data asuransi dengan ID ${id} tidak ditemukan.`,
-          HttpStatus.NOT_FOUND,
-        );
+        return {
+          success: false,
+          message: `Data asuransi dengan ID ${id} tidak ditemukan.`,
+        };
+      }
+
+      // Validasi tanggal
+      const fromDate = new Date(data.from ?? masterAsuransi.from);
+      const toDate = new Date(data.to ?? masterAsuransi.to);
+
+      if (toDate < fromDate) {
+        return {
+          success: false,
+          message: `Tanggal berakhirnya kerjasama tidak boleh sebelum tanggal mulainya kerjasama.`,
+        };
       }
 
       // Periksa ID Fasyankes jika disertakan
       if (data.idFasyankes && data.idFasyankes !== masterAsuransi.idFasyankes) {
-        throw new HttpException(
-          `ID Fasyankes ${data.idFasyankes} tidak cocok dengan data asuransi.`,
-          HttpStatus.BAD_REQUEST,
-        );
+        return {
+          success: false,
+          message: `ID Fasyankes ${data.idFasyankes} tidak cocok dengan data asuransi.`,
+        };
       }
 
       // Update data asuransi
@@ -116,25 +143,21 @@ export class MasterAsuransiService {
 
       return {
         success: true,
-        message: `Data asuransi dengan ID ${id} berhasil diperbarui.`,
+        message: `Asuransi ${updatedAsuransi.namaAsuransi} berhasil diperbarui.`,
         data: updatedAsuransi,
       };
     } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      throw new HttpException(
-        `Gagal memperbarui data asuransi: ${error.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      return {
+        success: false,
+        message: `Gagal memperbarui data asuransi: ${error.message}`,
+      };
     }
   }
 
   async deleteAsuransi(
     id: string,
     idFasyankes: string,
-  ): Promise<{ message: string }> {
+  ): Promise<{ message: string; success: boolean }> {
     try {
       const masterAsuransi = await this.prisma.masterAsuransi.findFirst({
         where: { id: Number(id), idFasyankes: idFasyankes },
@@ -147,18 +170,81 @@ export class MasterAsuransiService {
         );
       }
 
-      // Menghapus data
-      await this.prisma.masterAsuransi.delete({
+      const deleteAsuransi = await this.prisma.masterAsuransi.delete({
         where: { id: Number(id) },
       });
 
       return {
-        message: `Data asuransi dengan ID ${id} berhasil dihapus.`,
+        message: `Asuransi ${deleteAsuransi.namaAsuransi} berhasil dihapus.`,
+        success: true,
+      };
+    } catch (error) {
+      return {
+        message: `Gagal menghapus data asuransi: ${error.message}`,
+        success: false,
+      };
+    }
+  }
+
+  async findByIdWithResponse(id: number, idFasyankes: string) {
+    try {
+      const result = await this.prisma.masterAsuransi.findUnique({
+        where: {
+          id: Number(id),
+          idFasyankes: idFasyankes,
+        },
+      });
+
+      if (!result) {
+        throw new NotFoundException({
+          success: false,
+          message: `Data dengan id ${id} dan idFasyankes ${idFasyankes} tidak ditemukan.`,
+        });
+      }
+
+      return {
+        success: true,
+        message: 'Data berhasil ditemukan.',
+        data: result,
+      };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      console.error('Error fetching data:', error);
+      throw new Error('Terjadi kesalahan pada server.');
+    }
+  }
+
+  async ambilByFromTo(from: string, to: string) {
+    try {
+      const data = await this.prisma.masterAsuransi.findMany({
+        where: {
+          from: { gte: from },
+          to: { lte: to },
+        },
+      });
+
+      if (!data.length) {
+        return {
+          success: false,
+          message: 'Tidak ada data master asuransi dalam rentang tersebut.',
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Data master asuransi berhasil diambil.',
+        data,
       };
     } catch (error) {
       throw new HttpException(
-        `Gagal menghapus data asuransi: ${error.message}`,
-        HttpStatus.BAD_REQUEST,
+        {
+          success: false,
+          message: 'Terjadi kesalahan saat mengambil data.',
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

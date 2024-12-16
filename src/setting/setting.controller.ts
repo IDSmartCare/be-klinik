@@ -10,13 +10,17 @@ import {
   UseGuards,
   HttpException,
   HttpStatus,
-  Put,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { SettingService } from './setting.service';
-import { CreateJadwalDto, CreatePoliDto } from './dto/create-setting.dto';
-import { UpdateJadwalDto, UpdateSettingDto } from './dto/update-setting.dto';
-import { JadwalDokter, PoliKlinik } from '@prisma/client';
+import { CreatePoliDto } from './dto/create-setting.dto';
+import { UpdateSettingDto } from './dto/update-setting.dto';
+import { MasterVoicePoli, PoliKlinik } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { CreateVoicePoliDto } from './dto/create-voice-polis.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateVoicePolisDto } from './dto/update-voice-polis.dto';
 
 @Controller('setting')
 export class SettingController {
@@ -28,39 +32,50 @@ export class SettingController {
     return this.settingService.createPoli(createSettingDto);
   }
 
-  // @UseGuards(AuthGuard)
-  // @Post('/createjadwal')
-  // async createJadwal(
-  //   @Body() createSettingDto: CreateJadwalDto,
-  // ): Promise<JadwalDokter> {
-  //   return this.settingService.createJadwal(createSettingDto);
-  // }
+  @UseGuards(AuthGuard)
+  @Get('/voicepoli/:idFasyankes')
+  async findAllVoicePoli(@Param('idFasyankes') idFasyankes: string) {
+    return this.settingService.findAllVoicePoli(idFasyankes);
+  }
 
-  // @UseGuards(AuthGuard)
-  // @Put('/editjadwal/:id')
-  // async updateJadwal(
-  //   @Param('id') id: number,
-  //   @Body() updateJadwalDto: UpdateJadwalDto,
-  // ) {
-  //   try {
-  //     // Call the updateJadwal service method
-  //     const result = await this.settingService.updateJadwal(
-  //       id,
-  //       updateJadwalDto,
-  //     );
+  @UseGuards(AuthGuard)
+  @Post('/createvoicepoli')
+  @UseInterceptors(FileInterceptor('file'))
+  async createVoicePoli(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createVoicePoliDto: CreateVoicePoliDto,
+  ): Promise<MasterVoicePoli> {
+    createVoicePoliDto.file = file;
+    return this.settingService.createVoicePoli(createVoicePoliDto);
+  }
+  @UseGuards(AuthGuard)
+  @Patch('/updatevoicepoli/:id')
+  @UseInterceptors(FileInterceptor('file'))
+  async updateVoicePoli(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('id') id: string,
+    @Body() updateVoicePolisDto: UpdateVoicePolisDto,
+  ) {
+    updateVoicePolisDto.file = file;
+    return this.settingService.updateVoicePoli(+id, updateVoicePolisDto);
+  }
+  @UseGuards(AuthGuard)
+  @Get('/detailvoice/:id/:idFasyankes')
+  async detailVoicePoli(
+    @Param('id') id: string,
+    @Param('idFasyankes') idFasyankes: string,
+  ) {
+    return this.settingService.detailVoicePoli(+id, idFasyankes);
+  }
 
-  //     return {
-  //       status: result.status,
-  //       message: result.message,
-  //       data: result.data,
-  //     };
-  //   } catch (error) {
-  //     throw new HttpException(
-  //       { message: error.message || 'Internal server error', status: 'error' },
-  //       error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-  //     );
-  //   }
-  // }
+  @UseGuards(AuthGuard)
+  @Delete('/hapusvoicepoli/:id/:idFasyankes')
+  async deleteVoicePoli(
+    @Param('id') id: string,
+    @Param('idFasyankes') idFasyankes: string,
+  ) {
+    return this.settingService.deleteVoicePoli(+id, idFasyankes);
+  }
 
   @UseGuards(AuthGuard)
   @Get('/listpoli/:idfasyankes')
@@ -74,30 +89,6 @@ export class SettingController {
     });
   }
 
-  // @UseGuards(AuthGuard)
-  // @Get('/listjadwal/:idfasyankes')
-  // async findOne(
-  //   @Param('idfasyankes') idfasyankes: string,
-  // ): Promise<JadwalDokter[]> {
-  //   return this.settingService.findJadwalDokter({
-  //     where: {
-  //       idFasyankes: idfasyankes,
-  //     },
-  //     include: {
-  //       dokter: {
-  //         include: {
-  //           poliklinik: {
-  //             select: {
-  //               namaPoli: true,
-  //               kodePoli: true,
-  //             },
-  //           },
-  //         },
-  //       },
-  //     },
-  //   });
-  // }
-
   @UseGuards(AuthGuard)
   @Get('/listdokter/:idFasyankes')
   async findAllDokter(@Param('idFasyankes') idFasyankes: string) {
@@ -105,7 +96,6 @@ export class SettingController {
       const data = await this.settingService.findAllDokter(idFasyankes);
       return { success: true, data };
     } catch (error) {
-      // Cek apakah error merupakan error yang tidak ditemukan atau error lainnya
       throw new HttpException(
         {
           success: false,

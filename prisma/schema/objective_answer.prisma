@@ -1,0 +1,11 @@
+model ObjectiveAnswer {
+  id         Int      @id @default(autoincrement())
+  questionId Int
+  answer     String
+  createdBy  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  question MasterObjective @relation(fields: [questionId], references: [id])
+}

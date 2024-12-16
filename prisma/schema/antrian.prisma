@@ -1,0 +1,25 @@
+model AntrianPasien {
+  id            Int          @id @default(autoincrement())
+  tanggal       DateTime
+  status        Boolean      @default(false)
+  pendaftaranId Int?         @unique
+  pendaftaran   Pendaftaran? @relation(fields: [pendaftaranId], references: [id])
+  jumlahPanggil Int
+  nomor         String
+  idFasyankes   String
+  doctorId      Int
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  doctor        Doctors      @relation(fields: [doctorId], references: [id])
+}
+
+model AntrianAdmisi {
+  id            Int      @id @default(autoincrement())
+  nomor         String
+  tanggal       DateTime
+  status        Boolean  @default(false)
+  jumlahPanggil Int
+  idFasyankes   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

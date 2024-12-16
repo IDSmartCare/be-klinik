@@ -9,6 +9,7 @@ model Pasien {
   paspor              String?              @db.VarChar(100)
   bahasa              String?              @db.VarChar(100)
   noHp                String               @db.VarChar(20)
+  email               String               @db.VarChar(50)
   tempatLahir         String               @db.VarChar(20)
   tanggalLahir        DateTime             @db.Date
   jenisKelamin        String               @db.Char(1)
@@ -42,8 +43,8 @@ model Pasien {
   rwDomisili          Int
   kodePosDomisili     String?              @db.VarChar(10)
   isAktif             Boolean?             @default(true)
-  createdAt           DateTime             @default(now()) @db.Timestamptz
-  updatedAt           DateTime             @updatedAt @db.Timestamptz
-  episodePasien       EpisodePendaftaran[]
+  createdAt           DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime             @updatedAt @db.Timestamptz(6)
   idFasyankes         String?              @db.VarChar(30)
+  episodePasien       EpisodePendaftaran[]
 }

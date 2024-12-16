@@ -19,10 +19,19 @@ import { DoctorAvailableTimesModule } from './aidiva/doctor_available_times/doct
 import { DoctorAvailableSlotsModule } from './aidiva/doctor_available_slots/doctor_available_slots.module';
 import { DoctorsModule as DoctorsCoreModule } from './doctors/doctors.module';
 import { JadwalDokterModule } from './jadwal-dokter/jadwal-dokter.module';
-import { MasterAsuransiController } from './master-asuransi/master-asuransi.controller';
-import { MasterAsuransiService } from './master-asuransi/master-asuransi.service';
 import { MasterAsuransiModule } from './master-asuransi/master-asuransi.module';
 import { DoctorCostsModule } from './aidiva/doctor_costs/doctor_costs.module';
+import { MasterInstructionModule } from './master-instruction/master-instruction.module';
+import { SoapModule } from './soap/soap.module';
+import { SubjectiveAnswerModule } from './subjective-answer/subjective-answer.module';
+import { ObjectiveAnswerModule } from './objective-answer/objective-answer.module';
+import { AssessmentAnswerModule } from './assessment-answer/assessment-answer.module';
+import { PlanAnswerModule } from './plan-answer/plan-answer.module';
+import { InstructionAnswerModule } from './instruction-answer/instruction-answer.module';
+import { AntrianModule } from './antrian/antrian.module';
+import { QueueModule } from './queue/queue.module';
+import { PoliController } from './setting/poli/poli.controller';
+import { PoliModule } from './setting/poli/poli.module';
 
 @Module({
   imports: [
@@ -47,6 +56,16 @@ import { DoctorCostsModule } from './aidiva/doctor_costs/doctor_costs.module';
     JadwalDokterModule,
     MasterAsuransiModule,
     DoctorCostsModule,
+    MasterInstructionModule,
+    SoapModule,
+    SubjectiveAnswerModule,
+    ObjectiveAnswerModule,
+    AssessmentAnswerModule,
+    PlanAnswerModule,
+    InstructionAnswerModule,
+    AntrianModule,
+    QueueModule,
+    PoliModule,
   ],
   controllers: [AppController],
   providers: [AppService],

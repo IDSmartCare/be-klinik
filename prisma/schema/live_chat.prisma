@@ -1,0 +1,52 @@
+model Chats {
+  id            Int       @id @default(autoincrement())
+  customerId    Int
+  // customer      Customer    @relation(fields: [customerId], references: [id])
+  conversations Json?
+  deletedAt     DateTime? @db.Date
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Channels {
+  id         Int      @id @default(autoincrement())
+  uniqueCode String   @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model ChannelUser {
+  id        Int      @id @default(autoincrement())
+  channelId Int
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // channel      Channels @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  // user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LiveChat {
+  id          Int      @id @default(autoincrement())
+  channelCode String
+  userId      Int
+  role        String
+  message     String
+  isFromUser  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ChannelCustomer {
+  id         Int       @id @default(autoincrement())
+  channelId  Int
+  customerId Int
+  deletedAt  DateTime? @db.Date
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  // channel       Channels  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  //customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}

@@ -1,6 +1,14 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateJadwalDokterDto } from './dto/create-jadwal-dokter.dto';
 import { PrismaService } from 'src/service/prisma.service';
+import { UpdateJadwalDokterDto } from './dto/update-jadwal-dokter.dto';
+import { Doctors } from '@prisma/client';
 
 @Injectable()
 export class JadwalDokterService {
@@ -114,6 +122,7 @@ export class JadwalDokterService {
         select: {
           id: true,
           name: true,
+          unit: true,
           availableDays: {
             select: {
               id: true,
@@ -137,6 +146,7 @@ export class JadwalDokterService {
         return {
           id: doctor.id,
           name: doctor.name,
+          unit: doctor.unit,
           hari: {
             id: availableDay?.id || null,
             name: availableDay ? hariIndonesia : null,
@@ -165,6 +175,16 @@ export class JadwalDokterService {
   async createSchedule(createJadwalDokterDto: CreateJadwalDokterDto) {
     const { dokter_id, slot, days, times } = createJadwalDokterDto;
     return this.prisma.$transaction(async (prisma) => {
+      const existingSchedule = await prisma.doctorAvailableDays.findFirst({
+        where: { doctorId: dokter_id },
+        include: { doctor: true },
+      });
+      if (existingSchedule) {
+        throw new BadRequestException(
+          `Jadwal ${existingSchedule.doctor.name} sudah ada`,
+        );
+      }
+
       const availableDays = await prisma.doctorAvailableDays.create({
         data: {
           doctorId: dokter_id,
@@ -185,6 +205,12 @@ export class JadwalDokterService {
         const newFrom = new Date(`1970-01-01T${from}:00`);
         const newTo = new Date(`1970-01-01T${to}:00`);
 
+        if (newTo <= newFrom) {
+          throw new BadRequestException(
+            `Jadwal waktu ${from} - ${to} tidak valid.`,
+          );
+        }
+
         const existingSlots = await prisma.doctorAvailableTimes.findMany({
           where: {
             doctorId: dokter_id,
@@ -200,8 +226,8 @@ export class JadwalDokterService {
             (newTo > existingFrom && newTo <= existingTo) ||
             (newFrom <= existingFrom && newTo >= existingTo)
           ) {
-            throw new Error(
-              `Jadwal waktu ${from} - ${to} tumpang tindih dengan jadwal ${slot.from} - ${slot.to}.`,
+            throw new BadRequestException(
+              `Jadwal waktu ${from} - ${to} tidak boleh diantara jadwal ${slot.from} - ${slot.to}.`,
             );
           }
         }
@@ -245,5 +271,186 @@ export class JadwalDokterService {
         message: 'Berhasil membuat Jadwal Dokter',
       };
     });
+  }
+
+  async getDetailSchedule(idFasyankes: string, idDokter: number) {
+    const doctor = await this.prisma.doctors.findFirst({
+      where: { id: idDokter, idFasyankes },
+      include: {
+        availableDays: true,
+        availableSlots: true,
+        availableTimes: true,
+      },
+    });
+
+    if (!doctor) {
+      throw new NotFoundException('Doctor not found');
+    }
+
+    const dayNames: Record<string, string> = {
+      sun: 'Minggu',
+      mon: 'Senin',
+      tue: 'Selasa',
+      wed: 'Rabu',
+      thu: 'Kamis',
+      fri: 'Jumat',
+      sat: 'Sabtu',
+    };
+
+    const availableDays = Object.entries(dayNames)
+      .filter(([key]) => doctor.availableDays[0][key] !== null)
+      .map(([key, name]) => ({
+        day: name,
+      }));
+
+    return {
+      doctor: {
+        id: doctor.id,
+        name: doctor.name,
+        phone: doctor.phone,
+        unit: doctor.unit,
+        str: doctor.str,
+        sip: doctor.sip,
+        isAktif: doctor.isAktif,
+        status: doctor.status,
+        avatar: doctor.avatar,
+      },
+      availableDays,
+      availableSlots: doctor.availableSlots,
+      availableTimes: doctor.availableTimes,
+    };
+  }
+
+  async updateSchedule(updateJadwalDokterDto: UpdateJadwalDokterDto) {
+    const { dokter_id, slot, days, times } = updateJadwalDokterDto;
+    try {
+      return await this.prisma.$transaction(async (prisma) => {
+        const existingDay = await prisma.doctorAvailableDays.findFirst({
+          where: { doctorId: dokter_id },
+        });
+        if (!existingDay) {
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.NOT_FOUND,
+              success: false,
+              message: 'Data jadwal tidak ditemukan',
+            },
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        const updatedDays = await prisma.doctorAvailableDays.update({
+          where: { id: existingDay.id },
+          data: {
+            sun: days.includes('sun') ? '1' : '0',
+            mon: days.includes('mon') ? '1' : '0',
+            tue: days.includes('tue') ? '1' : '0',
+            wed: days.includes('wed') ? '1' : '0',
+            thu: days.includes('thu') ? '1' : '0',
+            fri: days.includes('fri') ? '1' : '0',
+            sat: days.includes('sat') ? '1' : '0',
+            slot,
+          },
+        });
+        await prisma.doctorAvailableTimes.updateMany({
+          where: { doctorId: dokter_id },
+          data: { deletedAt: new Date() },
+        });
+        await prisma.doctorAvailableSlots.updateMany({
+          where: { doctorId: dokter_id },
+          data: { deletedAt: new Date() },
+        });
+        for (const time of times) {
+          const { from, to } = time;
+          const availableTime = await prisma.doctorAvailableTimes.create({
+            data: { doctorId: dokter_id, from, to },
+          });
+          let current = new Date(`1970-01-01T${from}:00`);
+          const end = new Date(`1970-01-01T${to}:00`);
+          while (current < end) {
+            const slotFrom = current.toTimeString().slice(0, 5);
+            current.setMinutes(current.getMinutes() + slot);
+            const slotTo = current.toTimeString().slice(0, 5);
+            if (current <= end) {
+              await prisma.doctorAvailableSlots.create({
+                data: {
+                  doctorId: dokter_id,
+                  from: slotFrom,
+                  to: slotTo,
+                  doctor_available_times_id: availableTime.id,
+                  is_booked: false,
+                },
+              });
+            }
+          }
+        }
+        return {
+          statusCode: HttpStatus.OK,
+          success: true,
+          message: 'Berhasil memperbarui jadwal dokter',
+          data: updatedDays,
+        };
+      });
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          success: false,
+          message: 'Gagal memperbarui jadwal dokter',
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async findAllDoctorsWithoutAvailability(
+    idFasyankes: string,
+  ): Promise<{ success: boolean; data?: Doctors[]; message: string }> {
+    try {
+      const data = await this.prisma.doctors.findMany({
+        where: {
+          idFasyankes,
+          AND: [
+            {
+              availableDays: {
+                none: {},
+              },
+            },
+            {
+              availableTimes: {
+                none: {},
+              },
+            },
+            {
+              availableSlots: {
+                none: {},
+              },
+            },
+          ],
+        },
+        include: {
+          availableDays: true,
+          availableTimes: true,
+          availableSlots: true,
+        },
+      });
+
+      if (data.length === 0) {
+        return {
+          success: false,
+          message: 'No doctors without availability found for this Fasyankes',
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Successfully fetched doctors without availability',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'An error occurred',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

@@ -1,26 +1,27 @@
 model BillPasien {
   id               Int                @id @default(autoincrement())
-  billPasienDetail BillPasienDetail[]
   totalBill        String?
-  createdAt        DateTime           @default(now()) @db.Timestamptz
-  updatedAt        DateTime           @updatedAt @db.Timestamptz
-  Pendaftaran      Pendaftaran?       @relation(fields: [pendaftaranId], references: [id])
+  createdAt        DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime           @updatedAt @db.Timestamptz(6)
   pendaftaranId    Int?
   status           String?            @db.VarChar(50)
+  Pendaftaran      Pendaftaran?       @relation(fields: [pendaftaranId], references: [id])
+  billPasienDetail BillPasienDetail[]
   pembayaranBill   PembayaranPasien[]
 }
 
 model PembayaranPasien {
-  id           Int         @id @default(autoincrement())
-  totalBayar   String?
-  tglBayar     DateTime?   @db.Timestamptz
-  createdAt    DateTime    @default(now()) @db.Timestamptz
-  updatedAt    DateTime    @updatedAt @db.Timestamptz
-  billPasien   BillPasien? @relation(fields: [billPasienId], references: [id])
-  billPasienId Int?
-  totalDiskon  String?
-  totalPajak   String?
-  kembalian    String?
+  id            Int         @id @default(autoincrement())
+  totalBayar    String?
+  tglBayar      DateTime?   @db.Timestamptz(6)
+  createdAt     DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime    @updatedAt @db.Timestamptz(6)
+  billPasienId  Int?
+  totalDiskon   String?
+  totalPajak    String?
+  kembalian     String?
+  kategoriBayar String?
+  billPasien    BillPasien? @relation(fields: [billPasienId], references: [id])
 }
 
 model BillPasienDetail {
@@ -31,15 +32,15 @@ model BillPasienDetail {
   jumlah       Int?
   harga        String?     @db.VarChar(100)
   subTotal     String?
-  createdAt    DateTime    @default(now()) @db.Timestamptz
-  updatedAt    DateTime    @updatedAt @db.Timestamptz
-  billPasien   BillPasien? @relation(fields: [billPasienId], references: [id])
+  createdAt    DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime    @updatedAt @db.Timestamptz(6)
   billPasienId Int?
+  billPasien   BillPasien? @relation(fields: [billPasienId], references: [id])
 }
 
 model TransaksiPOS {
   id                 Int                  @id @default(autoincrement())
-  groupTransaksiId   String               @unique() @db.VarChar(100)
+  groupTransaksiId   String               @unique @db.VarChar(100)
   subTotal           String?              @db.VarChar(100)
   diskonInvoice      String?              @db.VarChar(100)
   pajak              String?              @db.VarChar(100)
@@ -49,9 +50,10 @@ model TransaksiPOS {
   namaPelanggan      String?              @db.VarChar(100)
   hpPelanggan        String?              @db.VarChar(100)
   biayaLainnya       String?              @db.VarChar(100)
+  kategoriBayar      String?              @db.VarChar(50)
   idFasyankes        String?              @db.VarChar(50)
-  createdAt          DateTime             @default(now()) @db.Timestamptz
-  updatedAt          DateTime             @updatedAt @db.Timestamptz
+  createdAt          DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime             @updatedAt @db.Timestamptz(6)
   transaksiPosDetail TransaksiPOSDetail[]
 }
 
@@ -63,8 +65,8 @@ model TransaksiPOSDetail {
   diskonFromBo       String?       @db.VarChar(100)
   hargaSetelahDiskon String?       @db.VarChar(100)
   qty                Int?
-  createdAt          DateTime      @default(now()) @db.Timestamptz
-  updatedAt          DateTime      @updatedAt @db.Timestamptz
-  transaksiPOS       TransaksiPOS? @relation(fields: [transaksiPOSId], references: [groupTransaksiId])
+  createdAt          DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime      @updatedAt @db.Timestamptz(6)
   transaksiPOSId     String?
+  transaksiPOS       TransaksiPOS? @relation(fields: [transaksiPOSId], references: [groupTransaksiId])
 }

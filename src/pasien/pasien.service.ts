@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Body, Injectable } from '@nestjs/common';
 import {
   Prisma,
   Pasien,
@@ -9,10 +9,14 @@ import {
 import { formatISO } from 'date-fns';
 import { PrismaService } from 'src/service/prisma.service';
 import { RegisPasienDto } from './dto/regis-pasien.dto';
+import { QueueGateway } from 'src/queue/queue.gateway';
 
 @Injectable()
 export class PasienService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private queueGateway: QueueGateway,
+  ) {}
 
   private convertDay(num) {
     let dayName;
@@ -44,11 +48,74 @@ export class PasienService {
     return dayName;
   }
 
+  async generateQueueNumber(idFasyankes: string): Promise<string> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const countToday = await this.prisma.pendaftaran.count({
+      where: {
+        idFasyankes: idFasyankes,
+        createdAt: {
+          gte: today,
+          lt: tomorrow,
+        },
+      },
+    });
+    const nextQueueNumber = countToday + 1;
+    const paddedNumber = nextQueueNumber.toString().padStart(4, '0');
+    return `P-${paddedNumber}`;
+  }
+
+  async queryFindFasyankes(idFasyankes: string) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return await this.findAllRegistrasi({
+      where: {
+        isClose: false,
+        AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
+        idFasyankes: idFasyankes,
+      },
+      orderBy: {
+        id: 'desc',
+      },
+      include: {
+        antrian: true,
+        doctor: {
+          select: {
+            name: true,
+            unit: true,
+            availableDays: true,
+            availableTimes: true,
+          },
+        },
+        episodePendaftaran: {
+          include: {
+            pasien: {
+              select: {
+                noRm: true,
+                namaPasien: true,
+                jenisKelamin: true,
+                kelurahan: true,
+                id: true,
+                paspor: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   async createRegis(
     data: RegisPasienDto,
     userRole?: string,
     userPackage?: string,
-  ): Promise<Pendaftaran> {
+  ): Promise<{ registrasi: Pendaftaran; nomorAntrian: string }> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
@@ -64,20 +131,62 @@ export class PasienService {
 
       if (existingEpisodes > 0) {
         throw new Error(
-          'You are only allowed to create one episode for this patient with the FREE package.',
+          'Anda hanya diperbolehkan membuat satu episode untuk pasien ini dengan paket FREE.',
         );
       }
     }
+    const nomorAntrian = await this.generateQueueNumber(data.idFasyankes);
 
     const transaksi = await this.prisma.$transaction(async (tx) => {
-      const tarifAdm = await tx.masterTarif.findFirst({
-        where: {
-          idFasyankes: data.idFasyankes,
-          penjamin: data.penjamin,
-          kategoriTarif: 'Admin',
-          isAktif: true,
-        },
-      });
+      let tarifAdm;
+
+      if (data.penjamin === 'BPJS' || data.penjamin === 'PRIBADI') {
+        tarifAdm = await tx.masterTarif.findFirst({
+          where: {
+            idFasyankes: data.idFasyankes,
+            penjamin: data.penjamin,
+            kategoriTarif: 'Admin',
+            isAktif: true,
+          },
+        });
+
+        if (!tarifAdm) {
+          throw new BadRequestException(
+            `Silahkan membuat tarif Administrasi untuk ${data.penjamin}`,
+          );
+        }
+      } else if (data.penjamin?.startsWith('ASURANSI')) {
+        tarifAdm = await tx.masterTarif.findFirst({
+          where: {
+            idFasyankes: data.idFasyankes,
+            penjamin: data.penjamin,
+            kategoriTarif: 'Admin',
+            isAktif: true,
+          },
+        });
+
+        if (!tarifAdm) {
+          tarifAdm = await tx.masterTarif.findFirst({
+            where: {
+              idFasyankes: data.idFasyankes,
+              penjamin: 'PRIBADI',
+              kategoriTarif: 'Admin',
+              isAktif: true,
+            },
+          });
+        }
+
+        if (!tarifAdm) {
+          throw new BadRequestException(
+            `Silahkan membuat tarif Administrasi untuk ${data.penjamin} atau PRIBADI`,
+          );
+        }
+      } else {
+        throw new BadRequestException(
+          `Jenis penjamin ${data.penjamin} tidak valid`,
+        );
+      }
+
       const lastEpisode = await tx.episodePendaftaran.findMany({
         where: {
           pasienId: data.pasienId,
@@ -107,7 +216,22 @@ export class PasienService {
             nomorAsuransi: data.nomorAsuransi,
             idFasyankes: data.idFasyankes,
           },
+          include: {
+            doctor: true,
+          },
         });
+
+        await tx.antrianPasien.create({
+          data: {
+            nomor: nomorAntrian,
+            tanggal: new Date(),
+            doctorId: data.doctorId,
+            jumlahPanggil: 0,
+            idFasyankes: data.idFasyankes,
+            pendaftaranId: registrasi.id,
+          },
+        });
+
         const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
           data: {
             pendaftaranId: registrasi.id,
@@ -127,14 +251,14 @@ export class PasienService {
           data: {
             harga: tarifAdm?.hargaTarif,
             jenisBill: 'Admin',
-            deskripsi: tarifAdm?.namaTarif ?? 'No Tarif Found',
+            deskripsi: tarifAdm?.namaTarif,
             billPasienId: bill.id,
             jumlah: 1,
             subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
           },
         });
-
-        return registrasi;
+        this.queueGateway;
+        return { registrasi, nomorAntrian };
       } else {
         const count = await tx.pendaftaran.count({
           where: {
@@ -156,7 +280,21 @@ export class PasienService {
               nomorAsuransi: data.nomorAsuransi,
               idFasyankes: data.idFasyankes,
             },
+            include: {
+              doctor: true,
+            },
           });
+          await tx.antrianPasien.create({
+            data: {
+              nomor: nomorAntrian,
+              tanggal: new Date(),
+              doctorId: data.doctorId,
+              jumlahPanggil: 0,
+              idFasyankes: data.idFasyankes,
+              pendaftaranId: registrasi.id,
+            },
+          });
+
           const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
             data: {
               pendaftaranId: registrasi.id,
@@ -176,13 +314,13 @@ export class PasienService {
             data: {
               harga: tarifAdm?.hargaTarif,
               jenisBill: 'Admin',
-              deskripsi: tarifAdm?.namaTarif ?? 'No Tarif Found',
+              deskripsi: tarifAdm?.namaTarif,
               billPasienId: bill.id,
               jumlah: 1,
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
             },
           });
-          return registrasi;
+          return { registrasi, nomorAntrian };
         } else {
           const episodeBaru = await tx.episodePendaftaran.create({
             data: {
@@ -191,6 +329,7 @@ export class PasienService {
               idFasyankes: data.idFasyankes,
             },
           });
+
           const registrasi = await tx.pendaftaran.create({
             data: {
               episodePendaftaranId: episodeBaru.id,
@@ -200,6 +339,19 @@ export class PasienService {
               nomorAsuransi: data.nomorAsuransi,
               idFasyankes: data.idFasyankes,
             },
+            include: {
+              doctor: true,
+            },
+          });
+          await tx.antrianPasien.create({
+            data: {
+              nomor: nomorAntrian,
+              tanggal: new Date(),
+              jumlahPanggil: 0,
+              doctorId: data.doctorId,
+              idFasyankes: data.idFasyankes,
+              pendaftaranId: registrasi.id,
+            },
           });
 
           const riwayatPendaftaran = await tx.riwayatPendaftaran.create({
@@ -220,16 +372,18 @@ export class PasienService {
             data: {
               harga: tarifAdm?.hargaTarif,
               jenisBill: 'Admin',
-              deskripsi: tarifAdm?.namaTarif ?? 'No Tarif Found',
+              deskripsi: tarifAdm?.namaTarif,
               billPasienId: bill.id,
               jumlah: 1,
               subTotal: (Number(tarifAdm?.hargaTarif) * 1).toString(),
             },
           });
-          return registrasi;
+          return { registrasi, nomorAntrian };
         }
       }
     });
+
+    await this.queryFindFasyankes(data.idFasyankes);
     return transaksi;
   }
 
@@ -247,7 +401,7 @@ export class PasienService {
 
       if (patientCount >= 10) {
         throw new Error(
-          'You have reached the limit of 10 patients for the FREE package.',
+          'Anda telah mencapai batas 10 pasien untuk paket FREE.',
         );
       }
     }
@@ -280,6 +434,7 @@ export class PasienService {
           noAsuransi: data.noAsuransi ?? null,
           paspor: data.paspor ?? null,
           bahasa: data.bahasa ?? null,
+          email: data.email,
           noHp: data.noHp,
           tempatLahir: data.tempatLahir,
           tanggalLahir: formatISO(new Date(data.tanggalLahir)),
@@ -357,11 +512,14 @@ export class PasienService {
     include?: Prisma.PendaftaranInclude;
   }): Promise<Pendaftaran[]> {
     const { where, orderBy, include } = params;
-    return this.prisma.pendaftaran.findMany({
+
+    const data = await this.prisma.pendaftaran.findMany({
       where,
       orderBy,
       include,
     });
+    await this.queueGateway.emitDataAntrianPasien(data);
+    return data;
   }
 
   async findOne(params: { where?: Prisma.PasienWhereInput }): Promise<Pasien> {
@@ -380,5 +538,32 @@ export class PasienService {
       data,
       where,
     });
+  }
+
+  async checkPasien(rm?: string, nik?: string): Promise<any> {
+    if (!rm && !nik) {
+      return {
+        success: false,
+        message:
+          'Harap masukkan Nomor Rekam Medis atau Nomor Induk Kependudukan.',
+      };
+    }
+
+    const pasien = await this.prisma.pasien.findFirst({
+      where: rm ? { noRm: rm } : { nik: nik },
+    });
+
+    if (!pasien) {
+      return {
+        success: false,
+        message: `${rm ? 'Nomor Rekam Medis' : 'Nomor Induk Kependudukan'} tidak ditemukan.`,
+      };
+    }
+
+    return {
+      success: true,
+      message: `${rm ? 'Nomor Rekam Medis' : 'Nomor Induk Kependudukan'} ditemukan.`,
+      data: pasien,
+    };
   }
 }

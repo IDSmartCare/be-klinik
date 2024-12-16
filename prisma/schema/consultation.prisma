@@ -1,0 +1,26 @@
+enum ConsultationType {
+  online
+  offline
+}
+
+model Consultation {
+  id                     Int              @id @default(autoincrement())
+  uniqueCode             String
+  meetingId              Int?             @db.Integer
+  customerId             Int
+  doctorId               Int?             @db.Integer
+  outletId               Int?             @db.Integer
+  doctorAvailableSlotsId Int?             @db.Integer
+  type                   ConsultationType
+  totalCost              Decimal          @default(0) @db.Decimal(10, 2)
+  status                 String           @default("pending")
+  deletedAt              DateTime?        @db.Date
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  //meetings               Meetings?  @relation(fields: [meetingId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  // customer               Customer @relation(fields: [customerId], references: [id])
+  // doctor                 Doctor?  @relation(fields: [doctorId], references: [id])
+  // outlet                 Outlet?  @relation(fields: [outletId], references: [id])
+  // doctorAvailableSlot    DoctorAvailableSlot? @relation(fields: [doctorAvailableSlotsId], references: [id])
+}

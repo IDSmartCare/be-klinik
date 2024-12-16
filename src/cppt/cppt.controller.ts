@@ -25,6 +25,15 @@ export class CpptController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('/soap/:kategori/:idfasyankes')
+  async getMasterSoap(
+    @Param('kategori') kategori: string,
+    @Param('idfasyankes') idfasyankes: string,
+  ): Promise<SOAP[]> {
+    return this.cpptService.getMasterSoap(kategori, idfasyankes);
+  }
+
+  @UseGuards(AuthGuard)
   @Get('/listfarmasi/:idfasyankes')
   async findOne(@Param('idfasyankes') idfasyankes: string) {
     const today = new Date();
@@ -78,5 +87,11 @@ export class CpptController {
         id: Number(id),
       },
     });
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/detailsoap/:id')
+  async detailSOAP(@Param('id') id: string) {
+    return this.cpptService.findOne(+id);
   }
 }

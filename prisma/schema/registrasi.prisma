@@ -1,32 +1,34 @@
 model Pendaftaran {
-    id                   Int                 @id @default(autoincrement())
-    riwayat              RiwayatPendaftaran? 
-    doctor               Doctors?            @relation(fields: [doctorId], references: [id])
-    doctorId             Int
-    penjamin             String              @db.VarChar(50)
-    namaAsuransi         String?             @db.VarChar(50)
-    nomorAsuransi        String?             @db.VarChar(50)
-    isSoapPerawat        Boolean?            @default(false)
-    isSoapDokter         Boolean?            @default(false)
-    isClose              Boolean?            @default(false)
-    isAktif              Boolean?            @default(true)
-    createdAt            DateTime            @default(now()) @db.Timestamptz
-    updatedAt            DateTime            @updatedAt @db.Timestamptz
-    episodePendaftaran   EpisodePendaftaran? @relation(fields: [episodePendaftaranId], references: [id])
-    episodePendaftaranId Int?
-    soap                 SOAP[]
-    idFasyankes          String?             @db.VarChar(30)
-    billPasien           BillPasien[]
+  id                   Int                 @id @default(autoincrement())
+  penjamin             String              @db.VarChar(50)
+  namaAsuransi         String?             @db.VarChar(50)
+  isSoapPerawat        Boolean?            @default(false)
+  isSoapDokter         Boolean?            @default(false)
+  isClose              Boolean?            @default(false)
+  isAktif              Boolean?            @default(true)
+  createdAt            DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime            @updatedAt @db.Timestamptz(6)
+  episodePendaftaranId Int?
+  idFasyankes          String?             @db.VarChar(30)
+  doctorId             Int
+  nomorAsuransi        String?             @db.VarChar(50)
+  billPasien           BillPasien[]
+  doctor               Doctors             @relation(fields: [doctorId], references: [id])
+  episodePendaftaran   EpisodePendaftaran? @relation(fields: [episodePendaftaranId], references: [id])
+  riwayat              RiwayatPendaftaran?
+  soap                 SOAP[]
+  antrian              AntrianPasien?
+  masterTarifs         MasterTarif[]       @relation("PendaftaranMasterTarif")
 }
 
 model EpisodePendaftaran {
   id          Int           @id @default(autoincrement())
   episode     Int
-  pendaftaran Pendaftaran[]
   isAktif     Boolean?      @default(true)
-  createdAt   DateTime      @default(now()) @db.Timestamptz
-  updatedAt   DateTime      @updatedAt @db.Timestamptz
-  pasien      Pasien?       @relation(fields: [pasienId], references: [id])
+  createdAt   DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime      @updatedAt @db.Timestamptz(6)
   pasienId    Int?
   idFasyankes String?       @db.VarChar(30)
+  pasien      Pasien?       @relation(fields: [pasienId], references: [id])
+  pendaftaran Pendaftaran[]
 }

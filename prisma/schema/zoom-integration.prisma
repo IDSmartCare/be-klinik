@@ -1,0 +1,12 @@
+model Meetings {
+  id        Int       @id @default(autoincrement())
+  topic     String
+  agenda    String
+  password  String
+  startTime DateTime
+  startUrl  String
+  joinUrl   String
+  deletedAt DateTime? @db.Date
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}

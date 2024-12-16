@@ -1,15 +1,14 @@
 model DoctorAvailableSlots {
-  id                        Int     @id @default(autoincrement())
+  id                        Int                  @id @default(autoincrement())
   is_booked                 Boolean
+  createdAt                 DateTime             @default(now()) @map("created_at")
+  deletedAt                 DateTime?            @map("deleted_at")
+  doctorId                  Int
+  doctor_available_times_id Int
   from                      String
   to                        String
-  doctor_available_times_id Int
+  updatedAt                 DateTime             @updatedAt @map("updated_at")
   consultation_id           Int?
-  doctorId                  Int
-  deletedAt                 DateTime? @map("deleted_at")
-  createdAt                 DateTime  @default(now()) @map("created_at")
-  updatedAt                 DateTime  @updatedAt @map("updated_at")
-
-  doctor                    Doctors  @relation("DoctorAvailableSlotsForDoctor", fields: [doctorId], references: [id])
+  doctor                    Doctors              @relation("DoctorAvailableSlotsForDoctor", fields: [doctorId], references: [id])
   availableTime             DoctorAvailableTimes @relation("DoctorAvailableSlotsForAvailableTimes", fields: [doctor_available_times_id], references: [id])
 }

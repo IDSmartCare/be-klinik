@@ -14,10 +14,15 @@ import { EpisodePendaftaran, Pasien, Pendaftaran } from '@prisma/client';
 import { UpdatePasienDto } from './dto/update-pasien.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { RegisPasienDto } from './dto/regis-pasien.dto';
+import { CheckPasienDto } from './dto/check-pasien.dto';
+import { DoctorsService } from 'src/doctors/doctors.service';
 
 @Controller('pasien')
 export class PasienController {
-  constructor(private readonly pasienService: PasienService) {}
+  constructor(
+    private readonly pasienService: PasienService,
+    private readonly doctorService: DoctorsService,
+  ) {}
 
   @UseGuards(AuthGuard)
   @Get('/listdokter/:iddokter/:idfasyankes')
@@ -29,15 +34,15 @@ export class PasienController {
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    return this.pasienService.findAllRegistrasi({
+
+    const doctor = await this.doctorService.findOneByProfile(+iddokter);
+
+    const data = await this.pasienService.findAllRegistrasi({
       where: {
         isClose: false,
         idFasyankes: idfasyankes,
         AND: [{ createdAt: { gte: today } }, { createdAt: { lt: tomorrow } }],
-        riwayat: {
-          doctorId: Number(iddokter),
-        },
-        isSoapPerawat: true,
+        doctorId: doctor.id,
       },
       orderBy: {
         id: 'desc',
@@ -47,6 +52,7 @@ export class PasienController {
           select: {
             doctor: {
               select: {
+                name: true,
                 availableDays: true,
                 availableTimes: true,
               },
@@ -68,6 +74,8 @@ export class PasienController {
         },
       },
     });
+
+    return data;
   }
 
   @UseGuards(AuthGuard)
@@ -89,14 +97,16 @@ export class PasienController {
         id: 'desc',
       },
       include: {
+        antrian: true,
         doctor: {
           select: {
+            name: true,
             availableDays: true,
             availableTimes: true,
           },
         },
         episodePendaftaran: {
-          select: {
+          include: {
             pasien: {
               select: {
                 noRm: true,
@@ -144,8 +154,7 @@ export class PasienController {
       userRole: string;
       userPackage: string;
     },
-  ): Promise<Pendaftaran> {
-    console.log(data);
+  ): Promise<{ registrasi: Pendaftaran; nomorAntrian: string }> {
     try {
       return await this.pasienService.createRegis(
         data.pasienData,
@@ -252,6 +261,7 @@ export class PasienController {
             penjamin: true,
             id: true,
             namaAsuransi: true,
+            nomorAsuransi: true,
             createdAt: true,
             riwayat: {
               include: {
@@ -281,5 +291,12 @@ export class PasienController {
       },
       data: updatePasienDto,
     });
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('/apm/check')
+  async checkPasien(@Body() checkPasienDto: CheckPasienDto) {
+    const { rm, nik } = checkPasienDto;
+    return this.pasienService.checkPasien(rm, nik);
   }
 }
