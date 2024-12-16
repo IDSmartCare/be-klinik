@@ -27,7 +27,7 @@ COPY . ./
 RUN npx prisma generate && npm run build
 
 # Debugging: cek hasil salinan
-RUN pwd && ls -alsh node_modules
+RUN pwd && ls -alsh && ls -alsh node_modules
 
 #RUN npm run build
 
@@ -48,7 +48,7 @@ COPY --chown=node:node   --from=img-builder  /app/node_modules/.prisma/client no
 COPY --chown=node:node   --from=img-builder  /app/node_modules/ts-node node_modules/
 
 # Debugging: cek hasil salinan
-RUN pwd && ls -alsh node_modules
+RUN pwd && ls -alsh && ls -alsh node_modules
 
 # Tahap 3: Production Stage
 # Menggunakan image Node.js 20.17.0 dengan Alpine sebagai base image untuk lingkungan produksi
@@ -80,7 +80,7 @@ COPY --chown=node:node --from=img-builder /app/package-lock.json .
 RUN npm install --omit=dev 
 
 # Debugging: cek hasil salinan
-RUN pwd && ls -alsh node_modules
+RUN pwd && ls -alsh && ls -alsh node_modules
 
 # Salin file prisma client dari img-builder
 COPY --chown=node:node --from=img-builder  /app/node_modules/.prisma/client node_modules/.prisma/client
