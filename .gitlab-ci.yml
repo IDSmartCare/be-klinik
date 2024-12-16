@@ -61,10 +61,9 @@ test-curl:
     - docker run --network=net-$CI_REG_PROJECT_NAME -d --name $CI_REG_PROJECT_NAME -e DATABASE_URL="${DATABASE_URL}" -e JWT_SECRET="${JWT_SECRET}" -e PORT="${PORT}" $IMAGE_TAG_PRE
     - docker inspect $CI_REG_PROJECT_NAME
     - sleep 10
-    - docker exec $CI_REG_PROJECT_NAME curl -vvv --fail http://127.0.0.1:80/
+    - docker exec $CI_REG_PROJECT_NAME curl -vvv --fail http://127.0.0.1/api/
     - docker stop $CI_REG_PROJECT_NAME
   allow_failure: true  # Pipeline tidak akan gagal meskipun job ini gagal
-
 
 test-direct:
   stage: test
