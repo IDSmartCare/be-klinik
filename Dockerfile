@@ -41,7 +41,7 @@ ENV NODE_ENV production
 WORKDIR /app
 
 COPY --chown=node:node --from=img-builder /app/prisma/schema prisma/schema
-# COPY --chown=node:node --from=img-builder /app/prisma/seed.ts prisma/
+COPY --chown=node:node --from=img-builder /app/prisma/seed prisma/seed
 
 # Salin file prisma client dari img-builder
 COPY --chown=node:node   --from=img-builder  /app/node_modules/.prisma/client node_modules/.prisma/client
