@@ -131,7 +131,7 @@ export class PasienService {
 
       if (existingEpisodes > 0) {
         throw new Error(
-          'You are only allowed to create one episode for this patient with the FREE package.',
+          'Anda hanya diperbolehkan membuat satu episode untuk pasien ini dengan paket FREE.',
         );
       }
     }
@@ -401,7 +401,7 @@ export class PasienService {
 
       if (patientCount >= 10) {
         throw new Error(
-          'You have reached the limit of 10 patients for the FREE package.',
+          'Anda telah mencapai batas 10 pasien untuk paket FREE.',
         );
       }
     }
@@ -434,6 +434,7 @@ export class PasienService {
           noAsuransi: data.noAsuransi ?? null,
           paspor: data.paspor ?? null,
           bahasa: data.bahasa ?? null,
+          email: data.email,
           noHp: data.noHp,
           tempatLahir: data.tempatLahir,
           tanggalLahir: formatISO(new Date(data.tanggalLahir)),

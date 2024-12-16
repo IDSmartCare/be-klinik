@@ -11,16 +11,17 @@ model BillPasien {
 }
 
 model PembayaranPasien {
-  id           Int         @id @default(autoincrement())
-  totalBayar   String?
-  tglBayar     DateTime?   @db.Timestamptz(6)
-  createdAt    DateTime    @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime    @updatedAt @db.Timestamptz(6)
-  billPasienId Int?
-  totalDiskon  String?
-  totalPajak   String?
-  kembalian    String?
-  billPasien   BillPasien? @relation(fields: [billPasienId], references: [id])
+  id            Int         @id @default(autoincrement())
+  totalBayar    String?
+  tglBayar      DateTime?   @db.Timestamptz(6)
+  createdAt     DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime    @updatedAt @db.Timestamptz(6)
+  billPasienId  Int?
+  totalDiskon   String?
+  totalPajak    String?
+  kembalian     String?
+  kategoriBayar String?
+  billPasien    BillPasien? @relation(fields: [billPasienId], references: [id])
 }
 
 model BillPasienDetail {
@@ -49,6 +50,7 @@ model TransaksiPOS {
   namaPelanggan      String?              @db.VarChar(100)
   hpPelanggan        String?              @db.VarChar(100)
   biayaLainnya       String?              @db.VarChar(100)
+  kategoriBayar      String?              @db.VarChar(50)
   idFasyankes        String?              @db.VarChar(50)
   createdAt          DateTime             @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime             @updatedAt @db.Timestamptz(6)

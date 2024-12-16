@@ -1,0 +1,13 @@
+model FinnetTransaction {
+    id                 Int                    @id @default(autoincrement())
+    orderId            String
+    amount             Int
+    reference          String
+    paymentType        String
+    paymentChannel     String
+    paymentCode        String?
+    paymentStatus      String
+    grossAmount        Int
+    createdAt          DateTime               @default(now()) @map("created_at")
+    updatedAt          DateTime               @updatedAt @map("updated_at")
+}

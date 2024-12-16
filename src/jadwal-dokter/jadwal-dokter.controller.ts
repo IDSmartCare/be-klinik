@@ -26,6 +26,16 @@ export class JadwalDokterController {
   }
 
   @UseGuards(AuthGuard)
+  @Get('/listdokter/withoutavailability/:idFasyankes')
+  async findAllDoctorsWithoutAvailability(
+    @Param('idFasyankes') idFasyankes: string,
+  ) {
+    return this.jadwalDocterService.findAllDoctorsWithoutAvailability(
+      idFasyankes,
+    );
+  }
+
+  @UseGuards(AuthGuard)
   @Get('/jadwaldokter/:hari/:idFasyankes')
   async findJadwalDokterToday(
     @Param('idFasyankes') idFasyankes: string,
@@ -48,6 +58,18 @@ export class JadwalDokterController {
     }
 
     return result;
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/detailschedule/:idFasyankes/:idDokter')
+  async deleteSchedule(
+    @Param('idFasyankes') idFasyankes: string,
+    @Param('idDokter') idDokter: string,
+  ) {
+    return await this.jadwalDocterService.getDetailSchedule(
+      idFasyankes,
+      +idDokter,
+    );
   }
 
   @UseGuards(AuthGuard)

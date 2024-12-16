@@ -3,10 +3,12 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateJadwalDokterDto } from './dto/create-jadwal-dokter.dto';
 import { PrismaService } from 'src/service/prisma.service';
 import { UpdateJadwalDokterDto } from './dto/update-jadwal-dokter.dto';
+import { Doctors } from '@prisma/client';
 
 @Injectable()
 export class JadwalDokterService {
@@ -271,6 +273,54 @@ export class JadwalDokterService {
     });
   }
 
+  async getDetailSchedule(idFasyankes: string, idDokter: number) {
+    const doctor = await this.prisma.doctors.findFirst({
+      where: { id: idDokter, idFasyankes },
+      include: {
+        availableDays: true,
+        availableSlots: true,
+        availableTimes: true,
+      },
+    });
+
+    if (!doctor) {
+      throw new NotFoundException('Doctor not found');
+    }
+
+    const dayNames: Record<string, string> = {
+      sun: 'Minggu',
+      mon: 'Senin',
+      tue: 'Selasa',
+      wed: 'Rabu',
+      thu: 'Kamis',
+      fri: 'Jumat',
+      sat: 'Sabtu',
+    };
+
+    const availableDays = Object.entries(dayNames)
+      .filter(([key]) => doctor.availableDays[0][key] !== null)
+      .map(([key, name]) => ({
+        day: name,
+      }));
+
+    return {
+      doctor: {
+        id: doctor.id,
+        name: doctor.name,
+        phone: doctor.phone,
+        unit: doctor.unit,
+        str: doctor.str,
+        sip: doctor.sip,
+        isAktif: doctor.isAktif,
+        status: doctor.status,
+        avatar: doctor.avatar,
+      },
+      availableDays,
+      availableSlots: doctor.availableSlots,
+      availableTimes: doctor.availableTimes,
+    };
+  }
+
   async updateSchedule(updateJadwalDokterDto: UpdateJadwalDokterDto) {
     const { dokter_id, slot, days, times } = updateJadwalDokterDto;
     try {
@@ -348,6 +398,57 @@ export class JadwalDokterService {
           message: 'Gagal memperbarui jadwal dokter',
           error: error.message,
         },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  async findAllDoctorsWithoutAvailability(
+    idFasyankes: string,
+  ): Promise<{ success: boolean; data?: Doctors[]; message: string }> {
+    try {
+      const data = await this.prisma.doctors.findMany({
+        where: {
+          idFasyankes,
+          AND: [
+            {
+              availableDays: {
+                none: {},
+              },
+            },
+            {
+              availableTimes: {
+                none: {},
+              },
+            },
+            {
+              availableSlots: {
+                none: {},
+              },
+            },
+          ],
+        },
+        include: {
+          availableDays: true,
+          availableTimes: true,
+          availableSlots: true,
+        },
+      });
+
+      if (data.length === 0) {
+        return {
+          success: false,
+          message: 'No doctors without availability found for this Fasyankes',
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Successfully fetched doctors without availability',
+        data,
+      };
+    } catch (error) {
+      throw new HttpException(
+        error.message || 'An error occurred',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

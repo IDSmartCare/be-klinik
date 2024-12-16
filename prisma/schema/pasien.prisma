@@ -9,6 +9,7 @@ model Pasien {
   paspor              String?              @db.VarChar(100)
   bahasa              String?              @db.VarChar(100)
   noHp                String               @db.VarChar(20)
+  email               String               @db.VarChar(50)
   tempatLahir         String               @db.VarChar(20)
   tanggalLahir        DateTime             @db.Date
   jenisKelamin        String               @db.Char(1)
