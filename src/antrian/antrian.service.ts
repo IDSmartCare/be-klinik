@@ -178,6 +178,7 @@ export class AntrianService {
             gte: today,
             lt: tomorrow,
           },
+          idFasyankes
         },
       });
 
