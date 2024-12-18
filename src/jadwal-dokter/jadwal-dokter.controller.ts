@@ -5,7 +5,6 @@ import {
   HttpException,
   HttpStatus,
   Param,
-  Patch,
   Post,
   Put,
   UseGuards,
@@ -38,8 +37,8 @@ export class JadwalDokterController {
   @UseGuards(AuthGuard)
   @Get('/jadwaldokter/:hari/:idFasyankes')
   async findJadwalDokterToday(
-    @Param('idFasyankes') idFasyankes: string,
     @Param('hari') hari: string,
+    @Param('idFasyankes') idFasyankes: string,
   ) {
     return this.jadwalDocterService.findJadwalDokterToday(idFasyankes, hari);
   }
@@ -56,7 +55,6 @@ export class JadwalDokterController {
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
     }
-
     return result;
   }
 
@@ -73,8 +71,14 @@ export class JadwalDokterController {
   }
 
   @UseGuards(AuthGuard)
-  @Put('/updatejadwal')
-  async updateSchedule(@Body() updateJadwalDokterDto: UpdateJadwalDokterDto) {
-    return await this.jadwalDocterService.updateSchedule(updateJadwalDokterDto);
+  @Put('/updatejadwal/:availableDayId')
+  async updateSchedule(
+    @Param('availableDayId') availableDayId: string,
+    @Body() updateJadwalDokterDto: UpdateJadwalDokterDto,
+  ) {
+    return await this.jadwalDocterService.updateSchedule(
+      updateJadwalDokterDto,
+      +availableDayId,
+    );
   }
 }
