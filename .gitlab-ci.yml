@@ -1,0 +1,114 @@
+default:
+  image: docker:24.0.5
+
+variables:
+    DOCKER_TLS_CERTDIR: ""  # Tidak menggunakan TLS untuk Docker Machine Executor
+    DOCKER_HOST: tcp://dockerhost:2375
+    DOCKER_DRIVER: overlay2
+    RELEASE_VER: $CI_COMMIT_BRANCH-$CI_COMMIT_SHA
+    RELEASE_VER_PRE: $CI_COMMIT_BRANCH-$CI_COMMIT_SHA-pre
+    IMAGE_TAG: $CI_REG_URL/$CI_REG_PROJECT_PATH/$CI_REG_PROJECT_NAME:$RELEASE_VER
+    IMAGE_TAG_PRE: $CI_REG_URL/$CI_REG_PROJECT_PATH/$CI_REG_PROJECT_NAME:$RELEASE_VER_PRE
+    IMAGE_TAG_LATEST: $CI_REG_URL/$CI_REG_PROJECT_PATH/$CI_REG_PROJECT_NAME:latest
+
+services:
+  - name: docker:24.0.5-dind
+    alias: dockerhost
+    command:
+      - /bin/sh
+      - -c
+      - dockerd-entrypoint.sh --mtu=1300 || exit
+
+before_script:
+  - echo $DOCKER_HOST
+  - until docker info; do
+      echo "Waiting for Docker daemon to be ready...";
+      sleep 5;
+    done
+  - echo "Attempting Docker login..."
+  - docker version
+  - cat /etc/*ease   
+  - ps -ef
+  - docker ps
+  - hostname
+  - df -hT
+  - echo "Attempting Docker login..."
+  - echo "$CI_REG_SANDY" | docker login -u "$CI_REG_USER" --password-stdin "$CI_REG_URL"
+  - echo "Docker login successful."
+
+  
+after_script:
+  - docker logout
+
+stages:
+  - build
+  - test
+  - release
+  - deploy
+
+build-app:
+  stage: build
+  script:
+    - echo "Building Docker image..."
+    - docker build -t "$IMAGE_TAG_PRE" . -f Dockerfile
+    - docker push "$IMAGE_TAG_PRE"
+
+test-curl:
+  stage: test
+  script:
+    - echo "Testing $CI_REG_PROJECT_NAME connectivity using cURL..."
+    - docker network create net-$CI_REG_PROJECT_NAME
+    - docker run --network=net-$CI_REG_PROJECT_NAME -d --name $CI_REG_PROJECT_NAME -e DATABASE_URL="${DATABASE_URL}" -e JWT_SECRET="${JWT_SECRET}" -e PORT="${PORT}" $IMAGE_TAG_PRE
+    - docker inspect $CI_REG_PROJECT_NAME
+    - sleep 10
+    - docker exec $CI_REG_PROJECT_NAME curl -vvv --fail http://127.0.0.1/api/
+    - docker stop $CI_REG_PROJECT_NAME
+  allow_failure: true  # Pipeline tidak akan gagal meskipun job ini gagal
+
+test-direct:
+  stage: test
+  script:
+    - docker pull "$IMAGE_TAG_PRE"
+    - docker run -d --name "$CI_REG_PROJECT_NAME" "$IMAGE_TAG_PRE"
+    - docker commit "$CI_REG_PROJECT_NAME" "$IMAGE_TAG_PRE-direct"
+    - docker push "$IMAGE_TAG_PRE-direct"
+
+release:
+  stage: release
+  script:
+    - docker pull "$IMAGE_TAG_PRE"
+    - docker run -d --name "$CI_REG_PROJECT_NAME" "$IMAGE_TAG_PRE"
+    - docker commit "$CI_REG_PROJECT_NAME" "$IMAGE_TAG"
+    - docker push "$IMAGE_TAG"
+    - docker commit "$CI_REG_PROJECT_NAME" "$IMAGE_TAG_LATEST"
+    - docker push "$IMAGE_TAG_LATEST"
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Deploying $APP_NAME application to VM..."
+    - apk update && apk add --no-cache ca-certificates curl bash
+    - cp /etc/gitlab-runner/certs/ca.crt /usr/local/share/ca-certificates/custom-ca.crt && update-ca-certificates
+    - echo "Validating required environment variables..."
+    - echo "Using DEPLOYMENT_API ":"" "$DEPLOYMENT_API"
+    - echo "Using TOKEN_API ":"" "(hidden)"
+    - echo "Using IMAGE_TAG ":"" "$IMAGE_TAG"
+    - >
+      if [ -z "$DEPLOYMENT_API" ] || [ -z "$TOKEN_API" ] || [ -z "$IMAGE_TAG" ]; then
+      echo "Error: Required environment variables are not set." >&2;
+      exit 1;
+      fi
+    - echo "Downloading deployment script..."
+    - >
+      curl --fail -o /tmp/curl-deploy.sh https://dns-gits.dnstech.co.id/go-public/ci-library/-/raw/main/script-deployment-k8s.sh ||
+      { echo "Error: Failed to download deployment script." >&2; exit 1; }
+    - echo "Customizing deployment script..."
+    - sed -i "s|DEPLOYMENT_API|$DEPLOYMENT_API|g" /tmp/curl-deploy.sh
+    - sed -i "s|AUTHTOKEN|$TOKEN_API|g" /tmp/curl-deploy.sh
+    - sed -i "s|IMAGETAG|$IMAGE_TAG|g" /tmp/curl-deploy.sh
+    - chmod +x /tmp/curl-deploy.sh
+    - cat /tmp/curl-deploy.sh
+    - echo "Executing deployment script..."
+    - bash -x /tmp/curl-deploy.sh
+
+
