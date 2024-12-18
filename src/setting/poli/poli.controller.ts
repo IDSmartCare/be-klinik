@@ -9,7 +9,17 @@ export class PoliController {
     constructor(private readonly poliService: PoliService){}
 
     @UseGuards(AuthGuard)
-    @Patch('/editpoli/:id')
+    @Patch('/editstatuspoli/:id')
+    async updateStatusPoli(
+        @Param('id') id: string,
+        @Body() updatePoliKlinikStatusDto: UpdatePoliKlinikStatusDto,
+    ) {
+        const { isAktif } = updatePoliKlinikStatusDto;
+        return this.poliService.updatePoliStatus(Number(id), isAktif);
+    }
+
+    @UseGuards(AuthGuard)
+    @Patch('/editpolis/:id')
     async updatePoli(
         @Param('id') id: string,
         @Body() updatePoliKlinikStatusDto: UpdatePoliKlinikStatusDto,

@@ -10,3 +10,10 @@ export class UpdateJadwalDto {
   jamPraktek: string;
   idFasyankes: string;
 }
+
+export class UpdatePoliDto {
+  id: number;
+  namaPoli: string;
+  idFasyankes: string;
+  voiceId: number;
+}

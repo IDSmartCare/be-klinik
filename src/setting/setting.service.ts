@@ -7,7 +7,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreatePoliDto } from './dto/create-setting.dto';
-import { UpdateSettingDto } from './dto/update-setting.dto';
+import { UpdatePoliDto, UpdateSettingDto } from './dto/update-setting.dto';
 import {
   JadwalDokter,
   MasterVoicePoli,
@@ -33,6 +33,32 @@ export class SettingService {
   async createPoli(createPoli: CreatePoliDto): Promise<PoliKlinik> {
     return this.prisma.poliKlinik.create({
       data: createPoli,
+    });
+  }
+
+  async updatePoli(id: number, updatePoli: UpdatePoliDto) {
+    const newPoli = updatePoli.namaPoli;
+
+    if (!newPoli) {
+      throw new Error('Nama Poli baru tidak boleh kosong.');
+    }
+
+    return this.prisma.$transaction(async (prisma) => {
+      const updatedPoli = await prisma.poliKlinik.update({
+        where: { id },
+        data: updatePoli,
+      });
+
+      await prisma.doctors.updateMany({
+        where: {
+          idPoliKlinik: id,
+        },
+        data: {
+          unit: newPoli,
+        },
+      });
+
+      return updatedPoli;
     });
   }
 
