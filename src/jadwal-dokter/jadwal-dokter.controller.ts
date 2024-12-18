@@ -1,6 +1,8 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
@@ -60,7 +62,7 @@ export class JadwalDokterController {
 
   @UseGuards(AuthGuard)
   @Get('/detailschedule/:idFasyankes/:idDokter')
-  async deleteSchedule(
+  async getDetailSchedule(
     @Param('idFasyankes') idFasyankes: string,
     @Param('idDokter') idDokter: string,
   ) {
@@ -80,5 +82,17 @@ export class JadwalDokterController {
       updateJadwalDokterDto,
       +availableDayId,
     );
+  }
+  @UseGuards(AuthGuard)
+  @Delete('/deletejadwal/:availableDayId')
+  async deleteSchedule(@Param('availableDayId') availableDayId: string) {
+    const id = +availableDayId;
+    if (isNaN(id)) {
+      throw new BadRequestException(
+        'ID hari yang tersedia harus berupa angka.',
+      );
+    }
+
+    return await this.jadwalDocterService.deleteSchedule(id);
   }
 }

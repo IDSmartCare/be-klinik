@@ -511,4 +511,62 @@ export class JadwalDokterService {
       );
     }
   }
+
+  async deleteSchedule(availableDayId: number): Promise<any> {
+    try {
+      return await this.prisma.$transaction(async (prisma) => {
+        const existingDay = await prisma.doctorAvailableDays.findUnique({
+          where: { id: availableDayId },
+        });
+
+        if (!existingDay) {
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.NOT_FOUND,
+              success: false,
+              message: 'Data jadwal tidak ditemukan',
+            },
+            HttpStatus.NOT_FOUND,
+          );
+        }
+
+        await prisma.doctorAvailableSlots.deleteMany({
+          where: {
+            doctor_available_times_id: {
+              in: (
+                await prisma.doctorAvailableTimes.findMany({
+                  where: { available_day_id: availableDayId },
+                  select: { id: true },
+                })
+              ).map((time) => time.id),
+            },
+          },
+        });
+
+        await prisma.doctorAvailableTimes.deleteMany({
+          where: { available_day_id: availableDayId },
+        });
+
+        await prisma.doctorAvailableDays.delete({
+          where: { id: availableDayId },
+        });
+
+        return {
+          statusCode: HttpStatus.OK,
+          success: true,
+          message: 'Berhasil menghapus jadwal dokter beserta detailnya',
+        };
+      });
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          success: false,
+          message: 'Gagal menghapus jadwal dokter',
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
