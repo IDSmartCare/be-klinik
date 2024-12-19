@@ -29,6 +29,9 @@ export class JadwalDokterService {
             day: true,
             slot: true,
             availableTimes: {
+              where: {
+                deletedAt: null,
+              },
               select: {
                 id: true,
                 from: true,
@@ -49,6 +52,11 @@ export class JadwalDokterService {
         schedule: doctor.availableDays.map((day) => ({
           id: day.id,
           day: day.day,
+          times: day.availableTimes.map((time) => ({
+            id: time.id,
+            from: time.from,
+            to: time.to,
+          })),
           slot: day.slot,
         })),
       };
@@ -103,6 +111,9 @@ export class JadwalDokterService {
               day: true,
               slot: true,
               availableTimes: {
+                where: {
+                  deletedAt: null,
+                },
                 select: {
                   id: true,
                   from: true,
@@ -343,13 +354,12 @@ export class JadwalDokterService {
       return await this.prisma.$transaction(async (prisma) => {
         const existingDay = await prisma.doctorAvailableDays.findFirst({
           where: {
-            id: Number(availableDayId),
+            id: availableDayId,
             doctorId: dokter_id,
             deletedAt: null,
           },
         });
 
-        console.log(existingDay);
         if (!existingDay) {
           throw new HttpException(
             {
@@ -474,6 +484,7 @@ export class JadwalDokterService {
       );
     }
   }
+
   async findAllDoctorsWithoutAvailability(
     idFasyankes: string,
   ): Promise<{ success: boolean; data?: Doctors[]; message: string }> {
