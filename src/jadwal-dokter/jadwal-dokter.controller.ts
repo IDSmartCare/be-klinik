@@ -1,11 +1,12 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
   Param,
-  Patch,
   Post,
   Put,
   UseGuards,
@@ -38,8 +39,8 @@ export class JadwalDokterController {
   @UseGuards(AuthGuard)
   @Get('/jadwaldokter/:hari/:idFasyankes')
   async findJadwalDokterToday(
-    @Param('idFasyankes') idFasyankes: string,
     @Param('hari') hari: string,
+    @Param('idFasyankes') idFasyankes: string,
   ) {
     return this.jadwalDocterService.findJadwalDokterToday(idFasyankes, hari);
   }
@@ -56,13 +57,12 @@ export class JadwalDokterController {
     if (!result.success) {
       throw new HttpException(result.message, HttpStatus.BAD_REQUEST);
     }
-
     return result;
   }
 
   @UseGuards(AuthGuard)
   @Get('/detailschedule/:idFasyankes/:idDokter')
-  async deleteSchedule(
+  async getDetailSchedule(
     @Param('idFasyankes') idFasyankes: string,
     @Param('idDokter') idDokter: string,
   ) {
@@ -73,8 +73,26 @@ export class JadwalDokterController {
   }
 
   @UseGuards(AuthGuard)
-  @Put('/updatejadwal')
-  async updateSchedule(@Body() updateJadwalDokterDto: UpdateJadwalDokterDto) {
-    return await this.jadwalDocterService.updateSchedule(updateJadwalDokterDto);
+  @Put('/updatejadwal/:availableDayId')
+  async updateSchedule(
+    @Param('availableDayId') availableDayId: string,
+    @Body() updateJadwalDokterDto: UpdateJadwalDokterDto,
+  ) {
+    return await this.jadwalDocterService.updateSchedule(
+      updateJadwalDokterDto,
+      +availableDayId,
+    );
+  }
+  @UseGuards(AuthGuard)
+  @Delete('/deletejadwal/:availableDayId')
+  async deleteSchedule(@Param('availableDayId') availableDayId: string) {
+    const id = +availableDayId;
+    if (isNaN(id)) {
+      throw new BadRequestException(
+        'ID hari yang tersedia harus berupa angka.',
+      );
+    }
+
+    return await this.jadwalDocterService.deleteSchedule(id);
   }
 }

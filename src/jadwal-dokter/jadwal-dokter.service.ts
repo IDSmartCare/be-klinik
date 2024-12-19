@@ -25,59 +25,39 @@ export class JadwalDokterService {
         unit: true,
         availableDays: {
           select: {
-            sun: true,
-            mon: true,
-            tue: true,
-            wed: true,
-            thu: true,
-            fri: true,
-            sat: true,
+            id: true,
+            day: true,
             slot: true,
-          },
-        },
-        availableTimes: {
-          select: {
-            from: true,
-            to: true,
+            availableTimes: {
+              where: {
+                deletedAt: null,
+              },
+              select: {
+                id: true,
+                from: true,
+                to: true,
+              },
+            },
           },
         },
       },
     });
 
-    const dayNamesInIndonesian = {
-      sun: 'Minggu',
-      mon: 'Senin',
-      tue: 'Selasa',
-      wed: 'Rabu',
-      thu: 'Kamis',
-      fri: 'Jumat',
-      sat: 'Sabtu',
-    };
-
     const formattedSchedules = doctorSchedules.map((doctor) => {
-      const days = [];
-      let slot = null;
-
-      if (doctor.availableDays && doctor.availableDays.length > 0) {
-        slot = doctor.availableDays[0].slot;
-
-        for (const [day, indoDayName] of Object.entries(dayNamesInIndonesian)) {
-          if (doctor.availableDays[0][day] === '1') {
-            days.push(indoDayName);
-          }
-        }
-      }
-
       return {
         id: doctor.id,
         name: doctor.name,
         unit: doctor.unit,
-        slot: slot,
         avatar: doctor.avatar ?? process.env.AVATAR_DUMMY,
-        days: days,
-        times: doctor.availableTimes.map((time) => ({
-          from: time.from,
-          to: time.to,
+        schedule: doctor.availableDays.map((day) => ({
+          id: day.id,
+          day: day.day,
+          times: day.availableTimes.map((time) => ({
+            id: time.id,
+            from: time.from,
+            to: time.to,
+          })),
+          slot: day.slot,
         })),
       };
     });
@@ -91,31 +71,30 @@ export class JadwalDokterService {
   ): Promise<any> {
     try {
       const dayMap = {
-        '0': { column: 'sun', indo: 'Minggu' },
-        '1': { column: 'mon', indo: 'Senin' },
-        '2': { column: 'tue', indo: 'Selasa' },
-        '3': { column: 'wed', indo: 'Rabu' },
-        '4': { column: 'thu', indo: 'Kamis' },
-        '5': { column: 'fri', indo: 'Jumat' },
-        '6': { column: 'sat', indo: 'Sabtu' },
+        '0': 'Minggu',
+        '1': 'Senin',
+        '2': 'Selasa',
+        '3': 'Rabu',
+        '4': 'Kamis',
+        '5': 'Jumat',
+        '6': 'Sabtu',
       };
 
-      if (!dayMap[dayNumber]) {
-        throw new BadRequestException(
-          'Invalid day number. Please use 0-6 (0 = Sunday, 6 = Saturday)',
-        );
-      }
+      const day = dayMap[dayNumber];
+      console.log(day);
 
-      const { column: dayColumn, indo: hariIndonesia } = dayMap[dayNumber];
+      if (!day) {
+        throw new Error('Invalid day number');
+      }
 
       const doctors = await this.prisma.doctors.findMany({
         where: {
-          idFasyankes: idFasyankes,
+          idFasyankes,
           isAktif: true,
           status: 'active',
           availableDays: {
             some: {
-              [dayColumn]: '1',
+              day,
             },
           },
         },
@@ -124,49 +103,66 @@ export class JadwalDokterService {
           name: true,
           unit: true,
           availableDays: {
-            select: {
-              id: true,
-              [dayColumn]: true,
+            where: {
+              day,
             },
-          },
-          availableTimes: {
             select: {
               id: true,
-              from: true,
-              to: true,
+              day: true,
+              slot: true,
+              availableTimes: {
+                where: {
+                  deletedAt: null,
+                },
+                select: {
+                  id: true,
+                  from: true,
+                  to: true,
+                  availableSlots: {
+                    where: {
+                      is_booked: false,
+                    },
+                    select: {
+                      id: true,
+                      from: true,
+                      to: true,
+                    },
+                  },
+                },
+              },
             },
           },
         },
       });
 
-      const formattedResponse = doctors.map((doctor) => {
-        const availableDay = doctor.availableDays.find(
-          (day) => day[dayColumn] === '1',
-        );
-        return {
-          id: doctor.id,
-          name: doctor.name,
-          unit: doctor.unit,
-          hari: {
-            id: availableDay?.id || null,
-            name: availableDay ? hariIndonesia : null,
-          },
-          jam_praktek: doctor.availableTimes.map((time) => ({
+      const formattedResponse = doctors.map((doctor) => ({
+        id: doctor.id,
+        name: doctor.name,
+        unit: doctor.unit,
+        days: doctor.availableDays.map((days) => ({
+          id: days.id,
+          day: days.day,
+          slot: days.slot,
+          times: days.availableTimes.map((time) => ({
             id: time.id,
             from: time.from,
             to: time.to,
           })),
-        };
-      });
+        })),
+      }));
 
       return {
         success: true,
         data: formattedResponse,
       };
     } catch (error) {
+      console.error('Error in findJadwalDokterToday:', error);
       return {
         success: false,
-        message: error.message || 'An error occurred',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred',
         data: null,
       };
     }
@@ -175,29 +171,44 @@ export class JadwalDokterService {
   async createSchedule(createJadwalDokterDto: CreateJadwalDokterDto) {
     const { dokter_id, slot, days, times } = createJadwalDokterDto;
     return this.prisma.$transaction(async (prisma) => {
-      const existingSchedule = await prisma.doctorAvailableDays.findFirst({
-        where: { doctorId: dokter_id },
-        include: { doctor: true },
+      const checkDoctor = await prisma.doctors.findFirst({
+        where: {
+          id: dokter_id,
+        },
       });
-      if (existingSchedule) {
+      if (!checkDoctor) {
+        throw new NotFoundException('Dokter not found');
+      }
+
+      // Check for existing days
+      const existingDays = await prisma.doctorAvailableDays.findMany({
+        where: {
+          doctorId: dokter_id,
+        },
+        select: { day: true },
+      });
+      const existingDayNames = existingDays.map((day) => day.day);
+      const duplicateDays = days.filter((day) =>
+        existingDayNames.includes(day),
+      );
+
+      if (duplicateDays.length > 0) {
         throw new BadRequestException(
-          `Jadwal ${existingSchedule.doctor.name} sudah ada`,
+          `Hari ${duplicateDays.join(', ')} sudah ada dalam jadwal dokter`,
         );
       }
 
-      const availableDays = await prisma.doctorAvailableDays.create({
-        data: {
-          doctorId: dokter_id,
-          sun: days.includes('sun') ? '1' : '0',
-          mon: days.includes('mon') ? '1' : '0',
-          tue: days.includes('tue') ? '1' : '0',
-          wed: days.includes('wed') ? '1' : '0',
-          thu: days.includes('thu') ? '1' : '0',
-          fri: days.includes('fri') ? '1' : '0',
-          sat: days.includes('sat') ? '1' : '0',
-          slot,
-        },
-      });
+      const availableDays = await Promise.all(
+        days.map((day) =>
+          prisma.doctorAvailableDays.create({
+            data: {
+              doctorId: dokter_id,
+              day,
+              slot,
+            },
+          }),
+        ),
+      );
 
       const allSlots = [];
       for (const time of times) {
@@ -211,57 +222,67 @@ export class JadwalDokterService {
           );
         }
 
-        const existingSlots = await prisma.doctorAvailableTimes.findMany({
-          where: {
-            doctorId: dokter_id,
-          },
-        });
-
-        for (const slot of existingSlots) {
-          const existingFrom = new Date(`1970-01-01T${slot.from}:00`);
-          const existingTo = new Date(`1970-01-01T${slot.to}:00`);
-
-          if (
-            (newFrom >= existingFrom && newFrom < existingTo) ||
-            (newTo > existingFrom && newTo <= existingTo) ||
-            (newFrom <= existingFrom && newTo >= existingTo)
-          ) {
-            throw new BadRequestException(
-              `Jadwal waktu ${from} - ${to} tidak boleh diantara jadwal ${slot.from} - ${slot.to}.`,
-            );
-          }
-        }
-
-        const availableTime = await prisma.doctorAvailableTimes.create({
-          data: {
-            doctorId: dokter_id,
-            from,
-            to,
-          },
-        });
-
-        let current = new Date(`1970-01-01T${from}:00`);
-        const end = new Date(`1970-01-01T${to}:00`);
-
-        while (current < end) {
-          const slotFrom = current.toTimeString().slice(0, 5);
-          current.setMinutes(current.getMinutes() + slot);
-          const slotTo = current.toTimeString().slice(0, 5);
-
-          if (current <= end) {
-            const slotEntry = {
-              doctorId: dokter_id,
-              from: slotFrom,
-              to: slotTo,
-              doctor_available_times_id: availableTime.id,
-              is_booked: false,
-            };
-
-            const savedSlot = await prisma.doctorAvailableSlots.create({
-              data: slotEntry,
+        for (const day of days) {
+          const existingTimesForDay =
+            await prisma.doctorAvailableTimes.findMany({
+              where: {
+                doctorId: dokter_id,
+                availableDay: {
+                  day,
+                },
+              },
             });
 
-            allSlots.push(savedSlot);
+          existingTimesForDay.forEach((existingTime) => {
+            const existingFrom = new Date(`1970-01-01T${existingTime.from}:00`);
+            const existingTo = new Date(`1970-01-01T${existingTime.to}:00`);
+
+            if (
+              (newFrom >= existingFrom && newFrom < existingTo) ||
+              (newTo > existingFrom && newTo <= existingTo) ||
+              (newFrom <= existingFrom && newTo >= existingTo)
+            ) {
+              throw new BadRequestException(
+                `Jadwal waktu ${from} - ${to} tidak boleh diantara jadwal ${existingTime.from} - ${existingTime.to}.`,
+              );
+            }
+          });
+        }
+
+        const availableTimeSlots = await Promise.all(
+          availableDays.map((availableDay) =>
+            prisma.doctorAvailableTimes.create({
+              data: {
+                doctorId: dokter_id,
+                available_day_id: availableDay.id,
+                from,
+                to,
+              },
+            }),
+          ),
+        );
+
+        for (const availableTimeSlot of availableTimeSlots) {
+          let current = new Date(`1970-01-01T${from}:00`);
+          const end = new Date(`1970-01-01T${to}:00`);
+
+          while (current < end) {
+            const slotFrom = current.toTimeString().slice(0, 5);
+            current.setMinutes(current.getMinutes() + slot);
+            const slotTo = current.toTimeString().slice(0, 5);
+
+            if (current <= end) {
+              const savedSlot = await prisma.doctorAvailableSlots.create({
+                data: {
+                  doctorId: dokter_id,
+                  doctor_available_times_id: availableTimeSlot.id,
+                  from: slotFrom,
+                  to: slotTo,
+                  is_booked: false,
+                },
+              });
+              allSlots.push(savedSlot);
+            }
           }
         }
       }
@@ -277,57 +298,68 @@ export class JadwalDokterService {
     const doctor = await this.prisma.doctors.findFirst({
       where: { id: idDokter, idFasyankes },
       include: {
-        availableDays: true,
-        availableSlots: true,
-        availableTimes: true,
+        availableDays: {
+          select: {
+            id: true,
+            day: true,
+            slot: true,
+            availableTimes: {
+              select: {
+                id: true,
+                from: true,
+                to: true,
+              },
+            },
+          },
+        },
       },
     });
 
     if (!doctor) {
-      throw new NotFoundException('Doctor not found');
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          success: false,
+          message: 'Data dokter tidak ditemukan',
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
-
-    const dayNames: Record<string, string> = {
-      sun: 'Minggu',
-      mon: 'Senin',
-      tue: 'Selasa',
-      wed: 'Rabu',
-      thu: 'Kamis',
-      fri: 'Jumat',
-      sat: 'Sabtu',
-    };
-
-    const availableDays = Object.entries(dayNames)
-      .filter(([key]) => doctor.availableDays[0][key] !== null)
-      .map(([key, name]) => ({
-        day: name,
-      }));
 
     return {
       doctor: {
         id: doctor.id,
         name: doctor.name,
-        phone: doctor.phone,
         unit: doctor.unit,
-        str: doctor.str,
-        sip: doctor.sip,
-        isAktif: doctor.isAktif,
-        status: doctor.status,
-        avatar: doctor.avatar,
+        schedule: doctor.availableDays.map((days) => ({
+          id: days.id,
+          day: days.day,
+          slot: days.slot,
+          times: days.availableTimes.map((times) => ({
+            id: times.id,
+            from: times.from,
+            to: times.to,
+          })),
+        })),
       },
-      availableDays,
-      availableSlots: doctor.availableSlots,
-      availableTimes: doctor.availableTimes,
     };
   }
 
-  async updateSchedule(updateJadwalDokterDto: UpdateJadwalDokterDto) {
-    const { dokter_id, slot, days, times } = updateJadwalDokterDto;
+  async updateSchedule(
+    updateJadwalDokterDto: UpdateJadwalDokterDto,
+    availableDayId: number,
+  ) {
+    const { dokter_id, slot, times } = updateJadwalDokterDto;
     try {
       return await this.prisma.$transaction(async (prisma) => {
         const existingDay = await prisma.doctorAvailableDays.findFirst({
-          where: { doctorId: dokter_id },
+          where: {
+            id: availableDayId,
+            doctorId: dokter_id,
+            deletedAt: null,
+          },
         });
+
         if (!existingDay) {
           throw new HttpException(
             {
@@ -338,38 +370,87 @@ export class JadwalDokterService {
             HttpStatus.NOT_FOUND,
           );
         }
+
         const updatedDays = await prisma.doctorAvailableDays.update({
           where: { id: existingDay.id },
           data: {
-            sun: days.includes('sun') ? '1' : '0',
-            mon: days.includes('mon') ? '1' : '0',
-            tue: days.includes('tue') ? '1' : '0',
-            wed: days.includes('wed') ? '1' : '0',
-            thu: days.includes('thu') ? '1' : '0',
-            fri: days.includes('fri') ? '1' : '0',
-            sat: days.includes('sat') ? '1' : '0',
             slot,
           },
         });
+
         await prisma.doctorAvailableTimes.updateMany({
-          where: { doctorId: dokter_id },
-          data: { deletedAt: new Date() },
+          where: {
+            available_day_id: existingDay.id,
+            doctorId: dokter_id,
+            deletedAt: null,
+          },
+          data: {
+            deletedAt: new Date(),
+          },
         });
+
         await prisma.doctorAvailableSlots.updateMany({
-          where: { doctorId: dokter_id },
-          data: { deletedAt: new Date() },
+          where: {
+            doctorId: dokter_id,
+            deletedAt: null,
+          },
+          data: {
+            deletedAt: new Date(),
+          },
         });
+
         for (const time of times) {
           const { from, to } = time;
-          const availableTime = await prisma.doctorAvailableTimes.create({
-            data: { doctorId: dokter_id, from, to },
+          const newFrom = new Date(`1970-01-01T${from}:00`);
+          const newTo = new Date(`1970-01-01T${to}:00`);
+
+          if (newTo <= newFrom) {
+            throw new BadRequestException(
+              `Jadwal waktu ${from} - ${to} tidak valid.`,
+            );
+          }
+
+          const existingTimesForDay =
+            await prisma.doctorAvailableTimes.findMany({
+              where: {
+                available_day_id: existingDay.id,
+                doctorId: dokter_id,
+                deletedAt: null,
+              },
+            });
+
+          existingTimesForDay.forEach((existingTime) => {
+            const existingFrom = new Date(`1970-01-01T${existingTime.from}:00`);
+            const existingTo = new Date(`1970-01-01T${existingTime.to}:00`);
+
+            if (
+              (newFrom >= existingFrom && newFrom < existingTo) ||
+              (newTo > existingFrom && newTo <= existingTo) ||
+              (newFrom <= existingFrom && newTo >= existingTo)
+            ) {
+              throw new BadRequestException(
+                `Jadwal waktu ${from} - ${to} bentrok dengan jadwal existing: ${existingTime.from} - ${existingTime.to}`,
+              );
+            }
           });
+
+          const availableTime = await prisma.doctorAvailableTimes.create({
+            data: {
+              doctorId: dokter_id,
+              available_day_id: existingDay.id,
+              from,
+              to,
+            },
+          });
+
           let current = new Date(`1970-01-01T${from}:00`);
           const end = new Date(`1970-01-01T${to}:00`);
+
           while (current < end) {
             const slotFrom = current.toTimeString().slice(0, 5);
             current.setMinutes(current.getMinutes() + slot);
             const slotTo = current.toTimeString().slice(0, 5);
+
             if (current <= end) {
               await prisma.doctorAvailableSlots.create({
                 data: {
@@ -383,6 +464,7 @@ export class JadwalDokterService {
             }
           }
         }
+
         return {
           statusCode: HttpStatus.OK,
           success: true,
@@ -402,6 +484,7 @@ export class JadwalDokterService {
       );
     }
   }
+
   async findAllDoctorsWithoutAvailability(
     idFasyankes: string,
   ): Promise<{ success: boolean; data?: Doctors[]; message: string }> {
@@ -409,46 +492,90 @@ export class JadwalDokterService {
       const data = await this.prisma.doctors.findMany({
         where: {
           idFasyankes,
-          AND: [
-            {
-              availableDays: {
-                none: {},
-              },
-            },
-            {
-              availableTimes: {
-                none: {},
-              },
-            },
-            {
-              availableSlots: {
-                none: {},
-              },
-            },
-          ],
-        },
-        include: {
-          availableDays: true,
-          availableTimes: true,
-          availableSlots: true,
+          isAktif: true,
+          status: 'active',
+          availableDays: {
+            none: {},
+          },
         },
       });
 
       if (data.length === 0) {
         return {
           success: false,
-          message: 'No doctors without availability found for this Fasyankes',
+          message: 'Tidak ada dokter tanpa jadwal tersedia untuk Fasyankes ini',
+          data: [],
         };
       }
 
       return {
         success: true,
-        message: 'Successfully fetched doctors without availability',
+        message: `Berhasil menemukan ${data.length} dokter tanpa jadwal`,
         data,
       };
     } catch (error) {
+      console.log('Error in findAllDoctorsWithoutAvailability:', error);
+
       throw new HttpException(
-        error.message || 'An error occurred',
+        error.message || 'Terjadi kesalahan saat mengambil data dokter',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async deleteSchedule(availableDayId: number): Promise<any> {
+    try {
+      return await this.prisma.$transaction(async (prisma) => {
+        const existingDay = await prisma.doctorAvailableDays.findUnique({
+          where: { id: availableDayId },
+        });
+
+        if (!existingDay) {
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.NOT_FOUND,
+              success: false,
+              message: 'Data jadwal tidak ditemukan',
+            },
+            HttpStatus.NOT_FOUND,
+          );
+        }
+
+        await prisma.doctorAvailableSlots.deleteMany({
+          where: {
+            doctor_available_times_id: {
+              in: (
+                await prisma.doctorAvailableTimes.findMany({
+                  where: { available_day_id: availableDayId },
+                  select: { id: true },
+                })
+              ).map((time) => time.id),
+            },
+          },
+        });
+
+        await prisma.doctorAvailableTimes.deleteMany({
+          where: { available_day_id: availableDayId },
+        });
+
+        await prisma.doctorAvailableDays.delete({
+          where: { id: availableDayId },
+        });
+
+        return {
+          statusCode: HttpStatus.OK,
+          success: true,
+          message: 'Berhasil menghapus jadwal dokter beserta detailnya',
+        };
+      });
+    } catch (error) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+          success: false,
+          message: 'Gagal menghapus jadwal dokter',
+          error: error.message,
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

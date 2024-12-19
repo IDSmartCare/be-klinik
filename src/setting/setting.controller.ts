@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { SettingService } from './setting.service';
 import { CreatePoliDto } from './dto/create-setting.dto';
-import { UpdateSettingDto } from './dto/update-setting.dto';
+import { UpdatePoliDto, UpdateSettingDto } from './dto/update-setting.dto';
 import { MasterVoicePoli, PoliKlinik } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateVoicePoliDto } from './dto/create-voice-polis.dto';
@@ -28,8 +28,19 @@ export class SettingController {
 
   @UseGuards(AuthGuard)
   @Post('/createpoli')
-  async create(@Body() createSettingDto: CreatePoliDto): Promise<PoliKlinik> {
+  async createPoli(
+    @Body() createSettingDto: CreatePoliDto,
+  ): Promise<PoliKlinik> {
     return this.settingService.createPoli(createSettingDto);
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch('/updatepoli/:id')
+  async updatePoli(
+    @Body() updatePoliDto: UpdatePoliDto,
+    @Param('id') id: string,
+  ): Promise<PoliKlinik> {
+    return this.settingService.updatePoli(+id, updatePoliDto);
   }
 
   @UseGuards(AuthGuard)
